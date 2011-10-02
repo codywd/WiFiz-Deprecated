@@ -1,0 +1,7 @@
+Welcome to the Anansi WebCalc's Git MASTER Branch.
+
+As the original version of Anansi WebCalc, developed by us at Seafire Software for Raindolf at Oasis Websoft, you will see the original version of Anansi WebCalc in it's full.
+
+Anansi WebCalc is being developed in joint with Oasis WebSoft for one sole reason: To bring the news of Web 2.0 to the masses in Africa. The Web as we Americans know it, in it's full beauty, is not as known in Africa, and Oasis WebSoft's goal is to fix that. Thus, they contracted us to develop this app.
+
+Basically, Anansi WebCalc is a calculator that is being developed to aggregate news from various sources about Web 2.0 and add it to a box on the side for you to read it.
