@@ -1,3 +1,4 @@
+#include <Python.h>
 #include <QtGui/QApplication>
 #include "anansiwebcalc.h"
 
