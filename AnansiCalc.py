@@ -159,10 +159,6 @@ class newsAggView(wx.Frame):
         
         fileMenu = wx.Menu()
         newItem = fileMenu.Append(wx.ID_NEW, "New Window", "Open a new, blank window.")
-        self.saveItem = fileMenu.Append(wx.ID_SAVE, "Save", "Save an ASTF file. Only available in StoryPad View.")
-        self.saveItem.Enable(False)
-        self.openItem = fileMenu.Append(wx.ID_OPEN, "Open", "Open an ASTF file. Only available in StoryPad View.")
-        self.openItem.Enable(False)
         clearItem = fileMenu.Append(wx.ID_CLEAR, "Clear All", "Clear the current data.")
         fileMenu.AppendSeparator()
         exitItem = fileMenu.Append(wx.ID_EXIT, "Exit", "Quit the program.")
@@ -171,6 +167,14 @@ class newsAggView(wx.Frame):
         editMenu = wx.Menu()
         prefBox = editMenu.Append(wx.ID_PREFERENCES, "Preferences", "View the preferences.")
         mainMenu.Append(editMenu, "&Edit")
+        
+        manageMenu = wx.Menu()
+        addFeed = manageMenu.Append(wx.ID_ANY, "Add Feed...", "Add a new feed to watch.")
+        editFeed = manageMenu.Append(wx.ID_ANY, "Edit Feed...", "Mess up in typing a URL? Edit it here.")
+        manageMenu.AppendSeparator()
+        removeFeed = manageMenu.Append(wx.ID_ANY, "Remove Feed ...", "Remove a feed from watching.")
+        mainMenu.Append(manageMenu, "Mana&ge")
+        
         
         viewMenu = wx.Menu()
         self.storyViewItem = viewMenu.Append(wx.ID_ANY, "StoryPad(R) View", "Use the StoryPad journal view.", wx.ITEM_RADIO)
@@ -194,18 +198,10 @@ class newsAggView(wx.Frame):
         ## Main GUI ##
         self.SPVSizer = wx.BoxSizer()
         self.SPVSizer.SetMinSize((450, 400))
-    
-        self.saveItem.Enable(True)
-        self.openItem.Enable(True)
+
         self.SPVSizer.SetMinSize((450, 400))
-        self.richtext = wx.stc.StyledTextCtrl(self, wx.ID_ANY, style=wx.TE_MULTILINE | wx.EXPAND)
-        self.SPVSizer.Add(self.richtext, 1, wx.EXPAND)
-        self.richtext.SetMarginType(1, wx.stc.STC_MARGIN_NUMBER)
-        self.richtext.SetMarginWidth(1, 25)        
-        self.dirName = ""
-        self.fileName = ""    
-        
-        self.SetSizerAndFit(self.SPVSizer)        
+        self.aggregator = wx.ListBox(self)
+        self.SPVSizer.Add(self.aggregator)
         ## End Main GUI ##
         
         ## Status Bar ##
@@ -265,28 +261,16 @@ class specCredits(wx.Dialog):
     def closeDialog(self, e):
         self.Destroy()
 
-class prefDialog(wx.Frame):
+class prefDialog(wx.Dialog):
     def __init__(self, parent, title):
-        super(prefDialog, self).__init__(parent=parent, title=title, size=(300, 700))
+        super(prefDialog, self).__init__(parent=parent, title="Preferences", size=(300, 700))
         self.InitUI()
     
     def InitUI(self):
         panel = wx.Panel(self)
         
-        ## Menu Bar ##
-        prefMenuBar = wx.MenuBar()
-        prefFileMenu = wx.Menu()
-        prefSave = prefFileMenu.Append(wx.ID_SAVE, "Save Preferences...", "Save the current preferences")
-        prefFileMenu.AppendSeparator()
-        prefExit = prefFileMenu.Append(wx.ID_EXIT, "Exit the Preferences", "Exit out of the Preferences Dialog.")
-        prefMenuBar.Append(prefFileMenu, "&File")
-        self.SetMenuBar(prefMenuBar)
-        ## End Menu Bar ##
-        
-        
-        
     def OnClose(self, e):
-        self.Destroy()
+        self.Destroy(True)
     
     def savePref(self, e):
         pass
@@ -313,14 +297,14 @@ class reportIssueDialog(wx.Dialog):
         self.Bind(wx.EVT_BUTTON, self.sendReport, sendBtn)
         
     def OnClose(self, e):
-        self.Destroy()
+        self.Show(False)
         
     def sendReport(self, e):
         webbrowser.open("http://www.seafiresoftware.org/bugtracker/bug_report_page.php")
 
 class AnansiCalc(wx.Frame):
-    def __init__(self, parent, id, title):
-        super(AnansiCalc, self).__init__(parent, id=1337, title="Anansi CalcPad(r)", style = wx.DEFAULT_FRAME_STYLE ^ wx.RESIZE_BORDER)
+    def __init__(self, parent, title):
+        super(AnansiCalc, self).__init__(parent, title="Anansi CalcPad(r)", style = wx.DEFAULT_FRAME_STYLE ^ wx.RESIZE_BORDER)
         self.InitUI()
         
     def InitUI(self):
@@ -380,15 +364,16 @@ class AnansiCalc(wx.Frame):
         self.Bind(wx.EVT_MENU, self.updateWin, updateItem)
         self.Bind(wx.EVT_MENU, self.specialCredits, specCredits)
         self.Bind(wx.EVT_MENU, self.prefBox, prefBox)
+        self.Bind(wx.EVT_MENU, self.newWin, newItem)
         ## End Binding Section ##
+        
         self.Center()
         self.Show()
         
     def prefBox(self, e):
-        pref = prefDialog(None, title="Preferences")
-        pref.Show()
-        pref.MakeModal()
-        pref.Destroy()
+        spec = prefDialog(None, title="Preferences")
+        spec.ShowModal()
+        spec.Destroy()
         
     def specialCredits(self, e):
         spec = specCredits(None, title="Special Credits")
@@ -411,7 +396,8 @@ class AnansiCalc(wx.Frame):
             self.Show(False)   
     
     def newWin(self, e):
-        pass
+        newWin = AnansiCalc(self, wx.ID_ANY)
+        newWin.Show(True)
     
     def clearData(self, e):
         pass
@@ -487,6 +473,6 @@ Suite 330, Boston, MA  02111-1307  USA"""
     
 if __name__ == "__main__":
     app = wx.App()
-    AnansiCalc(None, 1337, "Anansi CalcPad")
+    AnansiCalc(None,  "Anansi CalcPad")
     app.MainLoop()
     
