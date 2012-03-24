@@ -554,6 +554,7 @@ class AnansiCalc(wx.Frame):
         SPVSizer.Add(btnDiv)
         btnBk = wx.Button(self, label="Back", pos=(205, 35), size=(45, 45))
         SPVSizer.Add(btnBk)
+        btnBk.Disable()
         btnCE = wx.Button(self, label="CE", pos=(255, 35), size=(45, 45))
         SPVSizer.Add(btnCE)
         
