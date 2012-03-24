@@ -468,6 +468,10 @@ class AnansiCalc(wx.Frame):
         self.InitUI()
         
     def InitUI(self):
+        
+        self.num1 = ""
+        self.num2 = ""
+        
         iconFile = "./icon.ico"
         mainIcon = wx.Icon(iconFile, wx.BITMAP_TYPE_ICO)
         self.SetIcon(mainIcon)
@@ -509,8 +513,8 @@ class AnansiCalc(wx.Frame):
         SPVSizer = wx.BoxSizer()
         SPVSizer.SetMinSize((310, 310))
         
-        txtItem = wx.TextCtrl(self, size=(150, 25), pos=(75, 5))
-        SPVSizer.Add(txtItem)
+        self.txtItem = wx.TextCtrl(self, size=(300, 25), pos=(5, 5))
+        SPVSizer.Add(self.txtItem)
         btn7 = wx.Button(self, label="7", pos=(5, 35), size=(45, 45))
         SPVSizer.Add(btn7)
         btn8 = wx.Button(self, label="8", pos=(55, 35), size=(45, 45))
@@ -575,11 +579,107 @@ class AnansiCalc(wx.Frame):
         self.Bind(wx.EVT_MENU, self.specialCredits, specCredits)
         self.Bind(wx.EVT_MENU, self.prefBox, prefBox)
         self.Bind(wx.EVT_MENU, self.newWin, newItem)
+        self.Bind(wx.EVT_MENU, self.clearData, clearItem)
+        self.Bind(wx.EVT_BUTTON, self.xSq, btnSq)
+        self.Bind(wx.EVT_BUTTON, self.xSqR, btnSqR)
+        self.Bind(wx.EVT_BUTTON, self.btn0Clicked, btn0)
+        self.Bind(wx.EVT_BUTTON, self.btn1Clicked, btn1)
+        self.Bind(wx.EVT_BUTTON, self.btn2Clicked, btn2)
+        self.Bind(wx.EVT_BUTTON, self.btn3Clicked, btn3)
+        self.Bind(wx.EVT_BUTTON, self.btn4Clicked, btn4)
+        self.Bind(wx.EVT_BUTTON, self.btn5Clicked, btn5)
+        self.Bind(wx.EVT_BUTTON, self.btn6Clicked, btn6)
+        self.Bind(wx.EVT_BUTTON, self.btn7Clicked, btn7)
+        self.Bind(wx.EVT_BUTTON, self.btn8Clicked, btn8)
+        self.Bind(wx.EVT_BUTTON, self.btn9Clicked, btn9)
+        self.Bind(wx.EVT_BUTTON, self.btnPlusClicked, btnPlus)
+        self.Bind(wx.EVT_BUTTON, self.btnMinClicked, btnMin)
+        self.Bind(wx.EVT_BUTTON, self.btnDivClicked, btnDiv)
+        self.Bind(wx.EVT_BUTTON, self.btnMultClicked, btnMult)
+        self.Bind(wx.EVT_BUTTON, self.btnDecClicked, btnDec)
+        #self.Bind(wx.EVT_BUTTON, self.btnBkClicked, btnBk)
+        self.Bind(wx.EVT_BUTTON, self.clearData, btnCE)
+        self.Bind(wx.EVT_BUTTON, self.btnEqClicked, btnEq)
+        self.Bind(wx.EVT_BUTTON, self.btnOpPaClicked, btnParOpen)
+        self.Bind(wx.EVT_BUTTON, self.btnClPaClicked, btnParClose)
         ## End Binding Section ##
         
         self.Center()
         self.Show()
         
+    def btnOpPaClicked(self, e):
+        self.txtItem.AppendText("(")
+        
+    def btnClPaClicked(self, e):
+        self.txtItem.AppendText(")")
+    #def btnBkClicked(self, e):
+    #    self.txtItem.Remove(self, (self.txtItem.GetLastPosition()), (""))
+    
+    def btnEqClicked(self, e):
+        str1 = self.txtItem.GetValue()
+        while str1[0] == '0':
+            str1 = str1[1:]
+        if '/' in str1 and '1' not in str1:
+            str1 = str1 + '.0'
+        try:
+            self.txtItem.SetValue(str(eval(str1)))
+        except ZeroDivisionError:
+            self.txtItem.SetValue("You can't divide by zero!")
+    
+    def btn0Clicked(self, e):
+        self.txtItem.AppendText("0")
+            
+    def btn1Clicked(self, e):
+        self.txtItem.AppendText("1")
+        
+    def btn2Clicked(self, e):
+        self.txtItem.AppendText("2")
+    
+    def btn3Clicked(self, e):
+        self.txtItem.AppendText("3")
+        
+    def btn4Clicked(self, e):
+        self.txtItem.AppendText("4")
+        
+    def btn5Clicked(self, e):
+        self.txtItem.AppendText("5")
+        
+    def btn6Clicked(self, e):
+        self.txtItem.AppendText("6")
+        
+    def btn7Clicked(self, e):
+        self.txtItem.AppendText("7")
+        
+    def btn8Clicked(self, e):
+        self.txtItem.AppendText("8")
+        
+    def btn9Clicked(self, e):
+        self.txtItem.AppendText("9")
+        
+    def btnDecClicked(self, e):
+        self.txtItem.AppendText(".")
+        
+    def btnPlusClicked(self, e):
+        self.txtItem.AppendText("+")
+        
+    def btnMinClicked(self, e):
+        self.txtItem.AppendText("-")
+        
+    def btnDivClicked(self, e):
+        self.txtItem.AppendText("/")
+        
+    def btnMultClicked(self, e):
+        self.txtItem.AppendText("*")
+    
+    def xSq(self, e):
+        num = float(self.txtItem.GetValue())     
+        ans = num * num
+        self.txtItem.SetValue(str(ans))
+        
+    def xSqR(self, e):
+        num = float(self.txtItem.GetValue())
+        ans = math.sqrt(num)
+        self.txtItem.SetValue(str(ans))
     def prefBox(self, e):
         spec = prefDialog(None, title="Preferences")
         spec.ShowModal()
@@ -610,7 +710,7 @@ class AnansiCalc(wx.Frame):
         newWin.Show(True)
     
     def clearData(self, e):
-        pass
+        self.txtItem.Clear()
     
     def reportWin(self, e):
         reportn = reportIssueDialog(None, title="Report an Issue...")
