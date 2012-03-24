@@ -11,7 +11,7 @@ import wx
 import wx.stc
 
 SB_INFO = 0
-progVer = 0.2
+progVer = 0.3
 
 class storyPadView(wx.Frame):
     def __init__(self, parent, title):
