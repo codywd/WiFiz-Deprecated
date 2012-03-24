@@ -564,8 +564,8 @@ class AnansiCalc(wx.Frame):
         ## End Main GUI ##
         
         ## Status Bar ##
-        sb = self.CreateStatusBar()
-        sb.PushStatusText("Ready.")
+        self.sb = self.CreateStatusBar()
+        self.sb.PushStatusText("Ready.")
         ## End Status Bar ##
         
         ## Binding Events ##
@@ -623,8 +623,10 @@ class AnansiCalc(wx.Frame):
             str1 = str1 + '.0'
         try:
             self.txtItem.SetValue(str(eval(str1)))
+            self.sb.PushStatusText("Successfully evaluated your math problem.")
         except ZeroDivisionError:
             self.txtItem.SetValue("You can't divide by zero!")
+            self.sb.PushStatusText("Error! Seems you tried to divide by zero!")
     
     def btn0Clicked(self, e):
         self.txtItem.AppendText("0")
@@ -672,14 +674,17 @@ class AnansiCalc(wx.Frame):
         self.txtItem.AppendText("*")
     
     def xSq(self, e):
+        self.txtItem.SetValue(str(eval(self.txtItem.GetValue())))
         num = float(self.txtItem.GetValue())     
         ans = num * num
         self.txtItem.SetValue(str(ans))
         
     def xSqR(self, e):
+        self.txtItem.SetValue(str(eval(self.txtItem.GetValue())))
         num = float(self.txtItem.GetValue())
         ans = math.sqrt(num)
         self.txtItem.SetValue(str(ans))
+    
     def prefBox(self, e):
         spec = prefDialog(None, title="Preferences")
         spec.ShowModal()
