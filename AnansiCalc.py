@@ -561,6 +561,7 @@ class AnansiCalc(wx.Frame):
         
         ## Status Bar ##
         sb = self.CreateStatusBar()
+        sb.PushStatusText("Ready.")
         ## End Status Bar ##
         
         ## Binding Events ##
