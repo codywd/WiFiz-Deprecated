@@ -424,7 +424,7 @@ class AnansiCalc(wx.Frame):
     def updateWin(self, e):
         def updateDialog(self, e):
             try:
-                upFile = "https://raw.github.com/Seafire-Software/Seapad/master/curVersion"
+                upFile = "https://raw.github.com/Seafire-Software/Anansi-CalcPad/master/curVersion"
                 tempDir = tempfile.gettempdir()
                 webFile = urllib.urlretrieve(upFile, tempDir + '/curVersion')
                 basVer = open(tempDir + '/curVersion')
@@ -436,7 +436,7 @@ class AnansiCalc(wx.Frame):
                     result = dlg.ShowModal()
                     dlg.Destroy()
                     if result == wx.ID_YES:
-                        upgradeFile = "https://raw.github.com/Seafire-Software/Seapad/master/SeaPad.py"
+                        upgradeFile = "https://raw.github.com/Seafire-Software/Anansi-CalcPad/master/AnansiCalc.py"
                             
                         urllib.urlretrieve(upgradeFile, os.path.join(sys.path[0], sys.argv[0]))
                         dlg = wx.MessageDialog(None, "Update successful. Please restart the program!", "Restart manually.", wx.YES_NO)
