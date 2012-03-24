@@ -464,7 +464,7 @@ class reportIssueDialog(wx.Dialog):
 
 class AnansiCalc(wx.Frame):
     def __init__(self, parent, title):
-        super(AnansiCalc, self).__init__(parent, title="Anansi CalcPad(r)", style = wx.DEFAULT_FRAME_STYLE ^ wx.RESIZE_BORDER)
+        super(AnansiCalc, self).__init__(parent, title="Anansi CalcPad(r)", size = (310, 310), style = wx.DEFAULT_FRAME_STYLE ^ wx.RESIZE_BORDER)
         self.InitUI()
         
     def InitUI(self):
@@ -506,8 +506,57 @@ class AnansiCalc(wx.Frame):
         ## End Menu Bar ##
         
         ## Main GUI ##
-        self.SPVSizer = wx.BoxSizer()
-        self.SPVSizer.SetMinSize((450, 400))
+        SPVSizer = wx.BoxSizer()
+        SPVSizer.SetMinSize((310, 310))
+        
+        txtItem = wx.TextCtrl(self, size=(150, 25), pos=(75, 5))
+        SPVSizer.Add(txtItem)
+        btn7 = wx.Button(self, label="7", pos=(5, 35), size=(45, 45))
+        SPVSizer.Add(btn7)
+        btn8 = wx.Button(self, label="8", pos=(55, 35), size=(45, 45))
+        SPVSizer.Add(btn8)
+        btn9 = wx.Button(self, label="9", pos=(105, 35), size=(45, 45))
+        SPVSizer.Add(btn9)
+        btnDiv = wx.Button(self, label="/", pos=(155, 35), size=(45, 45))
+        SPVSizer.Add(btnDiv)
+        btnBk = wx.Button(self, label="Back", pos=(205, 35), size=(45, 45))
+        SPVSizer.Add(btnBk)
+        btnCE = wx.Button(self, label="CE", pos=(255, 35), size=(45, 45))
+        SPVSizer.Add(btnCE)
+        
+        btn4 = wx.Button(self, label="4", pos=(5, 90), size=(45, 45))
+        SPVSizer.Add(btn4)
+        btn5 = wx.Button(self, label="5", pos=(55, 90), size=(45, 45))
+        SPVSizer.Add(btn5)
+        btn6 = wx.Button(self, label="6", pos=(105, 90), size=(45, 45))
+        SPVSizer.Add(btn6)
+        btnMult = wx.Button(self, label="x", pos=(155, 90), size=(45, 45))
+        SPVSizer.Add(btnMult)
+        btnParOpen = wx.Button(self, label="(", pos=(205, 90), size=(45, 45))
+        SPVSizer.Add(btnParOpen)
+        btnParClose = wx.Button(self, label=")", pos=(255, 90), size=(45, 45))
+        
+        btn1 = wx.Button(self, label="1", pos=(5, 150), size=(45, 45))
+        SPVSizer.Add(btn1)
+        btn2 = wx.Button(self, label="2", pos=(55, 150), size=(45, 45))
+        SPVSizer.Add(btn2)
+        btn3 = wx.Button(self, label="3", pos=(105, 150), size=(45, 45))
+        SPVSizer.Add(btn3)        
+        btnMin = wx.Button(self, label="-", pos=(155, 150), size=(45, 45))
+        SPVSizer.Add(btnMin)
+        btnSq = wx.Button(self, label="x²", pos=(205, 150), size=(45, 45))
+        SPVSizer.Add(btnSq)        
+        btnSqR = wx.Button(self, label=u"\u221A", pos=(255, 150), size=(45, 45))
+        SPVSizer.Add(btnSqR)
+        
+        btn0 = wx.Button(self, label="0", pos=(5, 210), size=(45, 45))
+        SPVSizer.Add(btn0)        
+        btnDec = wx.Button(self, label=".", pos=(55, 210), size=(45, 45))
+        SPVSizer.Add(btnDec)        
+        btnPlus = wx.Button(self, label="+", pos=(155, 210), size=(45, 45))
+        SPVSizer.Add(btnPlus)
+        btnEq = wx.Button(self, label="=", pos=(205, 210), size=(95, 45))
+        SPVSizer.Add(btnEq)
         ## End Main GUI ##
         
         ## Status Bar ##
