@@ -13,6 +13,233 @@ import wx.stc
 SB_INFO = 0
 progVer = 0.1
 
+class storyPadView(wx.Frame):
+    def __init__(self, parent, title):
+        super(storyPadView, self).__init__(parent, title="Anansi StoryPad(r)", style = wx.DEFAULT_FRAME_STYLE)
+        self.InitUI()
+        
+    def InitUI(self):
+        iconFile = "./icon.ico"
+        mainIcon = wx.Icon(iconFile, wx.BITMAP_TYPE_ICO)
+        self.SetIcon(mainIcon)
+        
+        ## Menu Bar ##
+        mainMenu = wx.MenuBar()
+        
+        fileMenu = wx.Menu()
+        newItem = fileMenu.Append(wx.ID_NEW, "New Window", "Open a new, blank window.")
+        self.saveItem = fileMenu.Append(wx.ID_SAVE, "Save", "Save an ASTF file. Only available in StoryPad View.")
+        self.saveItem.Enable(False)
+        self.openItem = fileMenu.Append(wx.ID_OPEN, "Open", "Open an ASTF file. Only available in StoryPad View.")
+        self.openItem.Enable(False)
+        clearItem = fileMenu.Append(wx.ID_CLEAR, "Clear All", "Clear the current data.")
+        fileMenu.AppendSeparator()
+        exitItem = fileMenu.Append(wx.ID_EXIT, "Exit", "Quit the program.")
+        mainMenu.Append(fileMenu, "&File")
+        
+        editMenu = wx.Menu()
+        prefBox = editMenu.Append(wx.ID_PREFERENCES, "Preferences", "View the preferences.")
+        mainMenu.Append(editMenu, "&Edit")
+        
+        viewMenu = wx.Menu()
+        self.storyViewItem = viewMenu.Append(wx.ID_ANY, "StoryPad(R) View", "Use the StoryPad journal view.", wx.ITEM_RADIO)
+        self.storyViewItem.Enable(False)
+        self.calcViewItem = viewMenu.Append(wx.ID_ANY, "Calculator View", "Use the calculator view.", wx.ITEM_RADIO)
+        self.aggViewItem = viewMenu.Append(wx.ID_ANY, "News Aggregator View", "Use the news aggregator view.", wx.ITEM_RADIO)
+        mainMenu.Append(viewMenu, "&View")
+        
+        helpMenu = wx.Menu()
+        helpItem = helpMenu.Append(wx.ID_HELP, "Help with Anansi CalcPad...", "Get help with Anansi CalcPad.")
+        updateItem = helpMenu.Append(wx.ID_ANY, "Check for Updates...", "Check for Updates to Anansi CalcPad.")
+        reportItem = helpMenu.Append(wx.ID_ANY, "Report an Issue...", "Report an issue.")
+        helpMenu.AppendSeparator()
+        specCredits = helpMenu.Append(wx.ID_ANY, "Special Credits...", "Special credits for some awesome people.")
+        aboutBox = helpMenu.Append(wx.ID_ABOUT, "About Anansi CalcPad", "Read about Anansi CalcPad.")        
+        mainMenu.Append(helpMenu, "&Help")
+        
+        self.SetMenuBar(mainMenu)
+        ## End Menu Bar ##
+        
+        ## Main GUI ##
+        self.SPVSizer = wx.BoxSizer()
+        self.SPVSizer.SetMinSize((450, 400))
+        
+        self.saveItem.Enable(True)
+        self.openItem.Enable(True)
+        self.SPVSizer.SetMinSize((450, 400))
+        self.richtext = wx.stc.StyledTextCtrl(self, wx.ID_ANY, style=wx.TE_MULTILINE | wx.EXPAND)
+        self.SPVSizer.Add(self.richtext, 1, wx.EXPAND)
+        self.richtext.SetMarginType(1, wx.stc.STC_MARGIN_NUMBER)
+        self.richtext.SetMarginWidth(1, 25)        
+        self.dirName = ""
+        self.fileName = ""    
+        
+        self.SetSizerAndFit(self.SPVSizer)        
+        ## End Main GUI ##
+        
+        ## Status Bar ##
+        sb = self.CreateStatusBar()
+        ## End Status Bar ##
+        
+        ## Binding Events ##
+        self.Bind(wx.EVT_MENU, AnansiCalc.OnClose, exitItem)
+        self.Bind(wx.EVT_MENU, AnansiCalc.aboutWin, aboutBox)
+        self.Bind(wx.EVT_MENU, AnansiCalc.reportWin, reportItem)
+        self.Bind(wx.EVT_MENU, self.calcView, self.calcViewItem)
+        self.Bind(wx.EVT_MENU, self.newsAggView, self.aggViewItem)
+        self.Bind(wx.EVT_MENU, AnansiCalc.helpPage, helpItem)
+        self.Bind(wx.EVT_MENU, AnansiCalc.updateWin, updateItem)
+        self.Bind(wx.EVT_MENU, self.saveNow, self.saveItem)
+        self.Bind(wx.EVT_MENU, self.openASTF, self.openItem)
+        self.Bind(wx.EVT_MENU, AnansiCalc.specialCredits, specCredits)
+        self.Bind(wx.EVT_MENU, AnansiCalc.prefBox, prefBox)
+        ## End Binding Section ##
+        self.Center()
+        self.Show()
+        
+    def calcView(self, e):
+        self.dlg1 = AnansiCalc(self, wx.ID_ANY)
+        self.dlg1.Show()
+        self.Show(False)
+    
+    def newsAggView(self, e):
+        self.dlg1 = newsAggView(self, wx.ID_ANY)
+        self.dlg1.Show()
+        self.Show(False)
+        
+    def quickSave(self ,e):
+            if (self.fileName != "") and (self.dirName !=""):
+                try:
+                    f = file(os.path.join(self.dirName, self.fileName), 'w')
+                    f.write(self.richtext.GetText())
+                    self.PushStatusText("Saved file: " + str(self.richtext.GetTextLength()) + " characters as " + self.fileName + ".", SB_INFO)
+                    f.close()
+                    return True
+                except:
+                    self.PushStatusText("Error in saving file!", SB_INFO)
+                    return False
+                else:
+                    return self.saveNow(e)
+                        
+    def saveNow(self, e):
+        ret = False
+        dlg = wx.FileDialog(self, "Save As", self.dirName, self.fileName, "Anansi StoryPad Text(.ASTF)|.ASTF", wx.SAVE)
+        if dlg.ShowModal() == wx.ID_OK:
+            self.fileName = dlg.GetFilename()
+            self.dirName = dlg.GetDirectory()
+            if self.quickSave(e):
+                self.SetTitle("Anansi StoryPad(r)" + " - [" + self.fileName + "]")
+                ret = True
+        dlg.Destroy()
+        return ret
+            
+    def openASTF(self, e):
+        dlg = wx.FileDialog(self, "Open", self.dirName, self.fileName, "Anansi StoryPad Text(.ASTF)|.ASTF|All Files(*.*)|*.*", wx.OPEN)
+        if dlg.ShowModal() == wx.ID_OK:
+            self.fileName = dlg.GetFilename()
+            self.dirName = dlg.GetDirectory()
+            
+            if self.richtext.LoadFile(os.path.join(self.dirName, self.fileName)):
+                self.SetStatusText("Read " + str(self.richtext.GetTextLength()) + " characters. File named: " + dlg.GetFilename() + ".", SB_INFO)
+            else:
+                self.SetStatusText("Error in opening file.", SB_INFO)    
+
+class newsAggView(wx.Frame):
+    def __init__(self, parent, title):
+        super(newsAggView, self).__init__(parent, title="Anansi News Aggregator(r)", style = wx.DEFAULT_FRAME_STYLE)
+        self.InitUI()
+        
+    def InitUI(self):
+        iconFile = "./icon.ico"
+        mainIcon = wx.Icon(iconFile, wx.BITMAP_TYPE_ICO)
+        self.SetIcon(mainIcon)
+        
+        ## Menu Bar ##
+        mainMenu = wx.MenuBar()
+        
+        fileMenu = wx.Menu()
+        newItem = fileMenu.Append(wx.ID_NEW, "New Window", "Open a new, blank window.")
+        self.saveItem = fileMenu.Append(wx.ID_SAVE, "Save", "Save an ASTF file. Only available in StoryPad View.")
+        self.saveItem.Enable(False)
+        self.openItem = fileMenu.Append(wx.ID_OPEN, "Open", "Open an ASTF file. Only available in StoryPad View.")
+        self.openItem.Enable(False)
+        clearItem = fileMenu.Append(wx.ID_CLEAR, "Clear All", "Clear the current data.")
+        fileMenu.AppendSeparator()
+        exitItem = fileMenu.Append(wx.ID_EXIT, "Exit", "Quit the program.")
+        mainMenu.Append(fileMenu, "&File")
+        
+        editMenu = wx.Menu()
+        prefBox = editMenu.Append(wx.ID_PREFERENCES, "Preferences", "View the preferences.")
+        mainMenu.Append(editMenu, "&Edit")
+        
+        viewMenu = wx.Menu()
+        self.storyViewItem = viewMenu.Append(wx.ID_ANY, "StoryPad(R) View", "Use the StoryPad journal view.", wx.ITEM_RADIO)
+        self.calcViewItem = viewMenu.Append(wx.ID_ANY, "Calculator View", "Use the calculator view.", wx.ITEM_RADIO)
+        self.aggViewItem = viewMenu.Append(wx.ID_ANY, "News Aggregator View", "Use the news aggregator view.", wx.ITEM_RADIO)
+        self.aggViewItem.Enable(False)
+        mainMenu.Append(viewMenu, "&View")
+        
+        helpMenu = wx.Menu()
+        helpItem = helpMenu.Append(wx.ID_HELP, "Help with Anansi CalcPad...", "Get help with Anansi CalcPad.")
+        updateItem = helpMenu.Append(wx.ID_ANY, "Check for Updates...", "Check for Updates to Anansi CalcPad.")
+        reportItem = helpMenu.Append(wx.ID_ANY, "Report an Issue...", "Report an issue.")
+        helpMenu.AppendSeparator()
+        specCredits = helpMenu.Append(wx.ID_ANY, "Special Credits...", "Special credits for some awesome people.")
+        aboutBox = helpMenu.Append(wx.ID_ABOUT, "About Anansi CalcPad", "Read about Anansi CalcPad.")        
+        mainMenu.Append(helpMenu, "&Help")
+        
+        self.SetMenuBar(mainMenu)
+        ## End Menu Bar ##
+        
+        ## Main GUI ##
+        self.SPVSizer = wx.BoxSizer()
+        self.SPVSizer.SetMinSize((450, 400))
+    
+        self.saveItem.Enable(True)
+        self.openItem.Enable(True)
+        self.SPVSizer.SetMinSize((450, 400))
+        self.richtext = wx.stc.StyledTextCtrl(self, wx.ID_ANY, style=wx.TE_MULTILINE | wx.EXPAND)
+        self.SPVSizer.Add(self.richtext, 1, wx.EXPAND)
+        self.richtext.SetMarginType(1, wx.stc.STC_MARGIN_NUMBER)
+        self.richtext.SetMarginWidth(1, 25)        
+        self.dirName = ""
+        self.fileName = ""    
+        
+        self.SetSizerAndFit(self.SPVSizer)        
+        ## End Main GUI ##
+        
+        ## Status Bar ##
+        sb = self.CreateStatusBar()
+        ## End Status Bar ##
+        
+        ## Binding Events ##
+        self.Bind(wx.EVT_MENU, self.onClose, exitItem)
+        self.Bind(wx.EVT_MENU, AnansiCalc.aboutWin, aboutBox)
+        self.Bind(wx.EVT_MENU, AnansiCalc.reportWin, reportItem)
+        self.Bind(wx.EVT_MENU, self.calcView, self.calcViewItem)
+        self.Bind(wx.EVT_MENU, self.storyPadView, self.storyViewItem)
+        self.Bind(wx.EVT_MENU, AnansiCalc.helpPage, helpItem)
+        self.Bind(wx.EVT_MENU, AnansiCalc.updateWin, updateItem)
+        self.Bind(wx.EVT_MENU, AnansiCalc.specialCredits, specCredits)
+        self.Bind(wx.EVT_MENU, AnansiCalc.prefBox, prefBox)
+        ## End Binding Section ##
+        self.Center()
+        self.Show()
+        
+    def onClose(self, e):
+        self.Close()
+    
+    def calcView(self, e):
+        self.dlg1 = AnansiCalc(self, wx.ID_ANY)
+        self.dlg1.Show()
+        self.Show(False)
+    
+    def storyPadView(self, e):
+        self.dlg1 = storyPadView(self, wx.ID_ANY)
+        self.dlg1.Show()
+        self.Show(False)
+
+
 class specCredits(wx.Dialog):
     def __init__(self, parent, title):
         super(specCredits, self).__init__(parent=parent, title=title, size=(310, 300))
@@ -38,7 +265,7 @@ class specCredits(wx.Dialog):
     def closeDialog(self, e):
         self.Destroy()
 
-class prefDialog(wx.Dialog):
+class prefDialog(wx.Frame):
     def __init__(self, parent, title):
         super(prefDialog, self).__init__(parent=parent, title=title, size=(300, 700))
         self.InitUI()
@@ -53,6 +280,7 @@ class prefDialog(wx.Dialog):
         prefFileMenu.AppendSeparator()
         prefExit = prefFileMenu.Append(wx.ID_EXIT, "Exit the Preferences", "Exit out of the Preferences Dialog.")
         prefMenuBar.Append(prefFileMenu, "&File")
+        self.SetMenuBar(prefMenuBar)
         ## End Menu Bar ##
         
         
@@ -91,8 +319,8 @@ class reportIssueDialog(wx.Dialog):
         webbrowser.open("http://www.seafiresoftware.org/bugtracker/bug_report_page.php")
 
 class AnansiCalc(wx.Frame):
-    def __init__(self, parent, title):
-        super(AnansiCalc, self).__init__(parent, title=title, style = wx.DEFAULT_FRAME_STYLE ^ wx.RESIZE_BORDER)
+    def __init__(self, parent, id, title):
+        super(AnansiCalc, self).__init__(parent, id=1337, title="Anansi CalcPad(r)", style = wx.DEFAULT_FRAME_STYLE ^ wx.RESIZE_BORDER)
         self.InitUI()
         
     def InitUI(self):
@@ -105,17 +333,18 @@ class AnansiCalc(wx.Frame):
         
         fileMenu = wx.Menu()
         newItem = fileMenu.Append(wx.ID_NEW, "New Window", "Open a new, blank window.")
-        self.saveItem = fileMenu.Append(wx.ID_SAVE, "Save", "Save an ASTF file. Only available in StoryPad View.")
-        self.saveItem.Enable(False)
-        self.openItem = fileMenu.Append(wx.ID_OPEN, "Open", "Open an ASTF file. Only available in StoryPad View.")
-        self.openItem.Enable(False)
         clearItem = fileMenu.Append(wx.ID_CLEAR, "Clear All", "Clear the current data.")
         fileMenu.AppendSeparator()
         exitItem = fileMenu.Append(wx.ID_EXIT, "Exit", "Quit the program.")
         mainMenu.Append(fileMenu, "&File")
         
+        editMenu = wx.Menu()
+        prefBox = editMenu.Append(wx.ID_PREFERENCES, "Preferences", "View the preferences.")
+        mainMenu.Append(editMenu, "&Edit")
+        
         viewMenu = wx.Menu()
         self.calcViewItem = viewMenu.Append(wx.ID_ANY, "Calculator View", "Use the calculator view.", wx.ITEM_RADIO)
+        self.calcViewItem.Enable(False)
         self.storyViewItem = viewMenu.Append(wx.ID_ANY, "StoryPad(R) View", "Use the StoryPad journal view.", wx.ITEM_RADIO)
         self.aggViewItem = viewMenu.Append(wx.ID_ANY, "News Aggregator View", "Use the news aggregator view.", wx.ITEM_RADIO)
         mainMenu.Append(viewMenu, "&View")
@@ -133,7 +362,8 @@ class AnansiCalc(wx.Frame):
         ## End Menu Bar ##
         
         ## Main GUI ##
-        wx.MessageBox("CalcPad view, and News Aggregation view still under construction. Please open StoryPad(r) view for now.", "Use StoryPad", wx.OK)
+        self.SPVSizer = wx.BoxSizer()
+        self.SPVSizer.SetMinSize((450, 400))
         ## End Main GUI ##
         
         ## Status Bar ##
@@ -144,17 +374,21 @@ class AnansiCalc(wx.Frame):
         self.Bind(wx.EVT_MENU, self.OnClose, exitItem)
         self.Bind(wx.EVT_MENU, self.aboutWin, aboutBox)
         self.Bind(wx.EVT_MENU, self.reportWin, reportItem)
-        self.Bind(wx.EVT_MENU, self.calcView, self.calcViewItem)
         self.Bind(wx.EVT_MENU, self.storyPadView, self.storyViewItem)
         self.Bind(wx.EVT_MENU, self.newsAggView, self.aggViewItem)
         self.Bind(wx.EVT_MENU, self.helpPage, helpItem)
         self.Bind(wx.EVT_MENU, self.updateWin, updateItem)
-        self.Bind(wx.EVT_MENU, self.saveNow, self.saveItem)
-        self.Bind(wx.EVT_MENU, self.openASTF, self.openItem)
         self.Bind(wx.EVT_MENU, self.specialCredits, specCredits)
+        self.Bind(wx.EVT_MENU, self.prefBox, prefBox)
         ## End Binding Section ##
         self.Center()
         self.Show()
+        
+    def prefBox(self, e):
+        pref = prefDialog(None, title="Preferences")
+        pref.Show()
+        pref.MakeModal()
+        pref.Destroy()
         
     def specialCredits(self, e):
         spec = specCredits(None, title="Special Credits")
@@ -163,44 +397,23 @@ class AnansiCalc(wx.Frame):
     
     def OnClose(self, e):
         self.Close()
-        
-    def calcView(self, e):
-        if self.calcViewItem.IsChecked():
-            self.SetTitle("Anansi CalcPad(R)")
-        
+            
     def storyPadView(self, e):
         if self.storyViewItem.IsChecked():
-            # Hide Calc View #
+            self.dlg1 = storyPadView(self, wx.ID_ANY)
+            self.dlg1.Show()
+            self.Show(False)
             
-            # Hide News Aggregator View #
-            
-            # Show Story Pad View #
-            self.SetTitle("Anansi StoryPad(R)")
-            self.saveItem.Enable(True)
-            self.openItem.Enable(True)
-            SPVSizer = wx.BoxSizer()
-            SPVSizer.SetMinSize((450, 400))
-            self.richtext = wx.stc.StyledTextCtrl(self, wx.ID_ANY, style=wx.TE_MULTILINE | wx.EXPAND)
-            SPVSizer.Add(self.richtext, 1, wx.EXPAND)
-            self.richtext.SetMarginType(1, wx.stc.STC_MARGIN_NUMBER)
-            self.richtext.SetMarginWidth(1, 25)        
-            self.dirName = ""
-            self.fileName = ""    
-            
-            self.SetSizerAndFit(SPVSizer)
-        
-    
     def newsAggView(self, e):
         if self.aggViewItem.IsChecked():
-            self.SetTitle("Anansi News Aggregator")   
+            self.dlg1 = newsAggView(self, wx.ID_ANY)
+            self.dlg1.Show()
+            self.Show(False)   
     
     def newWin(self, e):
         pass
     
     def clearData(self, e):
-        pass
-    
-    def helpWin(self, e):
         pass
     
     def reportWin(self, e):
@@ -272,46 +485,9 @@ Suite 330, Boston, MA  02111-1307  USA"""
         info.AddTranslator('Cody Dostal')
         
         wx.AboutBox(info)
-        
-    def quickSave(self ,e):
-        if (self.fileName != "") and (self.dirName !=""):
-            try:
-                f = file(os.path.join(self.dirName, self.fileName), 'w')
-                f.write(self.richtext.GetText())
-                self.PushStatusText("Saved file: " + str(self.richtext.GetTextLength()) + " characters as " + self.fileName + ".", SB_INFO)
-                f.close()
-                return True
-            except:
-                self.PushStatusText("Error in saving file!", SB_INFO)
-                return False
-            else:
-                return self.SaveAsFile(e)
-                
-    def saveNow(self, e):
-        ret = False
-        dlg = wx.FileDialog(self, "Save As", self.dirName, self.fileName, "Anansi StoryPad Text(.ASTF)|.ASTF", wx.SAVE)
-        if dlg.ShowModal() == wx.ID_OK:
-            self.fileName = dlg.GetFilename()
-            self.dirName = dlg.GetDirectory()
-            if self.quickSave(e):
-                self.SetTitle("Anansi StoryPad" + " - [" + self.fileName + "]")
-                ret = True
-        dlg.Destroy()
-        return ret
-    
-    def openASTF(self, e):
-        dlg = wx.FileDialog(self, "Open", self.dirName, self.fileName, "Anansi StoryPad Text(.ASTF)|.ASTF|All Files(*.*)|*.*", wx.OPEN)
-        if dlg.ShowModal() == wx.ID_OK:
-            self.fileName = dlg.GetFilename()
-            self.dirName = dlg.GetDirectory()
-            
-            if self.richtext.LoadFile(os.path.join(self.dirName, self.fileName)):
-                self.SetStatusText("Read " + str(self.richtext.GetTextLength()) + " characters. File named: " + dlg.GetFilename() + ".", SB_INFO)
-            else:
-                self.SetStatusText("Error in opening file.", SB_INFO)
     
 if __name__ == "__main__":
     app = wx.App()
-    AnansiCalc(None, "Anansi CalcPad")
+    AnansiCalc(None, 1337, "Anansi CalcPad")
     app.MainLoop()
     
