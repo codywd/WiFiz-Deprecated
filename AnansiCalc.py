@@ -11,7 +11,7 @@ import wx
 import wx.stc
 
 SB_INFO = 0
-progVer = 0.3
+progVer = 0.35
 
 iconFile = "./icon.ico"
 
