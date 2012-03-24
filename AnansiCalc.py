@@ -11,7 +11,7 @@ import wx
 import wx.stc
 
 SB_INFO = 0
-progVer = 0.1
+progVer = 0.2
 
 class storyPadView(wx.Frame):
     def __init__(self, parent, title):
@@ -422,35 +422,34 @@ class AnansiCalc(wx.Frame):
         reportn.Destroy()        
     
     def updateWin(self, e):
-        def updateDialog(self, e):
-            try:
-                upFile = "https://raw.github.com/Seafire-Software/Anansi-CalcPad/master/curVersion"
-                tempDir = tempfile.gettempdir()
-                webFile = urllib.urlretrieve(upFile, tempDir + '/curVersion')
-                basVer = open(tempDir + '/curVersion')
-                ver = float(basVer.read())
-                
-                if progVer < ver:
-                    dlg = wx.MessageDialog(None, "You must update. Your version is " + str(progVer) + ", and the latest version is " + str(ver) + ", Do you wish to update?", "Update Required.", wx.YES_NO | wx.ICON_INFORMATION)
-                   
-                    result = dlg.ShowModal()
-                    dlg.Destroy()
-                    if result == wx.ID_YES:
-                        upgradeFile = "https://raw.github.com/Seafire-Software/Anansi-CalcPad/master/AnansiCalc.py"
-                            
-                        urllib.urlretrieve(upgradeFile, os.path.join(sys.path[0], sys.argv[0]))
-                        dlg = wx.MessageDialog(None, "Update successful. Please restart the program!", "Restart manually.", wx.YES_NO)
-                    else:
-                        wx.MessageBox("You chose not to upgrade. Please upgrade later!", "Upgrade later.", wx.OK)
-                elif ver == progVer:
-                    wx.MessageBox("You do not need to update. Your version is " + str(progVer) + ", which is equal to the latest version of " + str(ver), "No Update Required.", wx.OK | wx.ICON_INFORMATION)
-                elif progVer > ver: 
-                    wx.MessageBox("What happened here? Your version is " + str(progVer) + " which is greater than the latest version of " + str(ver), "Your version is greater than ours?", wx.OK | wx.ICON_QUESTION)
+        try:
+            upFile = "https://raw.github.com/Seafire-Software/Anansi-CalcPad/master/curVersion"
+            tempDir = tempfile.gettempdir()
+            webFile = urllib.urlretrieve(upFile, tempDir + '/curVersion')
+            basVer = open(tempDir + '/curVersion')
+            ver = float(basVer.read())
+            
+            if progVer < ver:
+                dlg = wx.MessageDialog(None, "You must update. Your version is " + str(progVer) + ", and the latest version is " + str(ver) + ", Do you wish to update?", "Update Required.", wx.YES_NO | wx.ICON_INFORMATION)
+               
+                result = dlg.ShowModal()
+                dlg.Destroy()
+                if result == wx.ID_YES:
+                    upgradeFile = "https://raw.github.com/Seafire-Software/Anansi-CalcPad/master/AnansiCalc.py"
+                        
+                    urllib.urlretrieve(upgradeFile, os.path.join(sys.path[0], sys.argv[0]))
+                    dlg = wx.MessageDialog(None, "Update successful. Please restart the program!", "Restart manually.", wx.YES_NO)
                 else:
-                    wx.MessageBox("Something went wrong with the update. Please try again. If it happens again, file a bug report please.", "Error!", wx.OK | wx.ICON_ERROR)            
-            except:
-                wx.MessageBox("There was an error (Error 10152). Maybe you are not connected to the internet? Try again please.", "Try again.", wx.OK)
-    
+                    wx.MessageBox("You chose not to upgrade. Please upgrade later!", "Upgrade later.", wx.OK)
+            elif ver == progVer:
+                wx.MessageBox("You do not need to update. Your version is " + str(progVer) + ", which is equal to the latest version of " + str(ver), "No Update Required.", wx.OK | wx.ICON_INFORMATION)
+            elif progVer > ver: 
+                wx.MessageBox("What happened here? Your version is " + str(progVer) + " which is greater than the latest version of " + str(ver), "Your version is greater than ours?", wx.OK | wx.ICON_QUESTION)
+            else:
+                wx.MessageBox("Something went wrong with the update. Please try again. If it happens again, file a bug report please.", "Error!", wx.OK | wx.ICON_ERROR)            
+        except:
+            wx.MessageBox("There was an error (Error 10152). Maybe you are not connected to the internet? Try again please.", "Try again.", wx.OK)
+
     def helpPage(self, e):
         webbrowser.open("http://seafiresoftware.org/hesk/admin/knowledgebase_private.php?category=3")
     
@@ -474,7 +473,7 @@ Suite 330, Boston, MA  02111-1307  USA"""
         
         info.SetIcon(wx.Icon('./aboutIcon.png', wx.BITMAP_TYPE_PNG))
         info.SetName('Anansi CalcPad')
-        info.SetVersion('0.1')
+        info.SetVersion('0.2')
         info.SetDescription(description)
         info.SetCopyright('(C) 2012 Cody Dostal')
         info.SetWebSite('http://www.seafiresoftware.org')
