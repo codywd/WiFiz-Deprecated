@@ -13,13 +13,34 @@ import wx.stc
 SB_INFO = 0
 progVer = 0.3
 
+iconFile = "./icon.ico"
+
+if os.path.exists(sys.path[0] + "/icon.ico"):
+    pass
+else:
+    wx.MessageBox("There has been an error loading the icon. We are going to try downloading it to this directory.", "Error with Icon.", wx.OK)
+    iconLoc = "https://github.com/Seafire-Software/Anansi-CalcPad/blob/master/icon.ico?raw=true"
+    urllib.urlretrieve(iconLoc, sys.path[0] + "/icon.ico")
+    if os.path.exists(sys.path[0] + "/icon.ico"):
+        wx.MessageBox("We successfully downloaded the icon. Next time, you won't get this error.", "Icon downloaded.", wx.OK)
+        iconFile = "./icon.ico"
+    else:
+        wx.MessageBox("Oops! We could not download it, please download it from our github.", "Error... Again.", wx.OK)
+
 class storyPadView(wx.Frame):
     def __init__(self, parent, title):
         super(storyPadView, self).__init__(parent, title="Anansi StoryPad(r)", style = wx.DEFAULT_FRAME_STYLE)
         self.InitUI()
         
     def InitUI(self):
-        iconFile = "./icon.ico"
+        if os.path.exists(sys.path[0] + "/aboutIcon.png"):
+            pass
+        else:
+            fileLoc = "https://github.com/Seafire-Software/Anansi-CalcPad/raw/master/aboutIcon.png"
+            urllib.urlretrieve(fileLoc, sys.path[0], "/aboutIcon.png")
+      
+        self.aboutIcon = wx.Icon("./aboutIcon.png", wx.BITMAP_TYPE_PNG)       
+
         mainIcon = wx.Icon(iconFile, wx.BITMAP_TYPE_ICO)
         self.SetIcon(mainIcon)
         
@@ -119,7 +140,7 @@ Suite 330, Boston, MA  02111-1307  USA"""
         
         info = wx.AboutDialogInfo()
         
-        info.SetIcon(wx.Icon('./aboutIcon.png', wx.BITMAP_TYPE_PNG))
+        info.SetIcon(self.aboutIcon)
         info.SetName('Anansi CalcPad')
         info.SetVersion('0.2')
         info.SetDescription(description)
@@ -228,7 +249,13 @@ class newsAggView(wx.Frame):
         self.InitUI()
         
     def InitUI(self):
-        iconFile = "./icon.ico"
+        if os.path.exists(sys.path[0] + "/aboutIcon.png"):
+            pass
+        else:
+            fileLoc = "https://github.com/Seafire-Software/Anansi-CalcPad/raw/master/aboutIcon.png"
+            urllib.urlretrieve(fileLoc, sys.path[0], "/aboutIcon.png")
+      
+        self.aboutIcon = wx.Icon("./aboutIcon.png", wx.BITMAP_TYPE_PNG)        
         mainIcon = wx.Icon(iconFile, wx.BITMAP_TYPE_ICO)
         self.SetIcon(mainIcon)
         
@@ -352,7 +379,7 @@ Suite 330, Boston, MA  02111-1307  USA"""
         
         info = wx.AboutDialogInfo()
         
-        info.SetIcon(wx.Icon('./aboutIcon.png', wx.BITMAP_TYPE_PNG))
+        info.SetIcon(self.aboutIcon)
         info.SetName('Anansi CalcPad')
         info.SetVersion('0.2')
         info.SetDescription(description)
@@ -468,11 +495,13 @@ class AnansiCalc(wx.Frame):
         self.InitUI()
         
     def InitUI(self):
-        
-        self.num1 = ""
-        self.num2 = ""
-        
-        iconFile = "./icon.ico"
+        if os.path.exists(sys.path[0] + "/aboutIcon.png"):
+            pass
+        else:
+            fileLoc = "https://github.com/Seafire-Software/Anansi-CalcPad/raw/master/aboutIcon.png"
+            urllib.urlretrieve(fileLoc, sys.path[0], "/aboutIcon.png")
+      
+        self.aboutIcon = wx.Icon("./aboutIcon.png", wx.BITMAP_TYPE_PNG)  
         mainIcon = wx.Icon(iconFile, wx.BITMAP_TYPE_ICO)
         self.SetIcon(mainIcon)
         
@@ -743,7 +772,7 @@ Suite 330, Boston, MA  02111-1307  USA"""
         
         info = wx.AboutDialogInfo()
         
-        info.SetIcon(wx.Icon('./aboutIcon.png', wx.BITMAP_TYPE_PNG))
+        info.SetIcon(self.aboutIcon)
         info.SetName('Anansi CalcPad')
         info.SetVersion('0.2')
         info.SetDescription(description)
