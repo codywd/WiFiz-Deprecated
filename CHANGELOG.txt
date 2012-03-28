@@ -1,0 +1,18 @@
+Version 0.1:
+Initial release. No calculator view. Storypad view barely functional.
+
+Version 0.2
+Calculator view fully implemented, apart from back button.
+
+Version 0.3:
+News Aggregation view set to be new window.
+
+Version 0.35:
+Fixed some minor bugs.
+
+Version 0.5:
+Fixed bug where program didn't close fully.
+Fixed bug where, if in calculator view, you tried to evaluate an expression with a letter, or that began with a division or multiplication sign, the program froze up.
+Enabled the backspace button for Calculator view.
+Set "News Aggregation View" to Google Reader.
+Pushed to Beta Status.

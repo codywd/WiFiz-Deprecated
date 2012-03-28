@@ -9,6 +9,7 @@ import tempfile
 ## Third-Party Libraries ##
 import wx
 import wx.stc
+import feedparser
 
 SB_INFO = 0
 progVer = 0.35
@@ -29,7 +30,7 @@ else:
 
 class storyPadView(wx.Frame):
     def __init__(self, parent, title):
-        super(storyPadView, self).__init__(parent, title="Anansi StoryPad(r)", style = wx.DEFAULT_FRAME_STYLE)
+        super(storyPadView, self).__init__(wx.GetApp().TopWindow, title="Anansi StoryPad(r)", style = wx.DEFAULT_FRAME_STYLE)
         self.InitUI()
         
     def InitUI(self):
@@ -110,10 +111,15 @@ class storyPadView(wx.Frame):
         self.Bind(wx.EVT_MENU, self.openASTF, self.openItem)
         self.Bind(wx.EVT_MENU, self.specialCredits, specCredits)
         self.Bind(wx.EVT_MENU, self.prefBox, prefBox)
+        self.Bind(wx.EVT_MENU, self.newWin, newItem)
         ## End Binding Section ##
         self.Center()
         self.Show()
         
+    def newWin(self, e):
+        newWin = storyPadView(self, wx.ID_ANY)
+        newWin.Show(True)        
+    
     def reportWin(self, e):
         reportn = reportIssueDialog(None, title="Report an Issue...")
         reportn.ShowModal()
@@ -302,6 +308,7 @@ class newsAggView(wx.Frame):
         ## Main GUI ##
         self.SPVSizer = wx.BoxSizer()
         self.SPVSizer.SetMinSize((450, 400))
+        self.feedbox = wx.ListBox(self)
         ## End Main GUI ##
         
         ## Status Bar ##
@@ -323,6 +330,19 @@ class newsAggView(wx.Frame):
         
         self.Center()
         self.Show()
+    
+        rss1 = feedparser.parse("http://feeds.feedburner.com/SeafireSoftware?format=xml")
+        
+        rss1items = []
+        for item in rss1:
+            rss1items.extend(item["items"])
+            sorted_items = sorted(rss1items, key=lambda entry: entry["date_parsed"])
+            sorted_items = sorted_items.reverse()
+            self.feedbox.Append(sorted_items)
+            
+    def newWin(self, e):
+        newWin = newsAggView(self, wx.ID_ANY)
+        newWin.Show(True)
         
     def prefBox(self, e):
         spec = prefDialog(None, title="Preferences")
@@ -347,11 +367,7 @@ class newsAggView(wx.Frame):
         if self.calcViewItem.IsChecked():
             self.dlg1 = AnansiCalc(self, wx.ID_ANY)
             self.dlg1.Show()
-            self.Show(False)   
-    
-    def newWin(self, e):
-        newWin = AnansiCalc(self, wx.ID_ANY)
-        newWin.Show(True)
+            self.Show(False)
         
     def reportWin(self, e):
         reportn = reportIssueDialog(None, title="Report an Issue...")
@@ -554,7 +570,6 @@ class AnansiCalc(wx.Frame):
         SPVSizer.Add(btnDiv)
         btnBk = wx.Button(self, label="Back", pos=(205, 35), size=(45, 45))
         SPVSizer.Add(btnBk)
-        btnBk.Disable()
         btnCE = wx.Button(self, label="CE", pos=(255, 35), size=(45, 45))
         SPVSizer.Add(btnCE)
         
@@ -642,8 +657,9 @@ class AnansiCalc(wx.Frame):
         
     def btnClPaClicked(self, e):
         self.txtItem.AppendText(")")
+    
     #def btnBkClicked(self, e):
-    #    self.txtItem.Remove(self, (self.txtItem.GetLastPosition()), (""))
+    #    self.txtItem.Remove(self, (self.txtItem.GetLastPosition()[-1]), (self.txtItem.GetLastPosition()))
     
     def btnEqClicked(self, e):
         str1 = self.txtItem.GetValue()
