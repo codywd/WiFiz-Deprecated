@@ -15,6 +15,8 @@ SB_INFO = 0
 progVer = 0.5
 
 iconFile = "./icon.ico"
+settingsFileWin = sys.path[0] + "\settings.ini"
+settingsFileLin = sys.path[0] + "/settings.ini"
 
 if os.path.exists(sys.path[0] + "/icon.ico"):
     pass
@@ -28,6 +30,167 @@ else:
     else:
         wx.MessageBox("Oops! We could not download it, please download it from our github.", "Error... Again.", wx.OK)
 
+class Initialize(wx.Frame):
+    def __init__(self, parent, title):
+        super(Initialize, self).__init__(parent, title="Welcome!", size = (700, 310), style = wx.DEFAULT_FRAME_STYLE ^ wx.RESIZE_BORDER)
+        self.InitUI()
+        
+    def InitUI(self):
+        if os.path.exists(sys.path[0] + "/aboutIcon.png"):
+            pass
+        else:
+            fileLoc = "https://github.com/Seafire-Software/Anansi-CalcPad/raw/master/aboutIcon.png"
+            urllib.urlretrieve(fileLoc, sys.path[0], "/aboutIcon.png")
+      
+        self.aboutIcon = wx.Icon("./aboutIcon.png", wx.BITMAP_TYPE_PNG)  
+        mainIcon = wx.Icon(iconFile, wx.BITMAP_TYPE_ICO)
+        self.SetIcon(mainIcon)
+        
+        ## Menu Bar ##
+        mainMenu = wx.MenuBar()
+        
+        fileMenu = wx.Menu()
+        exitItem = fileMenu.Append(wx.ID_EXIT, "Exit", "Quit the program.")
+        mainMenu.Append(fileMenu, "&File")
+        
+        editMenu = wx.Menu()
+        prefBox = editMenu.Append(wx.ID_PREFERENCES, "Preferences", "View the preferences.")
+        mainMenu.Append(editMenu, "&Edit")
+        
+        helpMenu = wx.Menu()
+        helpItem = helpMenu.Append(wx.ID_HELP, "Help with Anansi CalcPad...", "Get help with Anansi CalcPad.")
+        updateItem = helpMenu.Append(wx.ID_ANY, "Check for Updates...", "Check for Updates to Anansi CalcPad.")
+        reportItem = helpMenu.Append(wx.ID_ANY, "Report an Issue...", "Report an issue.")
+        helpMenu.AppendSeparator()
+        specCredits = helpMenu.Append(wx.ID_ANY, "Special Credits...", "Special credits for some awesome people.")
+        aboutBox = helpMenu.Append(wx.ID_ABOUT, "About Anansi CalcPad", "Read about Anansi CalcPad.")        
+        mainMenu.Append(helpMenu, "&Help")
+        
+        self.SetMenuBar(mainMenu)
+        ## End Menu Bar ##
+        
+        ## Main GUI ##
+        mPanel = wx.Panel(self)
+        
+        infoText = wx.StaticText(mPanel, label="Welcome to Anansi CalcPad 0.5 Beta. This is a multi-view program dedicated to making your life easier. \n The first view is a calculator, with some advanced functions. The second view is a journal, \nand the third is a news aggregator.", pos=(5, 5), style=wx.ALIGN_CENTER)
+        
+        btnCalc = wx.Button(mPanel, label="Anansi CalcPad(r) View", pos=(5, 100))
+        btnStory = wx.Button(mPanel, label="Anansi StoryPad(r) View", pos=(500, 100))
+        ## End Main GUI ##
+        
+        ## Status Bar ##
+        self.sb = self.CreateStatusBar()
+        self.sb.PushStatusText("Ready.")
+        ## End Status Bar ##
+        
+        ## Binding Events ##
+        self.Bind(wx.EVT_MENU, self.OnClose, exitItem)
+        self.Bind(wx.EVT_MENU, self.aboutWin, aboutBox)
+        self.Bind(wx.EVT_MENU, self.reportWin, reportItem)
+        self.Bind(wx.EVT_MENU, self.helpPage, helpItem)
+        self.Bind(wx.EVT_MENU, self.updateWin, updateItem)
+        self.Bind(wx.EVT_MENU, self.specialCredits, specCredits)
+        self.Bind(wx.EVT_MENU, self.prefBox, prefBox)
+        self.Bind(wx.EVT_BUTTON, self.calcView, btnCalc)
+        self.Bind(wx.EVT_BUTTON, self.storyView, btnStory)
+        ## End Binding Section ##
+        
+        self.Center()
+        self.Show()
+        
+    def calcView(self, e):
+        self.calc = AnansiCalc(self, title="Anansi CalcPad(r)")
+        self.calc.Show(True)
+        self.Show(False)
+    
+    def storyView(self, e):
+        self.story = storyPadView(self, title="Anansi StoryPad(r)")
+        self.story.Show(True)
+        self.Show(False)
+    
+    def prefBox(self, e):
+        spec = prefDialog(None, title="Preferences")
+        spec.ShowModal()
+        spec.Destroy()
+        
+    def specialCredits(self, e):
+        spec = specCredits(None, title="Special Credits")
+        spec.ShowModal()
+        spec.Destroy()         
+    
+    def OnClose(self, e):
+        app.Exit() 
+    
+    def reportWin(self, e):
+        reportn = reportIssueDialog(None, title="Report an Issue...")
+        reportn.ShowModal()
+        reportn.Destroy()        
+
+    def helpPage(self, e):
+        webbrowser.open("http://seafiresoftware.org/hesk/knowledgebase.php?category=3")
+    
+    def aboutWin(self, e):
+        description = """Anansi CalcPad is a brand new program developed in tandem with Raindolf Owusu and his company, Oasis WebSoft, for his Anansi Project."""
+        
+        licensed = """Anansi CalcPad is free software; you can redistribute 
+it and/or modify it under the terms of the GNU General Public License as 
+published by the Free Software Foundation; either version 3 of the License, 
+or (at your option) any later version.
+
+Anansi CalcPad is distributed in the hope that it will be useful, 
+but WITHOUT ANY WARRANTY; without even the implied warranty of 
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  
+See the GNU General Public License for more details. You should have 
+received a copy of the GNU General Public License along with Anansi CalcPad; 
+if not, write to the Free Software Foundation, Inc., 59 Temple Place, 
+Suite 330, Boston, MA  02111-1307  USA"""
+        
+        info = wx.AboutDialogInfo()
+        
+        info.SetIcon(self.aboutIcon)
+        info.SetName('Anansi CalcPad')
+        info.SetVersion('0.5 beta')
+        info.SetDescription(description)
+        info.SetCopyright('(C) 2012 Cody Dostal')
+        info.SetWebSite('http://www.seafiresoftware.org')
+        info.SetLicense(licensed)
+        info.AddDeveloper('Cody Dostal')
+        info.AddDocWriter('Cody Dostal')
+        info.AddArtist('Raindolf Owusu')
+        info.AddTranslator('Cody Dostal')
+        
+        wx.AboutBox(info)
+    
+    def updateWin(self, e):
+        try:
+            upFile = "https://raw.github.com/Seafire-Software/Anansi-CalcPad/master/curVersion"
+            tempDir = tempfile.gettempdir()
+            webFile = urllib.urlretrieve(upFile, tempDir + '/curVersion')
+            basVer = open(tempDir + '/curVersion')
+            ver = float(basVer.read())
+            
+            if progVer < ver:
+                dlg = wx.MessageDialog(None, "You must update. Your version is " + str(progVer) + ", and the latest version is " + str(ver) + ", Do you wish to update?", "Update Required.", wx.YES_NO | wx.ICON_INFORMATION)
+               
+                result = dlg.ShowModal()
+                dlg.Destroy()
+                if result == wx.ID_YES:
+                    upgradeFile = "https://raw.github.com/Seafire-Software/Anansi-CalcPad/master/AnansiCalc.py"
+                        
+                    urllib.urlretrieve(upgradeFile, os.path.join(sys.path[0], sys.argv[0]))
+                    dlg = wx.MessageDialog(None, "Update successful. Please restart the program!", "Restart manually.", wx.YES_NO)
+                else:
+                    wx.MessageBox("You chose not to upgrade. Please upgrade later!", "Upgrade later.", wx.OK)
+            elif ver == progVer:
+                wx.MessageBox("You do not need to update. Your version is " + str(progVer) + ", which is equal to the latest version of " + str(ver), "No Update Required.", wx.OK | wx.ICON_INFORMATION)
+            elif progVer > ver: 
+                wx.MessageBox("What happened here? Your version is " + str(progVer) + " which is greater than the latest version of " + str(ver), "Your version is greater than ours?", wx.OK | wx.ICON_QUESTION)
+            else:
+                wx.MessageBox("Something went wrong with the update. Please try again. If it happens again, file a bug report please.", "Error!", wx.OK | wx.ICON_ERROR)            
+        except:
+            wx.MessageBox("There was an error (Error 10152). Maybe you are not connected to the internet? Try again please.", "Try again.", wx.OK)
+            
+        
 class storyPadView(wx.Frame):
     def __init__(self, parent, title):
         super(storyPadView, self).__init__(wx.GetApp().TopWindow, title="Anansi StoryPad(r)", style = wx.DEFAULT_FRAME_STYLE)
@@ -315,7 +478,7 @@ class reportIssueDialog(wx.Dialog):
 
 class AnansiCalc(wx.Frame):
     def __init__(self, parent, title):
-        super(AnansiCalc, self).__init__(parent, title="Anansi CalcPad(r)", size = (310, 310), style = wx.DEFAULT_FRAME_STYLE ^ wx.RESIZE_BORDER)
+        super(AnansiCalc, self).__init__(wx.GetApp().TopWindow, title="Anansi CalcPad(r)", style = wx.DEFAULT_FRAME_STYLE ^ wx.RESIZE_BORDER)
         self.InitUI()
         
     def InitUI(self):
@@ -328,6 +491,11 @@ class AnansiCalc(wx.Frame):
         self.aboutIcon = wx.Icon("./aboutIcon.png", wx.BITMAP_TYPE_PNG)  
         mainIcon = wx.Icon(iconFile, wx.BITMAP_TYPE_ICO)
         self.SetIcon(mainIcon)
+        
+        if sys.platform == "win32":
+            self.SetSize((310, 350))
+        else:
+            self.SetSize((310, 310))
         
         ## Menu Bar ##
         mainMenu = wx.MenuBar()
@@ -363,6 +531,7 @@ class AnansiCalc(wx.Frame):
         ## End Menu Bar ##
         
         ## Main GUI ##
+        mPanel = wx.Panel(self)
         SPVSizer = wx.BoxSizer()
         SPVSizer.SetMinSize((310, 310))
         
@@ -642,6 +811,6 @@ Suite 330, Boston, MA  02111-1307  USA"""
             
 if __name__ == "__main__":
     app = wx.App()
-    AnansiCalc(None,  "Anansi CalcPad")
+    Initialize(None, title="Anansi CalcPad(r)")
     app.MainLoop()
     
