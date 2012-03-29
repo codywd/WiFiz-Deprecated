@@ -17,3 +17,6 @@ Fixed bug where, if in calculator view, you tried to evaluate an expression with
 Enabled the backspace button for Calculator view.
 Set "News Aggregation View" to Google Reader.
 Pushed to Beta Status.
+
+Version 0.51:
+Fixed bug where the program didn't close fully when clicking the "X" button in the titlebar. The earlier fix apparently only fixed the "Exit" menu.
