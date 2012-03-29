@@ -12,7 +12,7 @@ import wx.stc
 import feedparser
 
 SB_INFO = 0
-progVer = 0.5
+progVer = 0.51
 
 iconFile = "./icon.ico"
 settingsFileWin = sys.path[0] + "\settings.ini"
@@ -275,6 +275,7 @@ class storyPadView(wx.Frame):
         self.Bind(wx.EVT_MENU, self.specialCredits, specCredits)
         self.Bind(wx.EVT_MENU, self.prefBox, prefBox)
         self.Bind(wx.EVT_MENU, self.newWin, newItem)
+        self.Bind(wx.EVT_CLOSE, self.OnClose)
         ## End Binding Section ##
         self.Center()
         self.Show()
@@ -570,7 +571,7 @@ class AnansiCalc(wx.Frame):
         SPVSizer.Add(btn3)        
         btnMin = wx.Button(self, label="-", pos=(155, 150), size=(45, 45))
         SPVSizer.Add(btnMin)
-        btnSq = wx.Button(self, label="x²", pos=(205, 150), size=(45, 45))
+        btnSq = wx.Button(self, label="x" + u"\u00B2", pos=(205, 150), size=(45, 45))
         SPVSizer.Add(btnSq)        
         btnSqR = wx.Button(self, label=u"\u221A", pos=(255, 150), size=(45, 45))
         SPVSizer.Add(btnSqR)
@@ -624,6 +625,7 @@ class AnansiCalc(wx.Frame):
         self.Bind(wx.EVT_BUTTON, self.btnEqClicked, btnEq)
         self.Bind(wx.EVT_BUTTON, self.btnOpPaClicked, btnParOpen)
         self.Bind(wx.EVT_BUTTON, self.btnClPaClicked, btnParClose)
+        self.Bind(wx.EVT_CLOSE, self.OnClose)
         ## End Binding Section ##
         
         self.Center()
