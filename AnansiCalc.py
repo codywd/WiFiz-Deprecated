@@ -12,7 +12,7 @@ import wx.stc
 import feedparser
 
 SB_INFO = 0
-progVer = 0.35
+progVer = 0.5
 
 iconFile = "./icon.ico"
 
