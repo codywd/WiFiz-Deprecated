@@ -200,7 +200,7 @@ Suite 330, Boston, MA  02111-1307  USA"""
         spec.Destroy()     
         
     def OnClose(self, e):
-        self.Destroy()
+        app.Exit()
         
     def calcView(self, e):
         self.dlg1 = AnansiCalc(self, wx.ID_ANY)
@@ -208,9 +208,7 @@ Suite 330, Boston, MA  02111-1307  USA"""
         self.Show(False)
     
     def newsAggView(self, e):
-        self.dlg1 = newsAggView(self, wx.ID_ANY)
-        self.dlg1.Show()
-        self.Show(False)
+        webbrowser.open("http://www.google.com/reader")
         
     def quickSave(self ,e):
             if (self.fileName != "") and (self.dirName !=""):
@@ -228,7 +226,7 @@ Suite 330, Boston, MA  02111-1307  USA"""
                         
     def saveNow(self, e):
         ret = False
-        dlg = wx.FileDialog(self, "Save As", self.dirName, self.fileName, "Anansi StoryPad Text(.ASTF)|.ASTF", wx.SAVE)
+        dlg = wx.FileDialog(self, "Save A Journal", self.dirName, self.fileName, "Anansi StoryPad Text(.ASTF)|.ASTF", wx.SAVE)
         if dlg.ShowModal() == wx.ID_OK:
             self.fileName = dlg.GetFilename()
             self.dirName = dlg.GetDirectory()
@@ -239,7 +237,7 @@ Suite 330, Boston, MA  02111-1307  USA"""
         return ret
             
     def openASTF(self, e):
-        dlg = wx.FileDialog(self, "Open", self.dirName, self.fileName, "Anansi StoryPad Text(.ASTF)|.ASTF|All Files(*.*)|*.*", wx.OPEN)
+        dlg = wx.FileDialog(self, "Open a journal", self.dirName, self.fileName, "Anansi StoryPad Text(.ASTF)|*.ASTF|All Files(*.*)|*.*", wx.OPEN)
         if dlg.ShowModal() == wx.ID_OK:
             self.fileName = dlg.GetFilename()
             self.dirName = dlg.GetDirectory()
@@ -248,197 +246,7 @@ Suite 330, Boston, MA  02111-1307  USA"""
                 self.SetStatusText("Read " + str(self.richtext.GetTextLength()) + " characters. File named: " + dlg.GetFilename() + ".", SB_INFO)
             else:
                 self.SetStatusText("Error in opening file.", SB_INFO)  
-              
-class newsAggView(wx.Frame):
-    def __init__(self, parent, title):
-        super(newsAggView, self).__init__(parent, title="Anansi News Aggregator(r)", style = wx.DEFAULT_FRAME_STYLE ^ wx.RESIZE_BORDER)
-        self.InitUI()
-        
-    def InitUI(self):
-        if os.path.exists(sys.path[0] + "/aboutIcon.png"):
-            pass
-        else:
-            fileLoc = "https://github.com/Seafire-Software/Anansi-CalcPad/raw/master/aboutIcon.png"
-            urllib.urlretrieve(fileLoc, sys.path[0], "/aboutIcon.png")
-      
-        self.aboutIcon = wx.Icon("./aboutIcon.png", wx.BITMAP_TYPE_PNG)        
-        mainIcon = wx.Icon(iconFile, wx.BITMAP_TYPE_ICO)
-        self.SetIcon(mainIcon)
-        
-        ## Menu Bar ##
-        mainMenu = wx.MenuBar()
-        
-        fileMenu = wx.Menu()
-        newItem = fileMenu.Append(wx.ID_NEW, "New Window", "Open a new, blank window.")
-        clearItem = fileMenu.Append(wx.ID_CLEAR, "Clear All", "Clear the current data.")
-        fileMenu.AppendSeparator()
-        exitItem = fileMenu.Append(wx.ID_EXIT, "Exit", "Quit the program.")
-        mainMenu.Append(fileMenu, "&File")
-        
-        editMenu = wx.Menu()
-        prefBox = editMenu.Append(wx.ID_PREFERENCES, "Preferences", "View the preferences.")
-        mainMenu.Append(editMenu, "&Edit")
-        
-        manageMenu = wx.Menu()
-        addFeed = manageMenu.Append(wx.ID_ANY, "Add Feed...", "Add a new feed to watch.")
-        editFeed = manageMenu.Append(wx.ID_ANY, "Edit Feed...", "Mess up in typing a URL? Edit it here.")
-        manageMenu.AppendSeparator()
-        removeFeed = manageMenu.Append(wx.ID_ANY, "Remove Feed ...", "Remove a feed from watching.")
-        mainMenu.Append(manageMenu, "Mana&ge")
-        
-        viewMenu = wx.Menu()
-        self.aggViewItem = viewMenu.Append(wx.ID_ANY, "News Aggregator View", "Use the news aggregator view.", wx.ITEM_RADIO)
-        self.aggViewItem.Enable(False)        
-        self.calcViewItem = viewMenu.Append(wx.ID_ANY, "Calculator View", "Use the calculator view.", wx.ITEM_RADIO)
-        self.storyViewItem = viewMenu.Append(wx.ID_ANY, "StoryPad(R) View", "Use the StoryPad journal view.", wx.ITEM_RADIO)
-        mainMenu.Append(viewMenu, "&View")
-        
-        helpMenu = wx.Menu()
-        helpItem = helpMenu.Append(wx.ID_HELP, "Help with Anansi CalcPad...", "Get help with Anansi CalcPad.")
-        updateItem = helpMenu.Append(wx.ID_ANY, "Check for Updates...", "Check for Updates to Anansi CalcPad.")
-        reportItem = helpMenu.Append(wx.ID_ANY, "Report an Issue...", "Report an issue.")
-        helpMenu.AppendSeparator()
-        specCredits = helpMenu.Append(wx.ID_ANY, "Special Credits...", "Special credits for some awesome people.")
-        aboutBox = helpMenu.Append(wx.ID_ABOUT, "About Anansi CalcPad", "Read about Anansi CalcPad.")        
-        mainMenu.Append(helpMenu, "&Help")
-        
-        self.SetMenuBar(mainMenu)
-        ## End Menu Bar ##
-        
-        ## Main GUI ##
-        self.SPVSizer = wx.BoxSizer()
-        self.SPVSizer.SetMinSize((450, 400))
-        self.feedbox = wx.ListBox(self)
-        ## End Main GUI ##
-        
-        ## Status Bar ##
-        sb = self.CreateStatusBar()
-        ## End Status Bar ##
-        
-        ## Binding Events ##
-        self.Bind(wx.EVT_MENU, self.OnClose, exitItem)
-        self.Bind(wx.EVT_MENU, self.aboutWin, aboutBox)
-        self.Bind(wx.EVT_MENU, self.reportWin, reportItem)
-        self.Bind(wx.EVT_MENU, self.storyPadView, self.storyViewItem)
-        self.Bind(wx.EVT_MENU, self.calcView, self.calcViewItem)
-        self.Bind(wx.EVT_MENU, self.helpPage, helpItem)
-        self.Bind(wx.EVT_MENU, self.updateWin, updateItem)
-        self.Bind(wx.EVT_MENU, self.specialCredits, specCredits)
-        self.Bind(wx.EVT_MENU, self.prefBox, prefBox)
-        self.Bind(wx.EVT_MENU, self.newWin, newItem)
-        ## End Binding Section ##
-        
-        self.Center()
-        self.Show()
-    
-        rss1 = feedparser.parse("http://feeds.feedburner.com/SeafireSoftware?format=xml")
-        
-        rss1items = []
-        for item in rss1:
-            rss1items.extend(item["items"])
-            sorted_items = sorted(rss1items, key=lambda entry: entry["date_parsed"])
-            sorted_items = sorted_items.reverse()
-            self.feedbox.Append(sorted_items)
-            
-    def newWin(self, e):
-        newWin = newsAggView(self, wx.ID_ANY)
-        newWin.Show(True)
-        
-    def prefBox(self, e):
-        spec = prefDialog(None, title="Preferences")
-        spec.ShowModal()
-        spec.Destroy()
-        
-    def specialCredits(self, e):
-        spec = specCredits(None, title="Special Credits")
-        spec.ShowModal()
-        spec.Destroy()         
-    
-    def OnClose(self, e):
-        self.Close()
-            
-    def storyPadView(self, e):
-        if self.storyViewItem.IsChecked():
-            self.dlg1 = storyPadView(self, wx.ID_ANY)
-            self.dlg1.Show()
-            self.Show(False)
-            
-    def calcView(self, e):
-        if self.calcViewItem.IsChecked():
-            self.dlg1 = AnansiCalc(self, wx.ID_ANY)
-            self.dlg1.Show()
-            self.Show(False)
-        
-    def reportWin(self, e):
-        reportn = reportIssueDialog(None, title="Report an Issue...")
-        reportn.ShowModal()
-        reportn.Destroy()        
-
-    def helpPage(self, e):
-        webbrowser.open("http://seafiresoftware.org/hesk/knowledgebase.php?category=3")
-    
-    def aboutWin(self, e):
-        description = """Anansi CalcPad is a brand new program developed in tandem with Raindolf Owusu and his company, Oasis WebSoft, for his Anansi Project."""
-        
-        licensed = """Anansi CalcPad is free software; you can redistribute 
-it and/or modify it under the terms of the GNU General Public License as 
-published by the Free Software Foundation; either version 3 of the License, 
-or (at your option) any later version.
-
-Anansi CalcPad is distributed in the hope that it will be useful, 
-but WITHOUT ANY WARRANTY; without even the implied warranty of 
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  
-See the GNU General Public License for more details. You should have 
-received a copy of the GNU General Public License along with Anansi CalcPad; 
-if not, write to the Free Software Foundation, Inc., 59 Temple Place, 
-Suite 330, Boston, MA  02111-1307  USA"""
-        
-        info = wx.AboutDialogInfo()
-        
-        info.SetIcon(self.aboutIcon)
-        info.SetName('Anansi CalcPad')
-        info.SetVersion('0.2')
-        info.SetDescription(description)
-        info.SetCopyright('(C) 2012 Cody Dostal')
-        info.SetWebSite('http://www.seafiresoftware.org')
-        info.SetLicense(licensed)
-        info.AddDeveloper('Cody Dostal')
-        info.AddDocWriter('Cody Dostal')
-        info.AddArtist('Raindolf Owusu')
-        info.AddTranslator('Cody Dostal')
-        
-        wx.AboutBox(info)
-    
-    def updateWin(self, e):
-        try:
-            upFile = "https://raw.github.com/Seafire-Software/Anansi-CalcPad/master/curVersion"
-            tempDir = tempfile.gettempdir()
-            webFile = urllib.urlretrieve(upFile, tempDir + '/curVersion')
-            basVer = open(tempDir + '/curVersion')
-            ver = float(basVer.read())
-            
-            if progVer < ver:
-                dlg = wx.MessageDialog(None, "You must update. Your version is " + str(progVer) + ", and the latest version is " + str(ver) + ", Do you wish to update?", "Update Required.", wx.YES_NO | wx.ICON_INFORMATION)
-               
-                result = dlg.ShowModal()
-                dlg.Destroy()
-                if result == wx.ID_YES:
-                    upgradeFile = "https://raw.github.com/Seafire-Software/Anansi-CalcPad/master/AnansiCalc.py"
-                        
-                    urllib.urlretrieve(upgradeFile, os.path.join(sys.path[0], sys.argv[0]))
-                    dlg = wx.MessageDialog(None, "Update successful. Please restart the program!", "Restart manually.", wx.YES_NO)
-                else:
-                    wx.MessageBox("You chose not to upgrade. Please upgrade later!", "Upgrade later.", wx.OK)
-            elif ver == progVer:
-                wx.MessageBox("You do not need to update. Your version is " + str(progVer) + ", which is equal to the latest version of " + str(ver), "No Update Required.", wx.OK | wx.ICON_INFORMATION)
-            elif progVer > ver: 
-                wx.MessageBox("What happened here? Your version is " + str(progVer) + " which is greater than the latest version of " + str(ver), "Your version is greater than ours?", wx.OK | wx.ICON_QUESTION)
-            else:
-                wx.MessageBox("Something went wrong with the update. Please try again. If it happens again, file a bug report please.", "Error!", wx.OK | wx.ICON_ERROR)            
-        except:
-            wx.MessageBox("There was an error (Error 10152). Maybe you are not connected to the internet? Try again please.", "Try again.", wx.OK)
-
-
+                
 class specCredits(wx.Dialog):
     def __init__(self, parent, title):
         super(specCredits, self).__init__(parent=parent, title=title, size=(310, 300))
@@ -642,7 +450,7 @@ class AnansiCalc(wx.Frame):
         self.Bind(wx.EVT_BUTTON, self.btnDivClicked, btnDiv)
         self.Bind(wx.EVT_BUTTON, self.btnMultClicked, btnMult)
         self.Bind(wx.EVT_BUTTON, self.btnDecClicked, btnDec)
-        #self.Bind(wx.EVT_BUTTON, self.btnBkClicked, btnBk)
+        self.Bind(wx.EVT_BUTTON, self.btnBkClicked, btnBk)
         self.Bind(wx.EVT_BUTTON, self.clearData, btnCE)
         self.Bind(wx.EVT_BUTTON, self.btnEqClicked, btnEq)
         self.Bind(wx.EVT_BUTTON, self.btnOpPaClicked, btnParOpen)
@@ -658,8 +466,8 @@ class AnansiCalc(wx.Frame):
     def btnClPaClicked(self, e):
         self.txtItem.AppendText(")")
     
-    #def btnBkClicked(self, e):
-    #    self.txtItem.Remove(self, (self.txtItem.GetLastPosition()[-1]), (self.txtItem.GetLastPosition()))
+    def btnBkClicked(self, e):
+        self.txtItem.Remove(self.txtItem.GetLastPosition()-1, (self.txtItem.GetLastPosition()))
     
     def btnEqClicked(self, e):
         str1 = self.txtItem.GetValue()
@@ -673,6 +481,9 @@ class AnansiCalc(wx.Frame):
         except ZeroDivisionError:
             self.txtItem.SetValue("You can't divide by zero!")
             self.sb.PushStatusText("Error! Seems you tried to divide by zero!")
+        except:
+            self.txtItem.SetValue("Error!")
+            self.sb.PushStatusText("Error! Something has gone wrong here...")
     
     def btn0Clicked(self, e):
         self.txtItem.AppendText("0")
@@ -742,7 +553,7 @@ class AnansiCalc(wx.Frame):
         spec.Destroy()         
     
     def OnClose(self, e):
-        self.Close()
+        app.Exit()
             
     def storyPadView(self, e):
         if self.storyViewItem.IsChecked():
@@ -751,10 +562,7 @@ class AnansiCalc(wx.Frame):
             self.Show(False)
             
     def newsAggView(self, e):
-        if self.aggViewItem.IsChecked():
-            self.dlg1 = newsAggView(self, wx.ID_ANY)
-            self.dlg1.Show()
-            self.Show(False)   
+        webbrowser.open("http://www.google.com/reader")   
     
     def newWin(self, e):
         newWin = AnansiCalc(self, wx.ID_ANY)
@@ -791,7 +599,7 @@ Suite 330, Boston, MA  02111-1307  USA"""
         
         info.SetIcon(self.aboutIcon)
         info.SetName('Anansi CalcPad')
-        info.SetVersion('0.2')
+        info.SetVersion('0.5 beta')
         info.SetDescription(description)
         info.SetCopyright('(C) 2012 Cody Dostal')
         info.SetWebSite('http://www.seafiresoftware.org')
