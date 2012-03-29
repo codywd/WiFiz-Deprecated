@@ -627,7 +627,7 @@ class AnansiCalc(wx.Frame):
         ## End Binding Section ##
         
         self.Center()
-        self.Show()
+        self.Show()      
         
     def btnOpPaClicked(self, e):
         self.txtItem.AppendText("(")
@@ -639,13 +639,13 @@ class AnansiCalc(wx.Frame):
         self.txtItem.Remove(self.txtItem.GetLastPosition()-1, (self.txtItem.GetLastPosition()))
     
     def btnEqClicked(self, e):
-        str1 = self.txtItem.GetValue()
+        str1 = self.txtItem.GetValue()     
+        if '/' in str1 and '1' not in str1:
+            str1 = str1 + '.0'        
         while str1[0] == '0':
             str1 = str1[1:]
-        if '/' in str1 and '1' not in str1:
-            str1 = str1 + '.0'
         try:
-            self.txtItem.SetValue(str(eval(str1)))
+            self.txtItem.SetValue(str(float(eval(str1))))
             self.sb.PushStatusText("Successfully evaluated your math problem.")
         except ZeroDivisionError:
             self.txtItem.SetValue("You can't divide by zero!")
@@ -700,17 +700,38 @@ class AnansiCalc(wx.Frame):
         self.txtItem.AppendText("*")
     
     def xSq(self, e):
-        self.txtItem.SetValue(str(eval(self.txtItem.GetValue())))
-        num = float(self.txtItem.GetValue())     
-        ans = num * num
-        self.txtItem.SetValue(str(ans))
+        if self.txtItem.GetValue() == "":
+            self.txtItem.SetValue("Please enter something first!")
+        elif self.txtItem.GetValue() == "/":
+            self.txtItem.SetValue("You must enter a number, not '/'!")
+        elif self.txtItem.GetValue() == "*":
+            self.txtItem.SetValue("You must enter a number, not '*'!")
+        else:
+            try:
+                self.txtItem.SetValue(str(eval(self.txtItem.GetValue())))
+                num = float(self.txtItem.GetValue())     
+                ans = num * num
+                self.txtItem.SetValue(str(ans))
+            except:
+                self.txtItem.SetValue("Error!")
+                self.sb.PushStatusText("Error! Something has gone wrong here...")        
         
     def xSqR(self, e):
-        self.txtItem.SetValue(str(eval(self.txtItem.GetValue())))
-        num = float(self.txtItem.GetValue())
-        ans = math.sqrt(num)
-        self.txtItem.SetValue(str(ans))
-    
+        if self.txtItem.GetValue() == "":
+            self.txtItem.SetValue("Please enter something first!")
+        elif self.txtItem.GetValue() == "/":
+            self.txtItem.SetValue("You must enter a number, not '/'!")
+        elif self.txtItem.GetValue() == "*":
+            self.txtItem.SetValue("You must enter a number, not '*'!")        
+        else:        
+            try:
+                self.txtItem.SetValue(str(eval(self.txtItem.GetValue())))
+                num = float(self.txtItem.GetValue())
+                ans = math.sqrt(num)
+                self.txtItem.SetValue(str(ans))
+            except:
+                self.txtItem.SetValue("Error!")
+                self.sb.PushStatusText("Error! Something has gone wrong here...")        
     def prefBox(self, e):
         spec = prefDialog(None, title="Preferences")
         spec.ShowModal()
