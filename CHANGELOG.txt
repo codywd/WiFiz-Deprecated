@@ -12,6 +12,7 @@ Fixed some minor bugs.
 
 Version 0.5:
 Fixed bug where program didn't close fully.
+Fixed bug where the "Open" dialog didn't find any .ASTF files.
 Fixed bug where, if in calculator view, you tried to evaluate an expression with a letter, or that began with a division or multiplication sign, the program froze up.
 Enabled the backspace button for Calculator view.
 Set "News Aggregation View" to Google Reader.
