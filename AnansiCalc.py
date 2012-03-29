@@ -148,7 +148,7 @@ Suite 330, Boston, MA  02111-1307  USA"""
         
         info.SetIcon(self.aboutIcon)
         info.SetName('Anansi CalcPad')
-        info.SetVersion('0.2')
+        info.SetVersion('0.5 beta')
         info.SetDescription(description)
         info.SetCopyright('(C) 2012 Cody Dostal')
         info.SetWebSite('http://www.seafiresoftware.org')
