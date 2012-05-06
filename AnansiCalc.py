@@ -49,9 +49,7 @@ class storyPadView(wx.Frame):
         fileMenu = wx.Menu()
         newItem = fileMenu.Append(wx.ID_NEW, "New Window", "Open a new, blank window.")
         self.saveItem = fileMenu.Append(wx.ID_SAVE, "Save", "Save an ASTF file. Only available in StoryPad View.")
-        self.saveItem.Enable(False)
         self.openItem = fileMenu.Append(wx.ID_OPEN, "Open", "Open an ASTF file. Only available in StoryPad View.")
-        self.openItem.Enable(False)
         clearItem = fileMenu.Append(wx.ID_CLEAR, "Clear All", "Clear the current data.")
         fileMenu.AppendSeparator()
         exitItem = fileMenu.Append(wx.ID_EXIT, "Exit", "Quit the program.")
@@ -215,7 +213,8 @@ Suite 330, Boston, MA  02111-1307  USA"""
                         
     def saveNow(self, e):
         ret = False
-        dlg = wx.FileDialog(self, "Save A Journal", self.dirName, self.fileName, "Anansi StoryPad Text(.ASTF)|.ASTF", wx.SAVE)
+        workDir = os.getcwd()
+        dlg = wx.FileDialog(self, "Save A Journal", workDir, self.fileName, "Anansi StoryPad Text(.ASTF)|.ASTF", wx.SAVE)
         if dlg.ShowModal() == wx.ID_OK:
             self.fileName = dlg.GetFilename()
             self.dirName = dlg.GetDirectory()
