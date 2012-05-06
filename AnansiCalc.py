@@ -12,7 +12,7 @@ import wx.stc
 import feedparser
 
 SB_INFO = 0
-progVer = 0.51
+progVer = 1.00
 
 iconFile = "./icon.ico"
 settingsFileWin = sys.path[0] + "\settings.ini"
@@ -72,7 +72,7 @@ class Initialize(wx.Frame):
         ## Main GUI ##
         mPanel = wx.Panel(self)
         
-        infoText = wx.StaticText(mPanel, label="Welcome to Anansi CalcPad 0.5 Beta. This is a multi-view program dedicated to making your life easier. \n The first view is a calculator, with some advanced functions. The second view is a journal, \nand the third is a news aggregator.", pos=(5, 5), style=wx.ALIGN_CENTER)
+        infoText = wx.StaticText(mPanel, label="Welcome to Anansi CalcPad 1.0 Final. This is a multi-view program dedicated to making your life easier. \n The first view is a calculator, with some advanced functions. The second view is a journal, \nand the third is a news aggregator.", pos=(5, 5), style=wx.ALIGN_CENTER)
         
         btnCalc = wx.Button(mPanel, label="Anansi CalcPad(r) View", pos=(5, 100))
         btnStory = wx.Button(mPanel, label="Anansi StoryPad(r) View", pos=(500, 100))
@@ -149,7 +149,7 @@ Suite 330, Boston, MA  02111-1307  USA"""
         
         info.SetIcon(self.aboutIcon)
         info.SetName('Anansi CalcPad')
-        info.SetVersion('0.5 beta')
+        info.SetVersion('1.0')
         info.SetDescription(description)
         info.SetCopyright('(C) 2012 Cody Dostal')
         info.SetWebSite('http://www.seafiresoftware.org')
@@ -312,7 +312,7 @@ Suite 330, Boston, MA  02111-1307  USA"""
         
         info.SetIcon(self.aboutIcon)
         info.SetName('Anansi CalcPad')
-        info.SetVersion('0.5 beta')
+        info.SetVersion('1.0')
         info.SetDescription(description)
         info.SetCopyright('(C) 2012 Cody Dostal')
         info.SetWebSite('http://www.seafiresoftware.org')
@@ -791,7 +791,7 @@ Suite 330, Boston, MA  02111-1307  USA"""
         
         info.SetIcon(self.aboutIcon)
         info.SetName('Anansi CalcPad')
-        info.SetVersion('0.5 beta')
+        info.SetVersion('1.0')
         info.SetDescription(description)
         info.SetCopyright('(C) 2012 Cody Dostal')
         info.SetWebSite('http://www.seafiresoftware.org')
