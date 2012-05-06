@@ -20,3 +20,7 @@ Pushed to Beta Status.
 
 Version 0.51:
 Fixed bug where the program didn't close fully when clicking the "X" button in the titlebar. The earlier fix apparently only fixed the "Exit" menu.
+
+Version 1.00:
+No bug fixes.
+Changed all files to reflect version 1.0 change.
