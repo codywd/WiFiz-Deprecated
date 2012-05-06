@@ -9,202 +9,37 @@ import tempfile
 ## Third-Party Libraries ##
 import wx
 import wx.stc
-import feedparser
 
 SB_INFO = 0
 progVer = 1.00
 
-iconFile = "./icon.ico"
-settingsFileWin = sys.path[0] + "\settings.ini"
-settingsFileLin = sys.path[0] + "/settings.ini"
-
-if os.path.exists(sys.path[0] + "/icon.ico"):
-    pass
-else:
-    wx.MessageBox("There has been an error loading the icon. We are going to try downloading it to this directory.", "Error with Icon.", wx.OK)
-    iconLoc = "https://github.com/Seafire-Software/Anansi-CalcPad/blob/master/icon.ico?raw=true"
-    urllib.urlretrieve(iconLoc, sys.path[0] + "/icon.ico")
-    if os.path.exists(sys.path[0] + "/icon.ico"):
-        wx.MessageBox("We successfully downloaded the icon. Next time, you won't get this error.", "Icon downloaded.", wx.OK)
-        iconFile = "./icon.ico"
-    else:
-        wx.MessageBox("Oops! We could not download it, please download it from our github.", "Error... Again.", wx.OK)
-
-class Initialize(wx.Frame):
-    def __init__(self, parent, title):
-        super(Initialize, self).__init__(parent, title="Welcome!", size = (700, 310), style = wx.DEFAULT_FRAME_STYLE ^ wx.RESIZE_BORDER)
-        self.InitUI()
-        
-    def InitUI(self):
-        if os.path.exists(sys.path[0] + "/aboutIcon.png"):
-            pass
-        else:
-            fileLoc = "https://github.com/Seafire-Software/Anansi-CalcPad/raw/master/aboutIcon.png"
-            urllib.urlretrieve(fileLoc, sys.path[0], "/aboutIcon.png")
-      
-        self.aboutIcon = wx.Icon("./aboutIcon.png", wx.BITMAP_TYPE_PNG)  
-        mainIcon = wx.Icon(iconFile, wx.BITMAP_TYPE_ICO)
-        self.SetIcon(mainIcon)
-        
-        ## Menu Bar ##
-        mainMenu = wx.MenuBar()
-        
-        fileMenu = wx.Menu()
-        exitItem = fileMenu.Append(wx.ID_EXIT, "Exit", "Quit the program.")
-        mainMenu.Append(fileMenu, "&File")
-        
-        editMenu = wx.Menu()
-        prefBox = editMenu.Append(wx.ID_PREFERENCES, "Preferences", "View the preferences.")
-        mainMenu.Append(editMenu, "&Edit")
-        
-        helpMenu = wx.Menu()
-        helpItem = helpMenu.Append(wx.ID_HELP, "Help with Anansi CalcPad...", "Get help with Anansi CalcPad.")
-        updateItem = helpMenu.Append(wx.ID_ANY, "Check for Updates...", "Check for Updates to Anansi CalcPad.")
-        reportItem = helpMenu.Append(wx.ID_ANY, "Report an Issue...", "Report an issue.")
-        helpMenu.AppendSeparator()
-        specCredits = helpMenu.Append(wx.ID_ANY, "Special Credits...", "Special credits for some awesome people.")
-        aboutBox = helpMenu.Append(wx.ID_ABOUT, "About Anansi CalcPad", "Read about Anansi CalcPad.")        
-        mainMenu.Append(helpMenu, "&Help")
-        
-        self.SetMenuBar(mainMenu)
-        ## End Menu Bar ##
-        
-        ## Main GUI ##
-        mPanel = wx.Panel(self)
-        
-        infoText = wx.StaticText(mPanel, label="Welcome to Anansi CalcPad 1.0 Final. This is a multi-view program dedicated to making your life easier. \n The first view is a calculator, with some advanced functions. The second view is a journal, \nand the third is a news aggregator.", pos=(5, 5), style=wx.ALIGN_CENTER)
-        
-        btnCalc = wx.Button(mPanel, label="Anansi CalcPad(r) View", pos=(5, 100))
-        btnStory = wx.Button(mPanel, label="Anansi StoryPad(r) View", pos=(500, 100))
-        ## End Main GUI ##
-        
-        ## Status Bar ##
-        self.sb = self.CreateStatusBar()
-        self.sb.PushStatusText("Ready.")
-        ## End Status Bar ##
-        
-        ## Binding Events ##
-        self.Bind(wx.EVT_MENU, self.OnClose, exitItem)
-        self.Bind(wx.EVT_MENU, self.aboutWin, aboutBox)
-        self.Bind(wx.EVT_MENU, self.reportWin, reportItem)
-        self.Bind(wx.EVT_MENU, self.helpPage, helpItem)
-        self.Bind(wx.EVT_MENU, self.updateWin, updateItem)
-        self.Bind(wx.EVT_MENU, self.specialCredits, specCredits)
-        self.Bind(wx.EVT_MENU, self.prefBox, prefBox)
-        self.Bind(wx.EVT_BUTTON, self.calcView, btnCalc)
-        self.Bind(wx.EVT_BUTTON, self.storyView, btnStory)
-        ## End Binding Section ##
-        
-        self.Center()
-        self.Show()
-        
-    def calcView(self, e):
-        self.calc = AnansiCalc(self, title="Anansi CalcPad(r)")
-        self.calc.Show(True)
-        self.Show(False)
-    
-    def storyView(self, e):
-        self.story = storyPadView(self, title="Anansi StoryPad(r)")
-        self.story.Show(True)
-        self.Show(False)
-    
-    def prefBox(self, e):
-        spec = prefDialog(None, title="Preferences")
-        spec.ShowModal()
-        spec.Destroy()
-        
-    def specialCredits(self, e):
-        spec = specCredits(None, title="Special Credits")
-        spec.ShowModal()
-        spec.Destroy()         
-    
-    def OnClose(self, e):
-        app.Exit() 
-    
-    def reportWin(self, e):
-        reportn = reportIssueDialog(None, title="Report an Issue...")
-        reportn.ShowModal()
-        reportn.Destroy()        
-
-    def helpPage(self, e):
-        webbrowser.open("http://seafiresoftware.org/hesk/knowledgebase.php?category=3")
-    
-    def aboutWin(self, e):
-        description = """Anansi CalcPad is a brand new program developed in tandem with Raindolf Owusu and his company, Oasis WebSoft, for his Anansi Project."""
-        
-        licensed = """Anansi CalcPad is free software; you can redistribute 
-it and/or modify it under the terms of the GNU General Public License as 
-published by the Free Software Foundation; either version 3 of the License, 
-or (at your option) any later version.
-
-Anansi CalcPad is distributed in the hope that it will be useful, 
-but WITHOUT ANY WARRANTY; without even the implied warranty of 
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  
-See the GNU General Public License for more details. You should have 
-received a copy of the GNU General Public License along with Anansi CalcPad; 
-if not, write to the Free Software Foundation, Inc., 59 Temple Place, 
-Suite 330, Boston, MA  02111-1307  USA"""
-        
-        info = wx.AboutDialogInfo()
-        
-        info.SetIcon(self.aboutIcon)
-        info.SetName('Anansi CalcPad')
-        info.SetVersion('1.0')
-        info.SetDescription(description)
-        info.SetCopyright('(C) 2012 Cody Dostal')
-        info.SetWebSite('http://www.seafiresoftware.org')
-        info.SetLicense(licensed)
-        info.AddDeveloper('Cody Dostal')
-        info.AddDocWriter('Cody Dostal')
-        info.AddArtist('Raindolf Owusu')
-        info.AddTranslator('Cody Dostal')
-        
-        wx.AboutBox(info)
-    
-    def updateWin(self, e):
-        try:
-            upFile = "https://raw.github.com/Seafire-Software/Anansi-CalcPad/master/curVersion"
-            tempDir = tempfile.gettempdir()
-            webFile = urllib.urlretrieve(upFile, tempDir + '/curVersion')
-            basVer = open(tempDir + '/curVersion')
-            ver = float(basVer.read())
-            
-            if progVer < ver:
-                dlg = wx.MessageDialog(None, "You must update. Your version is " + str(progVer) + ", and the latest version is " + str(ver) + ", Do you wish to update?", "Update Required.", wx.YES_NO | wx.ICON_INFORMATION)
-               
-                result = dlg.ShowModal()
-                dlg.Destroy()
-                if result == wx.ID_YES:
-                    upgradeFile = "https://raw.github.com/Seafire-Software/Anansi-CalcPad/master/AnansiCalc.py"
-                        
-                    urllib.urlretrieve(upgradeFile, os.path.join(sys.path[0], sys.argv[0]))
-                    dlg = wx.MessageDialog(None, "Update successful. Please restart the program!", "Restart manually.", wx.YES_NO)
-                else:
-                    wx.MessageBox("You chose not to upgrade. Please upgrade later!", "Upgrade later.", wx.OK)
-            elif ver == progVer:
-                wx.MessageBox("You do not need to update. Your version is " + str(progVer) + ", which is equal to the latest version of " + str(ver), "No Update Required.", wx.OK | wx.ICON_INFORMATION)
-            elif progVer > ver: 
-                wx.MessageBox("What happened here? Your version is " + str(progVer) + " which is greater than the latest version of " + str(ver), "Your version is greater than ours?", wx.OK | wx.ICON_QUESTION)
-            else:
-                wx.MessageBox("Something went wrong with the update. Please try again. If it happens again, file a bug report please.", "Error!", wx.OK | wx.ICON_ERROR)            
-        except:
-            wx.MessageBox("There was an error (Error 10152). Maybe you are not connected to the internet? Try again please.", "Try again.", wx.OK)
-            
-        
 class storyPadView(wx.Frame):
     def __init__(self, parent, title):
         super(storyPadView, self).__init__(wx.GetApp().TopWindow, title="Anansi StoryPad(r)", style = wx.DEFAULT_FRAME_STYLE)
         self.InitUI()
         
     def InitUI(self):
-        if os.path.exists(sys.path[0] + "/aboutIcon.png"):
+        if os.path.exists(os.getcwd() + "/icon.ico"):
+            pass
+        else:
+            wx.MessageBox("There has been an error loading the icon. We are going to try downloading it to this directory.", "Error with Icon.", wx.OK)
+            iconLoc = "https://github.com/Seafire-Software/Anansi-CalcPad/blob/master/icon.ico?raw=true"
+            urllib.urlretrieve(iconLoc, os.getcwd() + "/icon.ico")
+            if os.path.exists(os.getcwd() + "/icon.ico"):
+                wx.MessageBox("We successfully downloaded the icon. Next time, you won't get this error.", "Icon downloaded.", wx.OK)
+                iconFile = "./icon.ico"
+            else:
+                wx.MessageBox("Oops! We could not download it, please download it from our github.", "Error... Again.", wx.OK)
+                
+        if os.path.exists(os.getcwd() + "/aboutIcon.png"):
             pass
         else:
             fileLoc = "https://github.com/Seafire-Software/Anansi-CalcPad/raw/master/aboutIcon.png"
-            urllib.urlretrieve(fileLoc, sys.path[0], "/aboutIcon.png")
+            urllib.urlretrieve(fileLoc, os.getcwd(), "/aboutIcon.png")
       
         self.aboutIcon = wx.Icon("./aboutIcon.png", wx.BITMAP_TYPE_PNG)       
-
+        
+        iconFile = "./icon.ico"
         mainIcon = wx.Icon(iconFile, wx.BITMAP_TYPE_ICO)
         self.SetIcon(mainIcon)
         
@@ -221,10 +56,6 @@ class storyPadView(wx.Frame):
         fileMenu.AppendSeparator()
         exitItem = fileMenu.Append(wx.ID_EXIT, "Exit", "Quit the program.")
         mainMenu.Append(fileMenu, "&File")
-        
-        editMenu = wx.Menu()
-        prefBox = editMenu.Append(wx.ID_PREFERENCES, "Preferences", "View the preferences.")
-        mainMenu.Append(editMenu, "&Edit")
         
         viewMenu = wx.Menu()
         self.storyViewItem = viewMenu.Append(wx.ID_ANY, "StoryPad(R) View", "Use the StoryPad journal view.", wx.ITEM_RADIO)
@@ -273,7 +104,6 @@ class storyPadView(wx.Frame):
         self.Bind(wx.EVT_MENU, self.saveNow, self.saveItem)
         self.Bind(wx.EVT_MENU, self.openASTF, self.openItem)
         self.Bind(wx.EVT_MENU, self.specialCredits, specCredits)
-        self.Bind(wx.EVT_MENU, self.prefBox, prefBox)
         self.Bind(wx.EVT_MENU, self.newWin, newItem)
         self.Bind(wx.EVT_CLOSE, self.OnClose)
         ## End Binding Section ##
@@ -340,7 +170,7 @@ Suite 330, Boston, MA  02111-1307  USA"""
                 if result == wx.ID_YES:
                     upgradeFile = "https://raw.github.com/Seafire-Software/Anansi-CalcPad/master/AnansiCalc.py"
                         
-                    urllib.urlretrieve(upgradeFile, os.path.join(sys.path[0], sys.argv[0]))
+                    urllib.urlretrieve(upgradeFile, os.path.join(os.getcwd(), sys.argv[0]))
                     dlg = wx.MessageDialog(None, "Update successful. Please restart the program!", "Restart manually.", wx.YES_NO)
                 else:
                     wx.MessageBox("You chose not to upgrade. Please upgrade later!", "Upgrade later.", wx.OK)
@@ -356,12 +186,7 @@ Suite 330, Boston, MA  02111-1307  USA"""
     def specialCredits(self, e):
         spec = specCredits(None, title="Special Credits")
         spec.ShowModal()
-        spec.Destroy()   
-           
-    def prefBox(self, e):
-        spec = prefDialog(None, title="Preferences")
-        spec.ShowModal()
-        spec.Destroy()     
+        spec.Destroy()       
         
     def OnClose(self, e):
         app.Exit()
@@ -413,7 +238,7 @@ Suite 330, Boston, MA  02111-1307  USA"""
                 
 class specCredits(wx.Dialog):
     def __init__(self, parent, title):
-        super(specCredits, self).__init__(parent=parent, title=title, size=(310, 300))
+        super(specCredits, self).__init__(parent=parent, title=title, size=(310, 330))
         self.InitUI()
         
     def InitUI(self):
@@ -435,24 +260,9 @@ class specCredits(wx.Dialog):
         
     def closeDialog(self, e):
         self.Destroy()
-
-class prefDialog(wx.Dialog):
-    def __init__(self, parent, title):
-        super(prefDialog, self).__init__(parent=parent, title="Preferences", size=(300, 700))
-        self.InitUI()
-    
-    def InitUI(self):
-        panel = wx.Panel(self)
-        
-    def OnClose(self, e):
-        self.Destroy(True)
-    
-    def savePref(self, e):
-        pass
-
 class reportIssueDialog(wx.Dialog):
     def __init__(self, parent, title):
-        super(reportIssueDialog, self).__init__(parent=parent, title=title, size=(300, 270))
+        super(reportIssueDialog, self).__init__(parent=parent, title=title, size=(300, 300))
         panel = wx.Panel(self)
         posIssues = ["Bug", "Suggestion", "Crash", "Other..."]
         posLevels = ["Application Breaking", "Severe", "Major", "Neutral", "Minor", "Miniscule"]
@@ -483,18 +293,32 @@ class AnansiCalc(wx.Frame):
         self.InitUI()
         
     def InitUI(self):
-        if os.path.exists(sys.path[0] + "/aboutIcon.png"):
+        if os.path.exists(os.getcwd() + "/icon.ico"):
+            pass
+        else:
+            wx.MessageBox("There has been an error loading the icon. We are going to try downloading it to this directory.", "Error with Icon.", wx.OK)
+            iconLoc = "https://github.com/Seafire-Software/Anansi-CalcPad/blob/master/icon.ico?raw=true"
+            urllib.urlretrieve(iconLoc, os.getcwd() + "/icon.ico")
+            if os.path.exists(os.getcwd() + "/icon.ico"):
+                wx.MessageBox("We successfully downloaded the icon. Next time, you won't get this error.", "Icon downloaded.", wx.OK)
+                iconFile = "./icon.ico"
+            else:
+                wx.MessageBox("Oops! We could not download it, please download it from our github.", "Error... Again.", wx.OK)
+
+        
+        if os.path.exists(os.getcwd() + "/aboutIcon.png"):
             pass
         else:
             fileLoc = "https://github.com/Seafire-Software/Anansi-CalcPad/raw/master/aboutIcon.png"
-            urllib.urlretrieve(fileLoc, sys.path[0], "/aboutIcon.png")
-      
+            urllib.urlretrieve(fileLoc, os.getcwd(), "/aboutIcon.png")
+        
+        iconFile = "./icon.ico"
         self.aboutIcon = wx.Icon("./aboutIcon.png", wx.BITMAP_TYPE_PNG)  
         mainIcon = wx.Icon(iconFile, wx.BITMAP_TYPE_ICO)
         self.SetIcon(mainIcon)
         
         if sys.platform == "win32":
-            self.SetSize((310, 350))
+            self.SetSize((320, 350))
         else:
             self.SetSize((310, 310))
         
@@ -507,10 +331,6 @@ class AnansiCalc(wx.Frame):
         fileMenu.AppendSeparator()
         exitItem = fileMenu.Append(wx.ID_EXIT, "Exit", "Quit the program.")
         mainMenu.Append(fileMenu, "&File")
-        
-        editMenu = wx.Menu()
-        prefBox = editMenu.Append(wx.ID_PREFERENCES, "Preferences", "View the preferences.")
-        mainMenu.Append(editMenu, "&Edit")
         
         viewMenu = wx.Menu()
         self.calcViewItem = viewMenu.Append(wx.ID_ANY, "Calculator View", "Use the calculator view.", wx.ITEM_RADIO)
@@ -533,56 +353,57 @@ class AnansiCalc(wx.Frame):
         
         ## Main GUI ##
         mPanel = wx.Panel(self)
+        mPanel.SetSize((320, 350))
         SPVSizer = wx.BoxSizer()
         SPVSizer.SetMinSize((310, 310))
         
-        self.txtItem = wx.TextCtrl(self, size=(300, 25), pos=(5, 5))
+        self.txtItem = wx.TextCtrl(mPanel, size=(300, 25), pos=(5, 5))
         SPVSizer.Add(self.txtItem)
-        btn7 = wx.Button(self, label="7", pos=(5, 35), size=(45, 45))
+        btn7 = wx.Button(mPanel, label="7", pos=(5, 35), size=(45, 45))
         SPVSizer.Add(btn7)
-        btn8 = wx.Button(self, label="8", pos=(55, 35), size=(45, 45))
+        btn8 = wx.Button(mPanel, label="8", pos=(55, 35), size=(45, 45))
         SPVSizer.Add(btn8)
-        btn9 = wx.Button(self, label="9", pos=(105, 35), size=(45, 45))
+        btn9 = wx.Button(mPanel, label="9", pos=(105, 35), size=(45, 45))
         SPVSizer.Add(btn9)
-        btnDiv = wx.Button(self, label="/", pos=(155, 35), size=(45, 45))
+        btnDiv = wx.Button(mPanel, label="/", pos=(155, 35), size=(45, 45))
         SPVSizer.Add(btnDiv)
-        btnBk = wx.Button(self, label="Back", pos=(205, 35), size=(45, 45))
+        btnBk = wx.Button(mPanel, label="Back", pos=(205, 35), size=(45, 45))
         SPVSizer.Add(btnBk)
-        btnCE = wx.Button(self, label="CE", pos=(255, 35), size=(45, 45))
+        btnCE = wx.Button(mPanel, label="CE", pos=(255, 35), size=(45, 45))
         SPVSizer.Add(btnCE)
         
-        btn4 = wx.Button(self, label="4", pos=(5, 90), size=(45, 45))
+        btn4 = wx.Button(mPanel, label="4", pos=(5, 90), size=(45, 45))
         SPVSizer.Add(btn4)
-        btn5 = wx.Button(self, label="5", pos=(55, 90), size=(45, 45))
+        btn5 = wx.Button(mPanel, label="5", pos=(55, 90), size=(45, 45))
         SPVSizer.Add(btn5)
-        btn6 = wx.Button(self, label="6", pos=(105, 90), size=(45, 45))
+        btn6 = wx.Button(mPanel, label="6", pos=(105, 90), size=(45, 45))
         SPVSizer.Add(btn6)
-        btnMult = wx.Button(self, label="x", pos=(155, 90), size=(45, 45))
+        btnMult = wx.Button(mPanel, label="x", pos=(155, 90), size=(45, 45))
         SPVSizer.Add(btnMult)
-        btnParOpen = wx.Button(self, label="(", pos=(205, 90), size=(45, 45))
+        btnParOpen = wx.Button(mPanel, label="(", pos=(205, 90), size=(45, 45))
         SPVSizer.Add(btnParOpen)
-        btnParClose = wx.Button(self, label=")", pos=(255, 90), size=(45, 45))
+        btnParClose = wx.Button(mPanel, label=")", pos=(255, 90), size=(45, 45))
         
-        btn1 = wx.Button(self, label="1", pos=(5, 150), size=(45, 45))
+        btn1 = wx.Button(mPanel, label="1", pos=(5, 150), size=(45, 45))
         SPVSizer.Add(btn1)
-        btn2 = wx.Button(self, label="2", pos=(55, 150), size=(45, 45))
+        btn2 = wx.Button(mPanel, label="2", pos=(55, 150), size=(45, 45))
         SPVSizer.Add(btn2)
-        btn3 = wx.Button(self, label="3", pos=(105, 150), size=(45, 45))
+        btn3 = wx.Button(mPanel, label="3", pos=(105, 150), size=(45, 45))
         SPVSizer.Add(btn3)        
-        btnMin = wx.Button(self, label="-", pos=(155, 150), size=(45, 45))
+        btnMin = wx.Button(mPanel, label="-", pos=(155, 150), size=(45, 45))
         SPVSizer.Add(btnMin)
-        btnSq = wx.Button(self, label="x" + u"\u00B2", pos=(205, 150), size=(45, 45))
+        btnSq = wx.Button(mPanel, label="x" + u"\u00B2", pos=(205, 150), size=(45, 45))
         SPVSizer.Add(btnSq)        
-        btnSqR = wx.Button(self, label=u"\u221A", pos=(255, 150), size=(45, 45))
+        btnSqR = wx.Button(mPanel, label=u"\u221A", pos=(255, 150), size=(45, 45))
         SPVSizer.Add(btnSqR)
         
-        btn0 = wx.Button(self, label="0", pos=(5, 210), size=(45, 45))
+        btn0 = wx.Button(mPanel, label="0", pos=(5, 210), size=(45, 45))
         SPVSizer.Add(btn0)        
-        btnDec = wx.Button(self, label=".", pos=(55, 210), size=(45, 45))
+        btnDec = wx.Button(mPanel, label=".", pos=(55, 210), size=(45, 45))
         SPVSizer.Add(btnDec)        
-        btnPlus = wx.Button(self, label="+", pos=(155, 210), size=(45, 45))
+        btnPlus = wx.Button(mPanel, label="+", pos=(155, 210), size=(45, 45))
         SPVSizer.Add(btnPlus)
-        btnEq = wx.Button(self, label="=", pos=(205, 210), size=(95, 45))
+        btnEq = wx.Button(mPanel, label="=", pos=(205, 210), size=(95, 45))
         SPVSizer.Add(btnEq)
         ## End Main GUI ##
         
@@ -600,7 +421,6 @@ class AnansiCalc(wx.Frame):
         self.Bind(wx.EVT_MENU, self.helpPage, helpItem)
         self.Bind(wx.EVT_MENU, self.updateWin, updateItem)
         self.Bind(wx.EVT_MENU, self.specialCredits, specCredits)
-        self.Bind(wx.EVT_MENU, self.prefBox, prefBox)
         self.Bind(wx.EVT_MENU, self.newWin, newItem)
         self.Bind(wx.EVT_MENU, self.clearData, clearItem)
         self.Bind(wx.EVT_BUTTON, self.xSq, btnSq)
@@ -734,10 +554,6 @@ class AnansiCalc(wx.Frame):
             except:
                 self.txtItem.SetValue("Error!")
                 self.sb.PushStatusText("Error! Something has gone wrong here...")        
-    def prefBox(self, e):
-        spec = prefDialog(None, title="Preferences")
-        spec.ShowModal()
-        spec.Destroy()
         
     def specialCredits(self, e):
         spec = specCredits(None, title="Special Credits")
@@ -819,7 +635,7 @@ Suite 330, Boston, MA  02111-1307  USA"""
                 if result == wx.ID_YES:
                     upgradeFile = "https://raw.github.com/Seafire-Software/Anansi-CalcPad/master/AnansiCalc.py"
                         
-                    urllib.urlretrieve(upgradeFile, os.path.join(sys.path[0], sys.argv[0]))
+                    urllib.urlretrieve(upgradeFile, os.path.join(os.getcwd(), sys.argv[0]))
                     dlg = wx.MessageDialog(None, "Update successful. Please restart the program!", "Restart manually.", wx.YES_NO)
                 else:
                     wx.MessageBox("You chose not to upgrade. Please upgrade later!", "Upgrade later.", wx.OK)
@@ -834,6 +650,6 @@ Suite 330, Boston, MA  02111-1307  USA"""
             
 if __name__ == "__main__":
     app = wx.App()
-    Initialize(None, title="Anansi CalcPad(r)")
+    AnansiCalc(None, title="Anansi CalcPad(r)")
     app.MainLoop()
     
