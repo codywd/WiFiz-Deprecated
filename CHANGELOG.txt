@@ -24,3 +24,10 @@ Fixed bug where the program didn't close fully when clicking the "X" button in t
 Version 1.00:
 No bug fixes.
 Changed all files to reflect version 1.0 change.
+
+Version 1.1:
+Removed Preferences Dialog for now.
+Fixed some bugs that caused exe compilation to fail.
+
+Version 1.2:
+Fixed a bug where "Save" and "Open..." were disabled in StoryPad.
