@@ -11,7 +11,7 @@ import wx
 import wx.stc
 
 SB_INFO = 0
-progVer = 1.00
+progVer = 1.1
 
 class storyPadView(wx.Frame):
     def __init__(self, parent, title):
@@ -142,7 +142,7 @@ Suite 330, Boston, MA  02111-1307  USA"""
         
         info.SetIcon(self.aboutIcon)
         info.SetName('Anansi CalcPad')
-        info.SetVersion('1.0')
+        info.SetVersion('1.1')
         info.SetDescription(description)
         info.SetCopyright('(C) 2012 Cody Dostal')
         info.SetWebSite('http://www.seafiresoftware.org')
@@ -607,7 +607,7 @@ Suite 330, Boston, MA  02111-1307  USA"""
         
         info.SetIcon(self.aboutIcon)
         info.SetName('Anansi CalcPad')
-        info.SetVersion('1.0')
+        info.SetVersion('1.1')
         info.SetDescription(description)
         info.SetCopyright('(C) 2012 Cody Dostal')
         info.SetWebSite('http://www.seafiresoftware.org')
