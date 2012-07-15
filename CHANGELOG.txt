@@ -34,3 +34,16 @@ Fixed a bug where "Save" and "Open..." were disabled in StoryPad.
 
 Version 1.3:
 Fixed an update bug on exe files.
+
+Version 1.4:
+Improved way of setting the version in the About Box.
+Had to disable the help window temporarily until I get a new way of managing a help-desk.
+Changed all instances of (r) to ®.
+Changed to 32-bit executable. The program should now run on 32bit or 64bit.
+Fixed some of the icons muddiness.
+
+Version 1.5 (Coming Soon):
+(All In Here will come at a later date, when 1.5 is released)
+A much upgraded "Update" window. Automatically run the EXE upgrade in Windows.
+A better designed, more functional calculator window.
+News Aggregator inside the program, no longer a link to Google Reader.
