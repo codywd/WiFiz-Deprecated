@@ -1,4 +1,4 @@
-**NOTE: As of version 1.4, you must install Visual Studio 2008 Redistributal for x86, if it isn't already installed. If you get an error upon starting the executable, try installing the redistributable from "Windows" folder first.
+**NOTE: As of version 1.4, you must install Visual Studio 2008 Redistributal for x86, if it isn't already installed. If you get an error upon starting the executable, try installing the redistributable (vcredist_x86.exe) from "Windows" folder first.
 
 Welcome to the Anansi CalcPad's Git MASTER Branch.
 
