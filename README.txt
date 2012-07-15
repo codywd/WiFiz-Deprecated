@@ -1,3 +1,5 @@
+**NOTE: As of version 1.4, you must install Visual Studio 2008 Redistributal for x86, if it isn't already installed. If you get an error upon starting the executable, try installing the redistributable from "Windows" folder first.
+
 Welcome to the Anansi CalcPad's Git MASTER Branch.
 
 As the original version of Anansi CalcPad, developed by us at Seafire Software for Raindolf at Oasis Websoft, you will see the original version of Anansi CalcPad in it's full.
