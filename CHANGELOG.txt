@@ -42,8 +42,15 @@ Changed all instances of (r) to ®.
 Changed to 32-bit executable. The program should now run on 32bit or 64bit.
 Fixed some of the icons muddiness.
 
-Version 1.5 (Coming Soon):
-(All In Here will come at a later date, when 1.5 is released)
+
+
+ROADMAP:
+
+Version 1.5:
 A much upgraded "Update" window. Automatically run the EXE upgrade in Windows.
-A better designed, more functional calculator window.
+More functional calculator window.
+
+Version 2.0:
+Revamped design for the Calculator view.
+Improved functionality (Bold, Italic, Underline, etc...) in StoryPad.
 News Aggregator inside the program, no longer a link to Google Reader.
