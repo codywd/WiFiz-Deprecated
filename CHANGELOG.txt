@@ -38,9 +38,12 @@ Fixed an update bug on exe files.
 Version 1.4:
 Improved way of setting the version in the About Box.
 Had to disable the help window temporarily until I get a new way of managing a help-desk.
-Changed all instances of (r) to ®.
+Changed all instances of (r) to the reserved symbol.
 Changed to 32-bit executable. The program should now run on 32bit or 64bit.
 Fixed some of the icons muddiness.
+
+Version 1.41:
+Updated the license to a custom MIT license.
 
 
 
