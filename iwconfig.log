@@ -1,0 +1,9 @@
+wlan0     IEEE 802.11bgn  ESSID:"MomAndKids"  
+          Mode:Managed  Frequency:2.437 GHz  Access Point: E0:91:F5:7D:C9:14   
+          Bit Rate=18 Mb/s   Tx-Power=20 dBm   
+          Retry  long limit:7   RTS thr=2347 B   Fragment thr:off
+          Power Management:off
+          Link Quality=69/70  Signal level=-41 dBm  
+          Rx invalid nwid:0  Rx invalid crypt:0  Rx invalid frag:0
+          Tx excessive retries:0  Invalid misc:331   Missed beacon:0
+
