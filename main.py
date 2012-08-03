@@ -14,6 +14,35 @@ from wx.lib.wordwrap import wordwrap
 progVer = 0.1
 logfile = os.getcwd() + '/iwlist.log'
 
+class APopupMenu(wx.Menu):
+    def __init__(self, parent):
+        super(APopupMenu, self).__init__()
+        
+        self.parent = parent
+        
+        cnct = wx.MenuItem(self, wx.NewId(), 'Connect')
+        self.AppendItem(cnct)
+        self.Bind(wx.EVT_MENU, self.OnConnect, cnct)
+        
+        dcnct = wx.MenuItem(self, wx.NewId(), "Disconnect")
+        self.AppendItem(dcnct)
+        self.Bind(wx.EVT_MENU, self.OnDConnect, dcnct)
+        
+        self.AppendSeparator()
+        
+        edp = wx.MenuItem(self, wx.NewId(), 'Edit Profile')
+        self.AppendItem(edp)
+        self.Bind(wx.EVT_MENU, self.OnEditPro, edp)
+        
+    def OnConnect(self):
+        pass
+    
+    def OnDConnect(self):
+        pass
+    
+    def OnEditPro(self):
+        pass
+
 class Logger(object):
     def __init__(self):
         self.terminal = sys.stdout
@@ -99,11 +128,17 @@ class WiFiz(wx.Frame):
         self.Bind(wx.EVT_MENU, self.OnAbout, aboutItem)
         self.Bind(wx.EVT_MENU, self.OnScan, ScanAPs)
         self.Bind(wx.EVT_TOOL, self.OnScan, ReScanAPs)
+        
+        self.Bind(wx.EVT_RIGHT_DOWN, self.OnRightDown)
         # End Bindings #
         
         self.SetSize((500,390))
+        self.OnScan(self)
         self.Show()
         self.Center()
+        
+    def OnRightDown(self, e):
+        self.PopupMenu(APopupMenu(self), e.GetPosition())
     
     def OnScan(self, e):
         if os.path.isfile(logfile):
@@ -130,8 +165,11 @@ class WiFiz(wx.Frame):
             if "WPA2" in line:
                 encrypt = "WPA2"
             if "WEP" in line:
-                print "WEP Encryption"
                 encrypt = "WEP"
+            if "Address" in line:
+                begin = line.replace(" ", "")
+                mid = begin.replace("Cell01-Address:", "")
+                Address = mid
         
         ilogfile = os.getcwd() + "/iwconfig.log"
         
@@ -140,23 +178,22 @@ class WiFiz(wx.Frame):
         f.write(outputs)
         f.close()
         
-        f = open(ilogfile).read()
-        print final
-        for lined in open(ilogfile):
-            s = str(line)
-            print s.find(final)
-            if s.find(final) != -1:
-                connect = "yes"
-            else:
-                connect = "no"
-        
+        d = open(ilogfile, 'r')
+        v = d.readline()
+        v2 = d.readline()
+        v3 = v2.replace(" ", "")
+        print Address
+        if Address in v3:
+            connect = "yes"
+        else:
+            connect = "no"
             
         lines = "Line %s" % self.index
         self.APList.InsertStringItem(self.index, lines)
         self.APList.SetStringItem(self.index, 0, final)  
         self.APList.SetStringItem(self.index, 1, s2)
         self.APList.SetStringItem(self.index, 2, encrypt)
-        self.APList.SetStringItem(self.index, 3, "yes")
+        self.APList.SetStringItem(self.index, 3, connect)
         
         logging.info("AP Scan completed, and saved.")
         
