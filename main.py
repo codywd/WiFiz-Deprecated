@@ -11,7 +11,7 @@ import subprocess
 from wx import *
 from wx.lib.wordwrap import wordwrap
 
-progVer = 0.1
+progVer = 0.11
 logfile = os.getcwd() + '/iwlist.log'
 
 class APopupMenu(wx.Menu):
