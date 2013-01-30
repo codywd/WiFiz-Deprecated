@@ -14,35 +14,6 @@ from wx.lib.wordwrap import wordwrap
 progVer = 0.11
 logfile = os.getcwd() + '/iwlist.log'
 
-class APopupMenu(wx.Menu):
-    def __init__(self, parent):
-        super(APopupMenu, self).__init__()
-        
-        self.parent = parent
-        
-        cnct = wx.MenuItem(self, wx.NewId(), 'Connect')
-        self.AppendItem(cnct)
-        self.Bind(wx.EVT_MENU, self.OnConnect, cnct)
-        
-        dcnct = wx.MenuItem(self, wx.NewId(), "Disconnect")
-        self.AppendItem(dcnct)
-        self.Bind(wx.EVT_MENU, self.OnDConnect, dcnct)
-        
-        self.AppendSeparator()
-        
-        edp = wx.MenuItem(self, wx.NewId(), 'Edit Profile')
-        self.AppendItem(edp)
-        self.Bind(wx.EVT_MENU, self.OnEditPro, edp)
-        
-    def OnConnect(self):
-        pass
-    
-    def OnDConnect(self):
-        pass
-    
-    def OnEditPro(self):
-        pass
-
 class Logger(object):
     def __init__(self):
         self.terminal = sys.stdout
@@ -65,6 +36,10 @@ class WiFiz(wx.Frame):
         self.InitUI()
     
     def InitUI(self):
+        
+        iconFile = "./icon.gif"
+        mainIcon = wx.Icon(iconFile, wx.BITMAP_TYPE_GIF)
+        self.SetIcon(mainIcon)
         
         # Menu Bar #
         mainMenu = wx.MenuBar()
@@ -128,8 +103,8 @@ class WiFiz(wx.Frame):
         self.Bind(wx.EVT_MENU, self.OnAbout, aboutItem)
         self.Bind(wx.EVT_MENU, self.OnScan, ScanAPs)
         self.Bind(wx.EVT_TOOL, self.OnScan, ReScanAPs)
-        
-        self.Bind(wx.EVT_RIGHT_DOWN, self.OnRightDown)
+        self.Bind(wx.EVT_TOOL, self.OnNew, newTool)
+        self.Bind(wx.EVT_TOOL, self.OnDConnect, dConnectSe)
         # End Bindings #
         
         self.SetSize((500,390))
@@ -137,8 +112,13 @@ class WiFiz(wx.Frame):
         self.Show()
         self.Center()
         
-    def OnRightDown(self, e):
-        self.PopupMenu(APopupMenu(self), e.GetPosition())
+    def OnDConnect(self, e):
+        pass
+        
+    def OnNew(self, e):
+        newProf = NewProfile(None, title="New Profile")
+        newProf.ShowModal()
+        newProf.Destroy()
     
     def OnScan(self, e):
         if os.path.isfile(logfile):
@@ -148,7 +128,7 @@ class WiFiz(wx.Frame):
         else:
             logging.error("No file exists!!")
             
-        output = str(subprocess.check_output("sudo iwlist wlan0 scan", shell=True))
+        output = str(subprocess.check_output("iwlist scan", shell=True))
         f = open(logfile, 'w')
         f.write(output)
         f.close()        
@@ -164,7 +144,7 @@ class WiFiz(wx.Frame):
                 s2 = s[28:33]
             if "WPA2" in line:
                 encrypt = "WPA2"
-            if "WEP" in line:
+            else:
                 encrypt = "WEP"
             if "Address" in line:
                 begin = line.replace(" ", "")
@@ -173,7 +153,7 @@ class WiFiz(wx.Frame):
         
         ilogfile = os.getcwd() + "/iwconfig.log"
         
-        outputs = str(subprocess.check_output("iwconfig wlan0", shell=True))
+        outputs = str(subprocess.check_output("iwconfig wlp2s0", shell=True))
         f = open(ilogfile, 'w')
         f.write(outputs)
         f.close()
@@ -220,7 +200,7 @@ class WiFiz(wx.Frame):
         
         info = wx.AboutDialogInfo()
         
-        info.SetIcon(wx.Icon('stock_network_24.png', wx.BITMAP_TYPE_PNG))
+        info.SetIcon(wx.Icon('./aboutIcon.gif', wx.BITMAP_TYPE_GIF))
         info.SetName('WiFiz')
         info.SetVersion(str(progVer))
         info.SetDescription(description)
@@ -229,10 +209,43 @@ class WiFiz(wx.Frame):
         info.SetLicence(wordwrap(licence, 350, wx.ClientDC(self)))
         info.AddDeveloper('Cody Dostal')
         info.AddDocWriter('Cody Dostal')
-        info.AddArtist('Stock Gnome Icons')
+        info.AddArtist('Sam Stuewe')
         info.AddTranslator('Cody Dostal (English)')
         
         wx.AboutBox(info)
+        
+        
+        
+class NewProfile(wx.Dialog):
+    def __init__(self, parent, title):
+        super(NewProfile, self).__init__(parent=parent, title=title, size=(310, 330))
+        self.InitUI()
+        
+    def InitUI(self):
+        connectionTypeLbl = wx.StaticText(self, label="Connection Type:", pos=(5, 10))
+        connectionTypeLbl.SetToolTip(wx.ToolTip("Wireless or Ethernet"))
+        connectionTypeTxt = wx.TextCtrl(self, wx.ID_ANY, value="Wireless", pos=(130, 5))
+        
+        interfaceLbl = wx.StaticText(self, label="Interface:", pos=(5, 80))
+        interfaceLbl.SetToolTip(wx.ToolTip("wlan0, eth0, etc..."))
+        interfaceTxt = wx.TextCtrl(self, wx.ID_ANY, value="wlan0", pos=(130, 75))
+        
+        
+        securityLbl = wx.StaticText(self, label="Security:", pos=(5, 135))
+        securityLbl.SetToolTip(wx.ToolTip("Choose from: none, wep, wpa"))
+        securityTxt = wx.TextCtrl(self, wx.ID_ANY, value="wpa", pos=(130, 130))
+        
+        btnSave = wx.Button(self, label="Save", pos=(215, 265))
+        btnQuit = wx.Button(self, label="Quit", pos=(125, 265))
+        
+        self.Bind(wx.EVT_BUTTON, self.saveProfile, btnSave)
+        self.Bind(wx.EVT_BUTTON, self.closeDialog, btnQuit)
+        
+    def saveProfile(self, e):
+        pass
+    
+    def closeDialog(self, e):
+        self.Destroy()
         
         
         
