@@ -40,6 +40,8 @@ class WiFiz(wx.Frame):
         iconFile = "./icon.gif"
         mainIcon = wx.Icon(iconFile, wx.BITMAP_TYPE_GIF)
         self.SetIcon(mainIcon)
+        tbicon = wx.TaskBarIcon()
+        tbicon.SetIcon(mainIcon, "WiFiz")
         
         # Menu Bar #
         mainMenu = wx.MenuBar()
@@ -104,7 +106,7 @@ class WiFiz(wx.Frame):
         self.Bind(wx.EVT_MENU, self.OnScan, ScanAPs)
         self.Bind(wx.EVT_TOOL, self.OnScan, ReScanAPs)
         self.Bind(wx.EVT_TOOL, self.OnNew, newTool)
-        self.Bind(wx.EVT_TOOL, self.OnDConnect, dConnectSe)
+        self.Bind(wx.EVT_TOOL, self.OnDConnect, dConnectSe) 
         # End Bindings #
         
         self.SetSize((500,390))
