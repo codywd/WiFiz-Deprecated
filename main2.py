@@ -10,7 +10,7 @@ class WiFiz(QtGui.QMainWindow):
     def InitUI(self):
         self.resize(500, 390)
         self.center()
-        self.setWindowTitle('Icon')
+        self.setWindowTitle('WiFiz')
         self.setWindowIcon(QtGui.QIcon('icon.gif'))
         
         # Menu Bar #
@@ -85,6 +85,13 @@ class WiFiz(QtGui.QMainWindow):
         self.toolbar.addAction(scanForAPs)
         self.toolbar.addAction(connectAction)
         self.toolbar.addAction(dConnectAction)
+        
+        SSIDList = QtGui.QTableWidget(0, 4, self)
+        labels = ["SSID", "Connection Strength", "Security", "Connected?"]
+        SSIDList.setHorizontalHeaderLabels(labels)        
+        SSIDList.verticalHeader().setVisible(False)
+        #SSIDList.horizontalHeader().setResizeMode(
+        self.setCentralWidget(SSIDList)
         self.statusBar()        
         self.show()
         

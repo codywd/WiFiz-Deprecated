@@ -10,10 +10,17 @@ import subprocess
 # Importing Third Party Libraries #
 from wx import *
 from wx.lib.wordwrap import wordwrap
+from wx.lib.mixins.listctrl import ListCtrlAutoWidthMixin
 
 progVer = 0.11
 logfile = os.getcwd() + '/iwlist.log'
 
+euid = os.geteuid()
+
+if euid != 0:
+            args = ['gksudo', sys.executable] + sys.argv + [os.environ]
+            os.execlpe('sudo', *args)
+            
 class Logger(object):
     def __init__(self):
         self.terminal = sys.stdout
@@ -33,6 +40,7 @@ class WiFiz(wx.Frame):
         logging.basicConfig(format='%(asctime)s \n %(levelname)s:%(message)s',filename="logfile.log", level=logging.DEBUG)
         sys.stdout = Logger()
         self.index = 0
+        
         self.InitUI()
     
     def InitUI(self):
@@ -72,28 +80,21 @@ class WiFiz(wx.Frame):
         # Create Toolbar #
         toolbar = self.CreateToolBar()
         newTool = toolbar.AddLabelTool(wx.ID_NEW, 'New', wx.ArtProvider.GetBitmap(wx.ART_NEW))
-        ReScanAPs = toolbar.AddLabelTool(wx.ID_ANY, 'Scan', wx.Bitmap('stock_network_24.png'))
-        connectSe = toolbar.AddLabelTool(wx.ID_ANY, 'Connect', wx.Bitmap('stock_connect_24.png'))
-        dConnectSe = toolbar.AddLabelTool(wx.ID_ANY, 'Disconnect', wx.Bitmap('stock_disconnect_24.png'))
+        ReScanAPs = toolbar.AddLabelTool(wx.ID_ANY, 'Scan', wx.Bitmap('APScan.png'))
+        connectSe = toolbar.AddLabelTool(wx.ID_ANY, 'Connect', wx.Bitmap('connect.png'))
+        dConnectSe = toolbar.AddLabelTool(wx.ID_ANY, 'Disconnect', wx.Bitmap('disconnect.png'))
         toolbar.AddSeparator()
-        prefTool = toolbar.AddLabelTool(wx.ID_PREFERENCES, 'Preferences', wx.Bitmap('stock_preferences_24.png'))
+        prefTool = toolbar.AddLabelTool(wx.ID_PREFERENCES, 'Preferences', wx.Bitmap('preferences.png'))
         quitTool = toolbar.AddLabelTool(wx.ID_EXIT, 'Quit', wx.ArtProvider.GetBitmap(wx.ART_QUIT))
         toolbar.Realize()
         # End Toolbar #
         
-        panel = wx.Panel(self, wx.ID_ANY)
-        
-        self.APList = wx.ListCtrl(panel, size=(100, 300),
-                             style=wx.LC_REPORT
-                             | wx.BORDER_SUNKEN)
+        self.APList = AutoWidthListCtrl(self)
+        self.APList.setResizeColumn(1)
         self.APList.InsertColumn(0, "SSID", width=125)
         self.APList.InsertColumn(1, "Connection Strength", width=150)
         self.APList.InsertColumn(2, "Security Type", width=125)
         self.APList.InsertColumn(3, "Connected?", width=100)
-        
-        sizer = wx.BoxSizer(wx.VERTICAL)
-        sizer.Add(self.APList, 0, wx.ALL | wx.EXPAND, 0)
-        panel.SetSizer(sizer)
         
         
         # Create Status Bar #
@@ -155,7 +156,7 @@ class WiFiz(wx.Frame):
         
         ilogfile = os.getcwd() + "/iwconfig.log"
         
-        outputs = str(subprocess.check_output("iwconfig wlp2s0", shell=True))
+        outputs = str(subprocess.check_output("iwconfig list", shell=True))
         f = open(ilogfile, 'w')
         f.write(outputs)
         f.close()
@@ -250,6 +251,11 @@ class NewProfile(wx.Dialog):
         self.Destroy()
         
         
+        
+class AutoWidthListCtrl(wx.ListCtrl, ListCtrlAutoWidthMixin):
+    def __init__(self, parent):
+        wx.ListCtrl.__init__(self, parent, -1, style=wx.LC_REPORT)
+        ListCtrlAutoWidthMixin.__init__(self)
         
 if __name__ == "__main__":
     app = wx.App()
