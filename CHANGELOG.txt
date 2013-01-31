@@ -48,12 +48,9 @@ Updated the license to a custom MIT license.
 
 
 ROADMAP:
-
-Version 1.5:
+Version 2.0:
 A much upgraded "Update" window. Automatically run the EXE upgrade in Windows.
 More functional calculator window.
-
-Version 2.0:
 Revamped design for the Calculator view.
 Improved functionality (Bold, Italic, Underline, etc...) in StoryPad.
 News Aggregator inside the program, no longer a link to Google Reader.
