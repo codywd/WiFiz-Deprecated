@@ -11,8 +11,8 @@ import subprocess
 from wx import *
 from wx.lib.wordwrap import wordwrap
 from wx.lib.mixins.listctrl import ListCtrlAutoWidthMixin
-
-progVer = 0.11
+from wx import wizard as wiz
+progVer = 0.12
 logfile = os.getcwd() + '/iwlist.log'
 
 euid = os.geteuid()
@@ -112,21 +112,19 @@ class WiFiz(wx.Frame):
 
         self.SetSize((500,390))
         self.Show()
+        self.Center()
         self.UID = wx.TextEntryDialog(self, "What is your Interface Name? (wlan0, wlp2s0)",
                                  "Wireless Interface",
                                  "")
         if self.UID.ShowModal() == wx.ID_OK:
             self.UIDValue = self.UID.GetValue()
         self.OnScan(self)
-        self.Center()
 
     def OnDConnect(self, e):
         pass
 
     def OnNew(self, e):
-        newProf = NewProfile(None, title="New Profile")
-        newProf.ShowModal()
-        newProf.Destroy()        
+        newProf = NewProfile(parent=None)       
 
     def OnScan(self, e):
         if os.path.isfile(logfile):
@@ -191,9 +189,9 @@ class WiFiz(wx.Frame):
         app.Exit()
 
     def OnAbout(self, e):
-        description = """ WiFiz is a front end to easily connect to wireless networks. It keeps a simple, elegant interface intact while using the netcfg backend to connect to networks."""
+        description = """WiFiz is a simple to use, elegant, and powerful frontend for NetCTL. NetCTL is a fork of NetCFG that focuses on being very well integrated into systemd."""
 
-        licence = """Copyright (c) 2012 Cody Dostal, Pivotraze
+        licence = """Copyright (c) 2013 Cody Dostal, Pivotraze
 
         Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
 
@@ -220,35 +218,72 @@ class WiFiz(wx.Frame):
 
 
 class NewProfile(wx.Dialog):
-    def __init__(self, parent, title):
-        super(NewProfile, self).__init__(parent=parent, title=title, size=(310, 330))
+    def __init__(self, parent):
+        super(NewProfile, self).__init__(None)
         self.InitUI()
 
     def InitUI(self):
-        connectionTypeLbl = wx.StaticText(self, label="Connection Type:", pos=(5, 10))
-        connectionTypeLbl.SetToolTip(wx.ToolTip("Wireless or Ethernet"))
-        connectionTypeTxt = wx.TextCtrl(self, wx.ID_ANY, value="Wireless", pos=(130, 5))
-
-        interfaceLbl = wx.StaticText(self, label="Interface:", pos=(5, 80))
-        interfaceLbl.SetToolTip(wx.ToolTip("wlan0, eth0, etc..."))
-        interfaceTxt = wx.TextCtrl(self, wx.ID_ANY, value="wlan0", pos=(130, 75))
-
-
-        securityLbl = wx.StaticText(self, label="Security:", pos=(5, 135))
-        securityLbl.SetToolTip(wx.ToolTip("Choose from: none, wep, wpa"))
-        securityTxt = wx.TextCtrl(self, wx.ID_ANY, value="wpa", pos=(130, 130))
-
-        btnSave = wx.Button(self, label="Save", pos=(215, 265))
-        btnQuit = wx.Button(self, label="Quit", pos=(125, 265))
-
-        self.Bind(wx.EVT_BUTTON, self.saveProfile, btnSave)
-        self.Bind(wx.EVT_BUTTON, self.closeDialog, btnQuit)
+            wizard = wx.wizard.Wizard(None, -1, "New Profile Wizard")
+            page1 = TitledPage(wizard, "Interface")
+            page1.Sizer.Add(wx.StaticText(page1, -1, "Please type the name of the interface you will be \nusing to connect to the network. Examples are \nwlan0, eth0, etc..."))
+            page1.Sizer.Add(wx.StaticText(page1, -1, ""))
+            interfaceNameV = wx.TextCtrl(page1)
+            page1.Sizer.Add(interfaceNameV, flag=wx.EXPAND)
+            self.interfaceName = interfaceNameV.GetValue()
+            page2 = TitledPage(wizard, "Connection Type")
+            page2.Sizer.Add(wx.StaticText(page2, -1, "Please type the type of connection you will be using. \nOnly use wireless or ethernet."))
+            page2.Sizer.Add(wx.StaticText(page2, -1, ""))
+            connectionName = wx.TextCtrl(page2)
+            page2.Sizer.Add(connectionName, flag=wx.EXPAND)  
+            self.connectionType = connectionName.GetValue()
+            page3 = TitledPage(wizard, "Security Type")
+            page3.Sizer.Add(wx.StaticText(page3, -1, "Please type the security type of the connection. \nOnly use wep or wpa."))
+            page3.Sizer.Add(wx.StaticText(page3, -1, ""))
+            securityTypeV = wx.TextCtrl(page3)
+            page3.Sizer.Add(securityTypeV, flag=wx.EXPAND) 
+            securityType = securityTypeV.GetValue()
+            page4 = TitledPage(wizard, "SSID")
+            page4.Sizer.Add(wx.StaticText(page4, -1, "Please type the name of the network you wish to connect to."))
+            page4.Sizer.Add(wx.StaticText(page4, -1, ""))
+            SSIDV = wx.TextCtrl(page4)
+            page4.Sizer.Add(SSIDV, flag=wx.EXPAND)  
+            SSID = SSIDV.GetValue()
+            page5 = TitledPage(wizard, "Security Key")
+            page5.Sizer.Add(wx.StaticText(page5, -1, "Please type the password of the network you wish to connect to."))
+            page5.Sizer.Add(wx.StaticText(page5, -1, ""))
+            securePass = wx.TextCtrl(page5, style=wx.TE_PASSWORD)
+            showPassBtn = wx.Button(page5, -1, "Show Password")
+            page5.Sizer.Add(securePass, flag=wx.EXPAND)
+            page5.Sizer.Add(showPassBtn)
+            password = securePass.GetValue()
+            page6 = TitledPage(wizard, "Hidden Network")
+            page6.Sizer.Add(wx.StaticText(page6, -1, "Is the network hidden? If so, check the checkbox."))
+            page6.Sizer.Add(wx.StaticText(page6, -1, ""))
+            page6.Sizer.Add(wx.CheckBox(page6, -1, "Network is Hidden"))
+            
+            wx.wizard.WizardPageSimple.Chain(page1, page2)
+            wx.wizard.WizardPageSimple.Chain(page2, page3)
+            wx.wizard.WizardPageSimple.Chain(page3, page4)
+            wx.wizard.WizardPageSimple.Chain(page4, page5)
+            wx.wizard.WizardPageSimple.Chain(page5, page6)
+            wizard.FitToPage(page1)
+            wizard.RunWizard(page1)
+            wizard.Destroy()
+            
+            self.Bind(self, wiz.EVT_WIZARD_CANCEL, self.closeDialog)
+            self.Bind(self, wiz.EVT_WIZARD_FINISHED, self.saveProfile)
 
     def saveProfile(self, e):
-        pass
+        wx.MessageBox(self.interfaceName, self.interfaceName, wx.ID_OK)
+        wx.MessageBox(self.connectionType, self.connectionType, wx.ID_OK)
 
     def closeDialog(self, e):
-        self.Destroy()
+        dial = wx.MessageDialog(None, "Are you sure you want to cancel?", "Cancel?", wx.YES_NO|wx.NO_DEFAULT|wx.ICON_QUESTION)
+        ret = dial.ShowModal()
+        if ref == wx.ID_YES:
+            self.Destroy()
+        else:
+            e.Veto()
 
 
 
@@ -276,6 +311,17 @@ class UserInterfaceDialog(wx.Dialog):
         self.Destroy()
                
         
+class TitledPage(wiz.WizardPageSimple):
+    def __init__(self, parent, title):
+        wiz.WizardPageSimple.__init__(self, parent)
+        
+        sizer = wx.BoxSizer(wx.VERTICAL)
+        self.SetSizer(sizer)
+
+        title = wx.StaticText(self, -1, title)
+        title.SetFont(wx.Font(18, wx.SWISS, wx.NORMAL, wx.BOLD))
+        sizer.Add(title, 0, wx.ALIGN_CENTER_HORIZONTAL|wx.ALL, 5)
+        sizer.Add(wx.StaticLine(self, -1), 0, wx.EXPAND|wx.ALL, 5)
 if __name__ == "__main__":
     app = wx.App()
     WiFiz(None, title="WiFiz")
