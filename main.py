@@ -76,7 +76,13 @@ class WiFiz(wx.Frame):
         self.SetMenuBar(mainMenu)
 
         # End Menu Bar #
-
+        
+        # Create Popup Menu #
+        self.PopupMenu = wx.Menu()
+        popCon = self.PopupMenu.Append(wx.ID_ANY, "Connect to Network", "Connect to selected network.")
+        popDCon = self.PopupMenu.Append(wx.ID_ANY, "Disconnect from Network", "Disconnect from selected network.")
+        popCrPro = self.PopupMenu.Append(wx.ID_ANY, "Create Profile around Network", "Create profile around selected network, but do not connect.")
+        
         # Create Toolbar #
         toolbar = self.CreateToolBar()
         newTool = toolbar.AddLabelTool(wx.ID_NEW, 'New', wx.ArtProvider.GetBitmap(wx.ART_NEW))
@@ -108,6 +114,7 @@ class WiFiz(wx.Frame):
         self.Bind(wx.EVT_TOOL, self.OnScan, ReScanAPs)
         self.Bind(wx.EVT_TOOL, self.OnNew, newTool)
         self.Bind(wx.EVT_TOOL, self.OnDConnect, dConnectSe) 
+        self.Bind(wx.EVT_CONTEXT_MENU, self.OnShowPopup)
         # End Bindings #
 
         self.SetSize((500,390))
@@ -119,9 +126,14 @@ class WiFiz(wx.Frame):
         if self.UID.ShowModal() == wx.ID_OK:
             self.UIDValue = self.UID.GetValue()
         self.OnScan(self)
+    
+    def OnShowPopup(self, e):
+        pos = e.GetPosition()
+        pos = self.APList.ScreenToClient(pos)
+        self.APList.PopupMenu(self.PopupMenu, pos)
 
     def OnDConnect(self, e):
-        pass
+        os.system("sudo netctl stop ThisProfile")
 
     def OnNew(self, e):
         newProf = NewProfile(parent=None)       
@@ -157,7 +169,7 @@ class WiFiz(wx.Frame):
 
         ilogfile = os.getcwd() + "/iwconfig.log"
         
-        outputs = str(subprocess.check_output("iwconfig | grep " + self.UIDValue, shell=True))
+        outputs = str(subprocess.check_output("iwconfig", shell=True))
         f = open(ilogfile, 'w')
         f.write(outputs)
         f.close()
@@ -231,17 +243,19 @@ class NewProfile(wx.Dialog):
             page1.Sizer.Add(interfaceNameV, flag=wx.EXPAND)
             self.interfaceName = interfaceNameV.GetValue()
             page2 = TitledPage(wizard, "Connection Type")
-            page2.Sizer.Add(wx.StaticText(page2, -1, "Please type the type of connection you will be using. \nOnly use wireless or ethernet."))
+            page2.Sizer.Add(wx.StaticText(page2, -1, "Please type the type of connection you will be using."))
             page2.Sizer.Add(wx.StaticText(page2, -1, ""))
-            connectionName = wx.TextCtrl(page2)
-            page2.Sizer.Add(connectionName, flag=wx.EXPAND)  
-            self.connectionType = connectionName.GetValue()
+            choiceWiFi = wx.RadioButton(page2, -1, "Wireless", style=wx.RB_GROUP)
+            choiceEth = wx.RadioButton(page2, -1, "Ethernet")
+            page2.Sizer.Add(choiceWiFi)
+            page2.Sizer.Add(choiceEth)
             page3 = TitledPage(wizard, "Security Type")
-            page3.Sizer.Add(wx.StaticText(page3, -1, "Please type the security type of the connection. \nOnly use wep or wpa."))
+            page3.Sizer.Add(wx.StaticText(page3, -1, "Please type the security type of the connection."))
             page3.Sizer.Add(wx.StaticText(page3, -1, ""))
-            securityTypeV = wx.TextCtrl(page3)
-            page3.Sizer.Add(securityTypeV, flag=wx.EXPAND) 
-            securityType = securityTypeV.GetValue()
+            choiceWEP = wx.RadioButton(page3, -1, "WEP", style=wx.RB_GROUP)
+            choiceWPA = wx.RadioButton(page3, -1, "WPA/WPA2")
+            page3.Sizer.Add(choiceWEP)
+            page3.Sizer.Add(choiceWPA)
             page4 = TitledPage(wizard, "SSID")
             page4.Sizer.Add(wx.StaticText(page4, -1, "Please type the name of the network you wish to connect to."))
             page4.Sizer.Add(wx.StaticText(page4, -1, ""))
@@ -251,11 +265,9 @@ class NewProfile(wx.Dialog):
             page5 = TitledPage(wizard, "Security Key")
             page5.Sizer.Add(wx.StaticText(page5, -1, "Please type the password of the network you wish to connect to."))
             page5.Sizer.Add(wx.StaticText(page5, -1, ""))
-            securePass = wx.TextCtrl(page5, style=wx.TE_PASSWORD)
-            showPassBtn = wx.Button(page5, -1, "Show Password")
-            page5.Sizer.Add(securePass, flag=wx.EXPAND)
-            page5.Sizer.Add(showPassBtn)
-            password = securePass.GetValue()
+            self.securePass = wx.TextCtrl(page5, style=wx.TE_PASSWORD)
+            page5.Sizer.Add(self.securePass, flag=wx.EXPAND)
+            self.password = self.securePass.GetValue()
             page6 = TitledPage(wizard, "Hidden Network")
             page6.Sizer.Add(wx.StaticText(page6, -1, "Is the network hidden? If so, check the checkbox."))
             page6.Sizer.Add(wx.StaticText(page6, -1, ""))
@@ -292,23 +304,6 @@ class AutoWidthListCtrl(wx.ListCtrl, ListCtrlAutoWidthMixin):
         wx.ListCtrl.__init__(self, parent, -1, style=wx.LC_REPORT)
         ListCtrlAutoWidthMixin.__init__(self)
 
-class UserInterfaceDialog(wx.Dialog):
-    def __init__(self, parent, title):
-        super(UserInterfaceDialog, self).__init__(parent=parent, title=title, size=(310, 100))
-        self.InitUI()
-    
-    def InitUI(self):
-        interfaceNameLbl = wx.StaticText(self, label="Wireless Interface:", pos=(5, 10))
-        interfaceNameLbl.SetToolTip(wx.ToolTip("What is the name of your wireless interface? E.G. wlan0, wlp2s0, etc..."))
-        self.interfaceNameTxt = wx.TextCtrl(self, wx.ID_ANY, value="wlan0", pos=(130, 5))
-
-        btnSave = wx.Button(self, wx.ID_SAVE, label="Save", pos=(215, 50))
-        
-        self.Bind(wx.EVT_BUTTON, self.saveIN, btnSave)      
-        
-    def saveIN(self, e):
-        uInterface = self.interfaceNameTxt.GetValue()
-        self.Destroy()
                
         
 class TitledPage(wiz.WizardPageSimple):
