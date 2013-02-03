@@ -14,7 +14,7 @@ from wx.lib.mixins.listctrl import ListCtrlAutoWidthMixin
 import wx.lib.mixins.listctrl as listmix
 from wx import wizard as wiz
 
-progVer = 0.2
+progVer = 0.3
 logfile = os.getcwd() + '/iwlist.log'
 
 euid = os.geteuid()
@@ -97,6 +97,7 @@ class WiFiz(wx.Frame):
 
 		# Binding Events #
 		self.Bind(wx.EVT_MENU, self.OnClose, fileQuit)
+		self.Bind(wx.EVT_TOOL, self.OnConnect, connectSe)
 		self.Bind(wx.EVT_CLOSE, self.OnClose)
 		self.Bind(wx.EVT_MENU, self.OnAbout, aboutItem)
 		self.Bind(wx.EVT_MENU, self.OnScan, ScanAPs)
@@ -116,6 +117,59 @@ class WiFiz(wx.Frame):
 		if self.UID.ShowModal() == wx.ID_OK:
 			self.UIDValue = self.UID.GetValue()
 		self.OnScan(self)
+		
+	def OnConnect(self, e):
+		index = str(self.getSelectedIndices()).strip('[]')
+		index = int(index)
+		nmp = self.APList.GetItem(index, 0)
+		nameofProfile = nmp.GetText()
+		tos = self.APList.GetItem(index, 2)
+		typeofSecurity = tos.GetText()
+		typeofSecurity = str(typeofSecurity).strip()
+		typeofSecurity = typeofSecurity.lower()
+		
+		workDir = "/etc/network.d/"
+		filename = str("wifiz-" + nameofProfile).strip()
+		filename = filename.strip()
+		f = open(workDir + filename, "w")
+		f.write("Description='A profile made by Wifiz for " + str(nameofProfile).strip() + "'\n")
+		f.close()
+		f = open(workDir + filename, 'a')
+		f.write("Interface=" + str(self.UIDValue).strip() + "\n")
+		f.write("Connection=wireless\n")
+		f.write("Security=" + typeofSecurity + "\n")
+		f.write("ESSID='" + str(nameofProfile).strip() + "'\n")
+		if str(typeofSecurity) != "None":  
+			passw = wx.TextEntryDialog(self, "What is the password?",
+				                              "Password",
+				                              "")
+			if passw.ShowModal() == wx.ID_OK:
+				thepass = passw.GetValue()	
+			else:
+				f.close()
+				break
+		f.write(r'Key=\"' + thepass + "\n")
+		f.write("IP=dhcp\n")
+		f.close()
+		os.system("netctl enable wifiz-" + str(nameofProfile).strip())
+		os.system("netctl start wifiz-" + str(nameofProfile).strip())
+		
+		
+	def getSelectedIndices( self, state =  wx.LIST_STATE_SELECTED):
+		indices = []
+		lastFound = -1
+		while True:
+			index = self.APList.GetNextItem(
+			        lastFound,
+			        wx.LIST_NEXT_ALL,
+			        state,
+			        )
+			if index == -1:
+				break
+			else:
+				lastFound = index
+				indices.append( index )
+		return indices	
 
 	def OnReport(self, e):
 		wx.MessageBox("To report a message, send an email to cody@seafiresoftware.org", "e-Mail")
@@ -126,8 +180,16 @@ class WiFiz(wx.Frame):
 		self.APList.PopupMenu(self.PopupMenu, pos)
 
 	def OnDConnect(self, e):
-		#os.system("sudo netctl stop ThisProfile")
-		pass
+		print self.getSelectedIndices()
+		index = str(self.getSelectedIndices()).strip('[]')
+		index = int(index)
+		print index
+		item = self.APList.GetItem(index, 0)
+		nameofProfile = item.GetText()
+		print nameofProfile
+		wx.MessageBox(nameofProfile, nameofProfile)
+		os.system("sudo netctl stop " + nameofProfile)
+		
 
 	def OnNew(self, e):
 		newProf = NewProfile(parent=None)       
@@ -179,6 +241,8 @@ class WiFiz(wx.Frame):
 			if "Encryption" in line:
 				if "WPA2" in line:
 					encrypt = "WPA2"
+				elif "off" in line:
+					encrypt = "None"
 				else:
 					encrypt = "WEP"
 				self.APList.SetStringItem(self.index, 2, encrypt)
