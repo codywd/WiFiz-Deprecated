@@ -69,7 +69,6 @@ class WiFiz(wx.Frame):
 		self.PopupMenu = wx.Menu()
 		popCon = self.PopupMenu.Append(wx.ID_ANY, "Connect to Network", "Connect to selected network.")
 		popDCon = self.PopupMenu.Append(wx.ID_ANY, "Disconnect from Network", "Disconnect from selected network.")
-		popCrPro = self.PopupMenu.Append(wx.ID_ANY, "Create Profile around Network", "Create profile around selected network, but do not connect.")
 
 		# Create Toolbar #
 		toolbar = self.CreateToolBar()
@@ -105,6 +104,8 @@ class WiFiz(wx.Frame):
 		self.Bind(wx.EVT_TOOL, self.OnNew, newTool)
 		self.Bind(wx.EVT_TOOL, self.OnDConnect, dConnectSe) 
 		self.Bind(wx.EVT_CONTEXT_MENU, self.OnShowPopup)
+		self.Bind(wx.EVT_CONTEXT_MENU, self.OnConnect, popCon)
+		self.Bind(wx.EVT_CONTEXT_MENU, self.OnDConnect, popDCon)
 		self.Bind(wx.EVT_MENU, self.OnReport, reportIssue)
 		# End Bindings #
 
