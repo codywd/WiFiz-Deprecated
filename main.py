@@ -16,6 +16,7 @@ from wx import wizard as wiz
 
 progVer = 0.35
 logfile = os.getcwd() + '/iwlist.log'
+intFile = os.getcwd() + "/interface.cfg"
 
 euid = os.geteuid()
 if euid != 0:
@@ -48,6 +49,7 @@ class WiFiz(wx.Frame):
 		editMenu = wx.Menu()
 		prefItem = editMenu.Append(wx.ID_PREFERENCES, "Preferences", "Edit the preferences for this application.")
 		prefItem.Enable(False)
+		editItem = editMenu.Append(wx.ID_ANY, "Edit Profiles", "Edit any current profiles.")
 		mainMenu.Append(editMenu, "&Edit")
 
 		helpMenu = wx.Menu()
@@ -112,11 +114,20 @@ class WiFiz(wx.Frame):
 		self.SetSize((700,390))
 		self.Show()
 		self.Center()
-		self.UID = wx.TextEntryDialog(self, "What is your Interface Name? (wlan0, wlp2s0)",
-				                      "Wireless Interface",
-				                      "")
-		if self.UID.ShowModal() == wx.ID_OK:
-			self.UIDValue = self.UID.GetValue()
+		if os.path.isfile(intFile):
+			f = open(intFile)
+			self.UIDValue = f.readline()
+			str(self.UIDValue).strip()
+			f.close()
+		else:
+			self.UID = wx.TextEntryDialog(self, "What is your Interface Name? (wlan0, wlp2s0)",
+				                          "Wireless Interface",
+				                          "")
+			if self.UID.ShowModal() == wx.ID_OK:
+				self.UIDValue = self.UID.GetValue()
+				f = open(intFile, 'w')
+				f.write(self.UIDValue)
+				f.close()
 		os.system("ifconfig " + self.UIDValue + " up")
 		self.OnScan(self)
 		
