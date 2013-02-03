@@ -154,19 +154,28 @@ class WiFiz(wx.Frame):
         output = str(subprocess.check_output("iwlist scan", shell=True))
         f = open(logfile, 'w')
         f.write(output)
-        f.close()        
+        f.close()
+        
+        self.APList.DeleteAllItems()
+        self.index = 0
+        
+             
 
         f = open(logfile).read()
         for line in open(logfile):
             if "ESSID" in line:
                 begin = line.replace(" ", "")
                 mid = begin.replace("ESSID:", "")
-                final = mid.replace('"', "")                  
-                self.APList.SetStringItem(self.index, 0, final)                  
+                final = mid.replace('"', "")
+                self.APList.SetStringItem(self.index, 0, final)
             if "Quality" in line:
+                lines = "Line %s" % self.index 
+                self.APList.InsertStringItem(self.index, lines)
+                self.index + 1                
                 s = str(line)
                 s2 = s[28:33]
-                self.APList.SetStringItem(self.index, 1, s2)
+                s3 = str(int(round(float(s2[0]) / float(s2[3]) * 100))).rjust(3) + " %" # Courtesy of gohu's iwlistparse.py, slightly modified. https://bbs.archlinux.org/viewtopic.php?id=88967
+                self.APList.SetStringItem(self.index, 1, s3)
             if "Encryption" in line:
                 if "WPA2" in line:
                     encrypt = "WPA2"
@@ -174,12 +183,7 @@ class WiFiz(wx.Frame):
                     encrypt = "WEP"
                 self.APList.SetStringItem(self.index, 2, encrypt)
             else:
-                #self.APList.DeleteItem(self.index)
-                pass
-            
-            lines = "Line %s" % self.index
-            self.APList.InsertStringItem(self.index, lines)            
-            self.index + 1
+                pass  
 
         ilogfile = os.getcwd() + "/iwconfig.log"
         
