@@ -109,6 +109,7 @@ class WiFiz(wx.Frame):
 		self.Bind(wx.EVT_CONTEXT_MENU, self.OnConnect, popCon)
 		self.Bind(wx.EVT_CONTEXT_MENU, self.OnDConnect, popDCon)
 		self.Bind(wx.EVT_MENU, self.OnReport, reportIssue)
+		self.Bind(wx.EVT_MENU, self.OnEdit, editItem)
 		# End Bindings #
 
 		self.SetSize((700,390))
@@ -130,6 +131,9 @@ class WiFiz(wx.Frame):
 				f.close()
 		os.system("ifconfig " + self.UIDValue + " up")
 		self.OnScan(self)
+	
+	def OnEdit(self, e):
+		editWindow = EditProfiles(None, title="Edit Profiles")
 		
 	def OnConnect(self, e):
 		index = str(self.getSelectedIndices()).strip('[]')
@@ -309,7 +313,14 @@ class WiFiz(wx.Frame):
 		wx.AboutBox(info)
 
 
-
+class EditProfile(wx.Dialog):
+	def __init__(self, parent, title):
+		super(NewProfile, self).__init__(self, None, "Edit Profile")
+		self.InitUI()
+		
+	def InitUI():
+		pass
+	
 class NewProfile(wx.Dialog):
 	def __init__(self, parent):
 		super(NewProfile, self).__init__(None)
