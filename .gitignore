@@ -195,4 +195,6 @@ pip-log.txt
 
 .log
 *.log
+.cfg
+*.cfg
 >>>>>>> 594a8a1ab2324832a472a5babeeef4f7e31b33be
