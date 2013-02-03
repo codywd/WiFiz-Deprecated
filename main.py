@@ -100,12 +100,13 @@ class WiFiz(wx.Frame):
         toolbar.Realize()
         # End Toolbar #
 
-        self.APList = ULC.UltimateListCtrl(self, wx.ID_ANY, agwStyle=wx.LC_REPORT|wx.LC_VRULES|wx.LC_HRULES|wx.LC_SINGLE_SEL|ULC.ULC_HAS_VARIABLE_ROW_HEIGHT)
+        self.APList = AutoWidthListCtrl(self)
         
-        self.APList.InsertColumn(0, "SSID")
-        self.APList.InsertColumn(1, "Connection Strength")
-        self.APList.InsertColumn(2, "Security Type")
-        self.APList.InsertColumn(3, "Connected?")
+        self.APList.setResizeColumn(0)
+        self.APList.InsertColumn(0, "SSID", width=150)
+        self.APList.InsertColumn(1, "Connection Strength", width=200)
+        self.APList.InsertColumn(2, "Security Type", width=150)
+        self.APList.InsertColumn(3, "Connected?", width=150)
 
         # Create Status Bar #
         self.CreateStatusBar()
@@ -199,12 +200,12 @@ class WiFiz(wx.Frame):
         else:
             connect = "no"
         self.APList.SetStringItem(self.index, 3, connect)
-        
+        """
         self.APList.SetColumnWidth(0, wx.LIST_AUTOSIZE)
         self.APList.SetColumnWidth(1, wx.LIST_AUTOSIZE_USEHEADER)
         self.APList.SetColumnWidth(2, wx.LIST_AUTOSIZE_USEHEADER)
         self.APList.SetColumnWidth(3, LIST_AUTOSIZE_FILL)        
-
+        """
 
 
 
@@ -314,7 +315,7 @@ class NewProfile(wx.Dialog):
 
 
 
-class ListCtrl(wx.ListCtrl, ListCtrlAutoWidthMixin):
+class AutoWidthListCtrl(wx.ListCtrl, ListCtrlAutoWidthMixin):
     def __init__(self, parent):
         wx.ListCtrl.__init__(self, parent, -1, style=wx.LC_REPORT)
         ListCtrlAutoWidthMixin.__init__(self)
