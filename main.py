@@ -13,6 +13,7 @@ from wx.lib.wordwrap import wordwrap
 from wx.lib.mixins.listctrl import ListCtrlAutoWidthMixin
 import wx.lib.mixins.listctrl as listmix
 from wx import wizard as wiz
+import taskbar as tbi
 
 progVer = 0.35
 logfile = os.getcwd() + '/iwlist.log'
@@ -26,6 +27,7 @@ if euid != 0:
 class WiFiz(wx.Frame):
 	def __init__(self, parent, title):
 		super(WiFiz, self).__init__(None, title="WiFiz", style = wx.DEFAULT_FRAME_STYLE)
+		self.TrayIcon = tbi.Icon(self, wx.Icon("./logo.png", wx.BITMAP_TYPE_PNG), "WiFiz")
 		self.index = 0
 		self.InitUI()
 
@@ -34,8 +36,6 @@ class WiFiz(wx.Frame):
 		iconFile = "./logo.png"
 		mainIcon = wx.Icon(iconFile, wx.BITMAP_TYPE_PNG)
 		self.SetIcon(mainIcon)
-		tbicon = wx.TaskBarIcon()
-		tbicon.SetIcon(mainIcon, "WiFiz")
 
 		# Menu Bar #
 		mainMenu = wx.MenuBar()
@@ -110,6 +110,7 @@ class WiFiz(wx.Frame):
 		self.Bind(wx.EVT_CONTEXT_MENU, self.OnDConnect, popDCon)
 		self.Bind(wx.EVT_MENU, self.OnReport, reportIssue)
 		self.Bind(wx.EVT_MENU, self.OnEdit, editItem)
+		self.Bind(wx.EVT_TASKBAR_RIGHT_DCLICK, self.OnRightDClick)
 		# End Bindings #
 
 		self.SetSize((700,390))
@@ -131,7 +132,10 @@ class WiFiz(wx.Frame):
 				f.close()
 		os.system("ifconfig " + self.UIDValue + " up")
 		self.OnScan(self)
-	
+	def OnRightDClick(self, e):
+		menu = wx.Menu()
+		menu.Append(wx.ID_EXIT, "Exit")
+		self.PopupMenu(menu)
 	def OnEdit(self, e):
 		editWindow = EditProfiles(None, title="Edit Profiles")
 		
@@ -280,10 +284,13 @@ class WiFiz(wx.Frame):
 
 
 	def OnClose(self, e):
+		self.Hide()
+		
+	def OnFullClose(self, e):
 		f = open(logfile, 'r+')
 		f.truncate()
 		f.close()        
-		app.Exit()
+		app.Exit()		
 
 	def OnAbout(self, e):
 		description = """WiFiz is a simple to use, elegant, and powerful frontend for NetCTL. NetCTL is a fork of NetCFG that focuses on being very well integrated into systemd."""
