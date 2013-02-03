@@ -162,7 +162,8 @@ class WiFiz(wx.Frame):
 				print final
 				self.APList.SetStringItem(self.index, 0, final)
 				line = open(ilogfile).readline()
-				if begin in line:
+				
+				if final.strip() in line.strip():
 					connect = "yes"
 				else:
 					connect = "no"
