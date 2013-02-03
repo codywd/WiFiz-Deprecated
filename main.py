@@ -17,10 +17,7 @@ from wx import wizard as wiz
 progVer = 0.2
 logfile = os.getcwd() + '/iwlist.log'
 
-LIST_AUTOSIZE_FILL = -3
-
 euid = os.geteuid()
-
 if euid != 0:
     args = ['gksudo', sys.executable] + sys.argv + [os.environ]
     os.execlpe('sudo', *args)
@@ -50,13 +47,17 @@ class WiFiz(wx.Frame):
 
         editMenu = wx.Menu()
         prefItem = editMenu.Append(wx.ID_PREFERENCES, "Preferences", "Edit the preferences for this application.")
+        prefItem.Enable(False)
         mainMenu.Append(editMenu, "&Edit")
 
         helpMenu = wx.Menu()
         helpItem = helpMenu.Append(wx.ID_HELP, "Help with WiFiz", "Get help with WiFiz")
+        helpItem.Enable(False)
         helpMenu.AppendSeparator()
         updateCheck = helpMenu.Append(wx.ID_ANY, "Check for Updates...", "Check for Updates to WiFiz")
+        updateCheck.Enable(False)
         reportIssue = helpMenu.Append(wx.ID_ANY, "Report an Issue...", "Report a bug, or give a suggestion.")
+        reportIssue.Enable(False)
         helpMenu.AppendSeparator()
         aboutItem = helpMenu.Append(wx.ID_ABOUT, "About WiFiz", "About this program...")
         mainMenu.Append(helpMenu, "&Help")
@@ -289,14 +290,10 @@ class NewProfile(wx.Dialog):
         else:
             e.Veto()
 
-
-
 class AutoWidthListCtrl(wx.ListCtrl, ListCtrlAutoWidthMixin):
     def __init__(self, parent):
         wx.ListCtrl.__init__(self, parent, -1, style=wx.LC_REPORT)
         ListCtrlAutoWidthMixin.__init__(self)
-
-               
         
 class TitledPage(wiz.WizardPageSimple):
     def __init__(self, parent, title):
@@ -309,6 +306,7 @@ class TitledPage(wiz.WizardPageSimple):
         title.SetFont(wx.Font(18, wx.SWISS, wx.NORMAL, wx.BOLD))
         sizer.Add(title, 0, wx.ALIGN_CENTER_HORIZONTAL|wx.ALL, 5)
         sizer.Add(wx.StaticLine(self, -1), 0, wx.EXPAND|wx.ALL, 5)
+        
 if __name__ == "__main__":
     app = wx.App()
     WiFiz(None, title="WiFiz")
