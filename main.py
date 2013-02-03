@@ -15,7 +15,7 @@ import wx.lib.mixins.listctrl as listmix
 from wx import wizard as wiz
 import taskbar as tbi
 
-progVer = 0.35
+progVer = 0.4
 logfile = os.getcwd() + '/iwlist.log'
 intFile = os.getcwd() + "/interface.cfg"
 
@@ -38,19 +38,27 @@ class WiFiz(wx.Frame):
 		self.SetIcon(mainIcon)
 
 		# Menu Bar #
-		mainMenu = wx.MenuBar()
+		self.mainMenu = wx.MenuBar()
 
 		fileMenu = wx.Menu()
 		ScanAPs = fileMenu.Append(wx.ID_ANY, "Scan for New Networks", "Scan for New Wireless Networks.")
 		fileMenu.AppendSeparator()
 		fileQuit = fileMenu.Append(wx.ID_EXIT, "Quit", "Exit the Program.")
-		mainMenu.Append(fileMenu, "&File")
+		self.mainMenu.Append(fileMenu, "&File")
 
 		editMenu = wx.Menu()
 		prefItem = editMenu.Append(wx.ID_PREFERENCES, "Preferences", "Edit the preferences for this application.")
 		prefItem.Enable(False)
 		editItem = editMenu.Append(wx.ID_ANY, "Edit Profiles", "Edit any current profiles.")
-		mainMenu.Append(editMenu, "&Edit")
+		self.mainMenu.Append(editMenu, "&Edit")
+		
+		profilesMenu = wx.Menu()
+		profiles = os.listdir("/etc/network.d/")
+		for i in profiles:
+			if os.path.isfile("/etc/network.d/" + i):
+				profile = profilesMenu.Append(wx.ID_ANY, i)
+				self.Bind(wx.EVT_MENU, self.OnMConnect, profile)
+		self.mainMenu.Append(profilesMenu, "Profiles")
 
 		helpMenu = wx.Menu()
 		helpItem = helpMenu.Append(wx.ID_HELP, "Help with WiFiz", "Get help with WiFiz")
@@ -61,9 +69,9 @@ class WiFiz(wx.Frame):
 		reportIssue = helpMenu.Append(wx.ID_ANY, "Report an Issue...", "Report a bug, or give a suggestion.")
 		helpMenu.AppendSeparator()
 		aboutItem = helpMenu.Append(wx.ID_ABOUT, "About WiFiz", "About this program...")
-		mainMenu.Append(helpMenu, "&Help")
+		self.mainMenu.Append(helpMenu, "&Help")
 
-		self.SetMenuBar(mainMenu)
+		self.SetMenuBar(self.mainMenu)
 
 		# End Menu Bar #
 
@@ -110,12 +118,11 @@ class WiFiz(wx.Frame):
 		self.Bind(wx.EVT_CONTEXT_MENU, self.OnDConnect, popDCon)
 		self.Bind(wx.EVT_MENU, self.OnReport, reportIssue)
 		self.Bind(wx.EVT_MENU, self.OnEdit, editItem)
-		self.Bind(wx.EVT_TASKBAR_RIGHT_DCLICK, self.OnRightDClick)
 		# End Bindings #
 
 		self.SetSize((700,390))
-		self.Show()
 		self.Center()
+		self.Show()
 		if os.path.isfile(intFile):
 			f = open(intFile)
 			self.UIDValue = f.readline()
@@ -123,8 +130,8 @@ class WiFiz(wx.Frame):
 			f.close()
 		else:
 			self.UID = wx.TextEntryDialog(self, "What is your Interface Name? (wlan0, wlp2s0)",
-				                          "Wireless Interface",
-				                          "")
+						                  "Wireless Interface",
+						                  "")
 			if self.UID.ShowModal() == wx.ID_OK:
 				self.UIDValue = self.UID.GetValue()
 				f = open(intFile, 'w')
@@ -132,13 +139,15 @@ class WiFiz(wx.Frame):
 				f.close()
 		os.system("ifconfig " + self.UIDValue + " up")
 		self.OnScan(self)
-	def OnRightDClick(self, e):
-		menu = wx.Menu()
-		menu.Append(wx.ID_EXIT, "Exit")
-		self.PopupMenu(menu)
-	def OnEdit(self, e):
-		editWindow = EditProfiles(None, title="Edit Profiles")
 		
+	def OnMConnect(self, e):
+		item = self.mainMenu.FindItemById(e.GetId())
+		profile = item.GetText()
+		os.system("netctl stop-all")
+		os.system("netctl start " + profile)		
+	
+	def OnEdit(self, e):
+		editWindow = EditProfile(None)
 	def OnConnect(self, e):
 		index = str(self.getSelectedIndices()).strip('[]')
 		index = int(index)
@@ -148,7 +157,7 @@ class WiFiz(wx.Frame):
 		typeofSecurity = tos.GetText()
 		typeofSecurity = str(typeofSecurity).strip()
 		typeofSecurity = typeofSecurity.lower()
-		
+
 		workDir = "/etc/network.d/"
 		filename = str("wifiz-" + nameofProfile).strip()
 		filename = filename.strip()
@@ -168,8 +177,8 @@ class WiFiz(wx.Frame):
 			f.write("ESSID='" + str(nameofProfile).strip() + "'\n")
 			if str(typeofSecurity).strip() != "none":  
 				passw = wx.TextEntryDialog(self, "What is the password?",
-					                              "Password",
-					                              "")
+								           "Password",
+								           "")
 				if passw.ShowModal() == wx.ID_OK:
 					thepass = passw.GetValue()	
 				else:
@@ -184,16 +193,16 @@ class WiFiz(wx.Frame):
 			os.system("netctl start wifiz-" + str(nameofProfile).strip())
 			wx.MessageBox("You are now connected to " + str(nameofProfile).strip() + ".", "Connected.")
 			self.OnScan(self)
-		
+
 	def getSelectedIndices( self, state =  wx.LIST_STATE_SELECTED):
 		indices = []
 		lastFound = -1
 		while True:
 			index = self.APList.GetNextItem(
-			        lastFound,
-			        wx.LIST_NEXT_ALL,
-			        state,
-			        )
+				lastFound,
+				wx.LIST_NEXT_ALL,
+				state,
+			)
 			if index == -1:
 				break
 			else:
@@ -251,7 +260,7 @@ class WiFiz(wx.Frame):
 				final = mid.replace('"', "")
 				self.APList.SetStringItem(self.index, 0, final)
 				line = open(ilogfile).readline()
-				
+
 				if final.strip() in line.strip():
 					connect = "yes"
 				else:
@@ -285,7 +294,7 @@ class WiFiz(wx.Frame):
 
 	def OnClose(self, e):
 		self.Hide()
-		
+
 	def OnFullClose(self, e):
 		f = open(logfile, 'r+')
 		f.truncate()
@@ -321,13 +330,55 @@ class WiFiz(wx.Frame):
 
 
 class EditProfile(wx.Dialog):
-	def __init__(self, parent, title):
-		super(NewProfile, self).__init__(self, None, "Edit Profile")
+	def __init__(self, parent):
+		super(EditProfile, self).__init__(None)
 		self.InitUI()
-		
-	def InitUI():
-		pass
-	
+
+	def InitUI(self):
+		wizard = wx.wizard.Wizard(None, -1, "New Profile Wizard")
+		page1 = TitledPage(wizard, "Profile")
+		page1.Sizer.Add(wx.StaticText(page1, -1, "Please choose the name of the profile you will be editing."))
+		page1.Sizer.Add(wx.StaticText(page1, -1, ""))
+		profiles = os.listdir("/etc/network.d/")
+		for i in profiles:
+			if os.path.isfile("/etc/network.d/" + i):
+				page1.Sizer.Add(wx.RadioButton(page1, wx.ID_ANY, i))
+			else:
+				pass
+		page2 = TitledPage(wizard, "Settings")
+		page2.Sizer.Add(wx.StaticText(page2, -1, "Description"))
+		page2.Sizer.Add(wx.TextCtrl(page2, -1, size=(250, 25)))
+		page2.Sizer.Add(wx.StaticText(page2, -1, "Interface"))
+		page2.Sizer.Add(wx.TextCtrl(page2, -1, size=(250, 25)))
+		page2.Sizer.Add(wx.StaticText(page2, -1, "Connection"))
+		page2.Sizer.Add(wx.TextCtrl(page2, -1, size=(250, 25)))
+		page2.Sizer.Add(wx.StaticText(page2, -1, "Security"))
+		page2.Sizer.Add(wx.TextCtrl(page2, -1, size=(250, 25)))
+		page2.Sizer.Add(wx.StaticText(page2, -1, "ESSID"))
+		page2.Sizer.Add(wx.TextCtrl(page2, -1, size=(250, 25)))
+		page2.Sizer.Add(wx.StaticText(page2, -1, "Key"))
+		page2.Sizer.Add(wx.TextCtrl(page2, -1, size=(250, 25)))
+		wx.wizard.WizardPageSimple.Chain(page1, page2)
+		wizard.FitToPage(page1)
+		wizard.RunWizard(page1)
+		wizard.Destroy()
+
+		self.Bind(wiz.EVT_WIZARD_CANCEL, self.closeDialog)
+		self.Bind(wiz.EVT_WIZARD_FINISHED, self.saveProfile)
+
+	def saveProfile(self, e):
+		wx.MessageBox(self.interfaceName, self.interfaceName, wx.ID_OK)
+		wx.MessageBox(self.connectionType, self.connectionType, wx.ID_OK)
+
+	def closeDialog(self, e):
+		dial = wx.MessageDialog(None, "Are you sure you want to cancel?", "Cancel?", wx.YES_NO|wx.NO_DEFAULT|wx.ICON_QUESTION)
+		ret = dial.ShowModal()
+		if ref == wx.ID_YES:
+			self.Destroy()
+		else:
+			e.Veto()
+
+
 class NewProfile(wx.Dialog):
 	def __init__(self, parent):
 		super(NewProfile, self).__init__(None)
@@ -381,8 +432,8 @@ class NewProfile(wx.Dialog):
 		wizard.RunWizard(page1)
 		wizard.Destroy()
 
-		self.Bind(self, wiz.EVT_WIZARD_CANCEL, self.closeDialog)
-		self.Bind(self, wiz.EVT_WIZARD_FINISHED, self.saveProfile)
+		self.Bind(wiz.EVT_WIZARD_CANCEL, self.closeDialog)
+		self.Bind(wiz.EVT_WIZARD_FINISHED, self.saveProfile)
 
 	def saveProfile(self, e):
 		wx.MessageBox(self.interfaceName, self.interfaceName, wx.ID_OK)

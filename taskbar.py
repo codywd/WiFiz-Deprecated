@@ -36,7 +36,6 @@ class Icon(wx.TaskBarIcon):
     def OnConnect(self, e):
         item = self.menu.FindItemById(e.GetId())
         profile = item.GetText()
-        print profile
         os.system("netctl stop-all")
         os.system("netctl start " + profile)
     
