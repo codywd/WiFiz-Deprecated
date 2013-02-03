@@ -13,9 +13,8 @@ from wx.lib.wordwrap import wordwrap
 from wx.lib.mixins.listctrl import ListCtrlAutoWidthMixin
 import wx.lib.mixins.listctrl as listmix
 from wx import wizard as wiz
-import wx.lib.agw.ultimatelistctrl as ULC
 
-progVer = 0.13
+progVer = 0.2
 logfile = os.getcwd() + '/iwlist.log'
 
 LIST_AUTOSIZE_FILL = -3
@@ -26,26 +25,10 @@ if euid != 0:
     args = ['gksudo', sys.executable] + sys.argv + [os.environ]
     os.execlpe('sudo', *args)
 
-class Logger(object):
-    def __init__(self):
-        self.terminal = sys.stdout
-        self.log = open("iwlist.log", "w")
-
-    def write(self, message):
-        self.terminal.write(message)
-        self.log.write(message)
-
-    def close(self):
-        self.terminal.close()
-        self.log.close()
-
 class WiFiz(wx.Frame):
     def __init__(self, parent, title):
         super(WiFiz, self).__init__(None, title="WiFiz", style = wx.DEFAULT_FRAME_STYLE)
-        logging.basicConfig(format='%(asctime)s \n %(levelname)s:%(message)s',filename="logfile.log", level=logging.DEBUG)
-        sys.stdout = Logger()
         self.index = 0
-
         self.InitUI()
 
     def InitUI(self):
@@ -139,8 +122,9 @@ class WiFiz(wx.Frame):
         self.APList.PopupMenu(self.PopupMenu, pos)
 
     def OnDConnect(self, e):
-        os.system("sudo netctl stop ThisProfile")
-
+        #os.system("sudo netctl stop ThisProfile")
+        pass
+    
     def OnNew(self, e):
         newProf = NewProfile(parent=None)       
 
@@ -150,7 +134,7 @@ class WiFiz(wx.Frame):
             f.truncate()
             f.close()
         else:
-            logging.error("No file exists!!")
+            pass
 
         output = str(subprocess.check_output("iwlist scan", shell=True))
         f = open(logfile, 'w')
@@ -158,9 +142,7 @@ class WiFiz(wx.Frame):
         f.close()
         
         self.APList.DeleteAllItems()
-        self.index = 0
-        
-             
+        self.index = 0 
 
         f = open(logfile).read()
         for line in open(logfile):
@@ -200,12 +182,6 @@ class WiFiz(wx.Frame):
         else:
             connect = "no"
         self.APList.SetStringItem(self.index, 3, connect)
-        """
-        self.APList.SetColumnWidth(0, wx.LIST_AUTOSIZE)
-        self.APList.SetColumnWidth(1, wx.LIST_AUTOSIZE_USEHEADER)
-        self.APList.SetColumnWidth(2, wx.LIST_AUTOSIZE_USEHEADER)
-        self.APList.SetColumnWidth(3, LIST_AUTOSIZE_FILL)        
-        """
 
 
 
