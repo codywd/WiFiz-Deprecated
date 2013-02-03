@@ -11,9 +11,14 @@ import subprocess
 from wx import *
 from wx.lib.wordwrap import wordwrap
 from wx.lib.mixins.listctrl import ListCtrlAutoWidthMixin
+import wx.lib.mixins.listctrl as listmix
 from wx import wizard as wiz
-progVer = 0.12
+import wx.lib.agw.ultimatelistctrl as ULC
+
+progVer = 0.13
 logfile = os.getcwd() + '/iwlist.log'
+
+LIST_AUTOSIZE_FILL = -3
 
 euid = os.geteuid()
 
@@ -45,8 +50,8 @@ class WiFiz(wx.Frame):
 
     def InitUI(self):
 
-        iconFile = "./icon.gif"
-        mainIcon = wx.Icon(iconFile, wx.BITMAP_TYPE_GIF)
+        iconFile = "./logo.png"
+        mainIcon = wx.Icon(iconFile, wx.BITMAP_TYPE_PNG)
         self.SetIcon(mainIcon)
         tbicon = wx.TaskBarIcon()
         tbicon.SetIcon(mainIcon, "WiFiz")
@@ -95,13 +100,12 @@ class WiFiz(wx.Frame):
         toolbar.Realize()
         # End Toolbar #
 
-        self.APList = AutoWidthListCtrl(self)
-        self.APList.setResizeColumn(1)
-        self.APList.InsertColumn(0, "SSID", width=125)
-        self.APList.InsertColumn(1, "Connection Strength", width=150)
-        self.APList.InsertColumn(2, "Security Type", width=125)
-        self.APList.InsertColumn(3, "Connected?", width=100)
-
+        self.APList = ULC.UltimateListCtrl(self, wx.ID_ANY, agwStyle=wx.LC_REPORT|wx.LC_VRULES|wx.LC_HRULES|wx.LC_SINGLE_SEL|ULC.ULC_HAS_VARIABLE_ROW_HEIGHT)
+        
+        self.APList.InsertColumn(0, "SSID")
+        self.APList.InsertColumn(1, "Connection Strength")
+        self.APList.InsertColumn(2, "Security Type")
+        self.APList.InsertColumn(3, "Connected?")
 
         # Create Status Bar #
         self.CreateStatusBar()
@@ -109,6 +113,7 @@ class WiFiz(wx.Frame):
 
         # Binding Events #
         self.Bind(wx.EVT_MENU, self.OnClose, fileQuit)
+        self.Bind(wx.EVT_CLOSE, self.OnClose)
         self.Bind(wx.EVT_MENU, self.OnAbout, aboutItem)
         self.Bind(wx.EVT_MENU, self.OnScan, ScanAPs)
         self.Bind(wx.EVT_TOOL, self.OnScan, ReScanAPs)
@@ -128,8 +133,8 @@ class WiFiz(wx.Frame):
         self.OnScan(self)
     
     def OnShowPopup(self, e):
-        pos = e.GetPosition()
-        pos = self.APList.ScreenToClient(pos)
+        x, y = e.GetPosition()
+        pos = self.APList.ScreenToClientXY(x, y)
         self.APList.PopupMenu(self.PopupMenu, pos)
 
     def OnDConnect(self, e):
@@ -156,15 +161,24 @@ class WiFiz(wx.Frame):
             if "ESSID" in line:
                 begin = line.replace(" ", "")
                 mid = begin.replace("ESSID:", "")
-                final = mid.replace('"', "")
+                final = mid.replace('"', "")                  
+                self.APList.SetStringItem(self.index, 0, final)                  
             if "Quality" in line:
                 s = str(line)
                 s2 = s[28:33]
+                self.APList.SetStringItem(self.index, 1, s2)
             if "Encryption" in line:
                 if "WPA2" in line:
                     encrypt = "WPA2"
                 else:
                     encrypt = "WEP"
+                self.APList.SetStringItem(self.index, 2, encrypt)
+            else:
+                #self.APList.DeleteItem(self.index)
+                pass
+            
+            lines = "Line %s" % self.index
+            self.APList.InsertStringItem(self.index, lines)            
             self.index + 1
 
         ilogfile = os.getcwd() + "/iwconfig.log"
@@ -180,15 +194,12 @@ class WiFiz(wx.Frame):
             connect = "yes"
         else:
             connect = "no"
-
-        lines = "Line %s" % self.index
-        self.APList.InsertStringItem(self.index, lines)
-        self.APList.SetStringItem(self.index, 0, final)  
-        self.APList.SetStringItem(self.index, 1, s2)
-        self.APList.SetStringItem(self.index, 2, encrypt)
         self.APList.SetStringItem(self.index, 3, connect)
-
-        logging.info("AP Scan completed, and saved.")
+        
+        self.APList.SetColumnWidth(0, wx.LIST_AUTOSIZE)
+        self.APList.SetColumnWidth(1, wx.LIST_AUTOSIZE_USEHEADER)
+        self.APList.SetColumnWidth(2, wx.LIST_AUTOSIZE_USEHEADER)
+        self.APList.SetColumnWidth(3, LIST_AUTOSIZE_FILL)        
 
 
 
@@ -213,7 +224,7 @@ class WiFiz(wx.Frame):
 
         info = wx.AboutDialogInfo()
 
-        info.SetIcon(wx.Icon('./aboutIcon.gif', wx.BITMAP_TYPE_GIF))
+        info.SetIcon(wx.Icon('./aboutLogo.png', wx.BITMAP_TYPE_PNG))
         info.SetName('WiFiz')
         info.SetVersion(str(progVer))
         info.SetDescription(description)
@@ -239,9 +250,9 @@ class NewProfile(wx.Dialog):
             page1 = TitledPage(wizard, "Interface")
             page1.Sizer.Add(wx.StaticText(page1, -1, "Please type the name of the interface you will be \nusing to connect to the network. Examples are \nwlan0, eth0, etc..."))
             page1.Sizer.Add(wx.StaticText(page1, -1, ""))
-            interfaceNameV = wx.TextCtrl(page1)
-            page1.Sizer.Add(interfaceNameV, flag=wx.EXPAND)
-            self.interfaceName = interfaceNameV.GetValue()
+            intFaces = os.listdir("/sys/class/net")
+            for i in intFaces:
+                page1.Sizer.Add(wx.RadioButton(page1, -1, i))
             page2 = TitledPage(wizard, "Connection Type")
             page2.Sizer.Add(wx.StaticText(page2, -1, "Please type the type of connection you will be using."))
             page2.Sizer.Add(wx.StaticText(page2, -1, ""))
@@ -299,7 +310,7 @@ class NewProfile(wx.Dialog):
 
 
 
-class AutoWidthListCtrl(wx.ListCtrl, ListCtrlAutoWidthMixin):
+class ListCtrl(wx.ListCtrl, ListCtrlAutoWidthMixin):
     def __init__(self, parent):
         wx.ListCtrl.__init__(self, parent, -1, style=wx.LC_REPORT)
         ListCtrlAutoWidthMixin.__init__(self)
