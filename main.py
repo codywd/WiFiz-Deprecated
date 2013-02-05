@@ -20,7 +20,7 @@ progVer = 0.4
 logfile = os.getcwd() + '/iwlist.log'
 intFile = os.getcwd() + "/interface.cfg"
 
-pid_file = 'program.pwd'
+pid_file = 'program.pid'
 
 euid = os.geteuid()
 if euid != 0:
