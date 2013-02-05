@@ -6,6 +6,7 @@ import os
 import sys
 import re
 import subprocess
+import fcntl
 
 # Importing Third Party Libraries #
 from wx import *
@@ -19,10 +20,18 @@ progVer = 0.4
 logfile = os.getcwd() + '/iwlist.log'
 intFile = os.getcwd() + "/interface.cfg"
 
+pid_file = 'program.pwd'
+
 euid = os.geteuid()
 if euid != 0:
 	args = ['gksudo', sys.executable] + sys.argv + [os.environ]
 	os.execlpe('sudo', *args)
+
+fp = open(pid_file, 'w')
+try:
+	fcntl.lockf(fp, fcntl.LOCK_EX|fcntl.LOCK_NB)
+except IOError:
+	sys.exit(0)
 
 class WiFiz(wx.Frame):
 	def __init__(self, parent, title):
