@@ -73,8 +73,6 @@ class WiFiz(wx.Frame):
 		helpItem = helpMenu.Append(wx.ID_HELP, "Help with WiFiz", "Get help with WiFiz")
 		helpItem.Enable(False)
 		helpMenu.AppendSeparator()
-		updateCheck = helpMenu.Append(wx.ID_ANY, "Check for Updates...", "Check for Updates to WiFiz")
-		updateCheck.Enable(False)
 		reportIssue = helpMenu.Append(wx.ID_ANY, "Report an Issue...", "Report a bug, or give a suggestion.")
 		helpMenu.AppendSeparator()
 		aboutItem = helpMenu.Append(wx.ID_ABOUT, "About WiFiz", "About this program...")
@@ -157,6 +155,7 @@ class WiFiz(wx.Frame):
 	
 	def OnEdit(self, e):
 		editWindow = EditProfile(None)
+		
 	def OnConnect(self, e):
 		index = str(self.getSelectedIndices()).strip('[]')
 		index = int(index)
