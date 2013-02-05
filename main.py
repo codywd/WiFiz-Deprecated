@@ -125,6 +125,8 @@ class WiFiz(wx.Frame):
 		self.Bind(wx.EVT_CONTEXT_MENU, self.OnDConnect, popDCon)
 		self.Bind(wx.EVT_MENU, self.OnReport, reportIssue)
 		self.Bind(wx.EVT_MENU, self.OnEdit, editItem)
+		self.Bind(wx.EVT_MENU, self.OnPref, prefItem)
+		self.Bind(wx.EVT_MENU, self.OnPref, prefTool)
 		# End Bindings #
 
 		self.SetSize((700,390))
@@ -153,6 +155,11 @@ class WiFiz(wx.Frame):
 		os.system("netctl stop-all")
 		os.system("netctl start " + profile)		
 	
+	def OnPref(self, e):
+		prefWindow = Preferences(self, wx.ID_ANY, title="Preferences")
+		prefWindow.CenterOnParent()
+		prefWindow.Show()
+		
 	def OnEdit(self, e):
 		editWindow = EditProfile(None)
 		
@@ -337,6 +344,15 @@ class WiFiz(wx.Frame):
 		wx.AboutBox(info)
 
 
+class Preferences(wx.Dialog):
+	def __init(self, parent, title):
+		super(Preferences, self).__init__(self, None, title="Preferences")
+		self.InitUI()
+	
+	def InitUI(self):
+		pass		
+
+	
 class EditProfile(wx.Dialog):
 	def __init__(self, parent):
 		super(EditProfile, self).__init__(None)
