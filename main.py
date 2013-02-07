@@ -16,7 +16,7 @@ import wx.lib.mixins.listctrl as listmix
 from wx import wizard as wiz
 import taskbar as tbi
 
-progVer = 0.4
+progVer = 0.8
 logfile = os.getcwd() + '/iwlist.log'
 intFile = os.getcwd() + "/interface.cfg"
 
@@ -54,12 +54,6 @@ class WiFiz(wx.Frame):
 		fileMenu.AppendSeparator()
 		fileQuit = fileMenu.Append(wx.ID_EXIT, "Quit", "Exit the Program.")
 		self.mainMenu.Append(fileMenu, "&File")
-
-		editMenu = wx.Menu()
-		prefItem = editMenu.Append(wx.ID_PREFERENCES, "Preferences", "Edit the preferences for this application.")
-		prefItem.Enable(False)
-		editItem = editMenu.Append(wx.ID_ANY, "Edit Profiles", "Edit any current profiles.")
-		self.mainMenu.Append(editMenu, "&Edit")
 		
 		profilesMenu = wx.Menu()
 		profiles = os.listdir("/etc/network.d/")
@@ -94,7 +88,6 @@ class WiFiz(wx.Frame):
 		connectSe = toolbar.AddLabelTool(wx.ID_ANY, 'Connect', wx.Bitmap('connect.png'))
 		dConnectSe = toolbar.AddLabelTool(wx.ID_ANY, 'Disconnect', wx.Bitmap('disconnect.png'))
 		toolbar.AddSeparator()
-		prefTool = toolbar.AddLabelTool(wx.ID_PREFERENCES, 'Preferences', wx.Bitmap('preferences.png'))
 		quitTool = toolbar.AddLabelTool(wx.ID_EXIT, 'Quit', wx.ArtProvider.GetBitmap(wx.ART_QUIT))
 		toolbar.Realize()
 		# End Toolbar #
@@ -124,9 +117,6 @@ class WiFiz(wx.Frame):
 		self.Bind(wx.EVT_CONTEXT_MENU, self.OnConnect, popCon)
 		self.Bind(wx.EVT_CONTEXT_MENU, self.OnDConnect, popDCon)
 		self.Bind(wx.EVT_MENU, self.OnReport, reportIssue)
-		self.Bind(wx.EVT_MENU, self.OnEdit, editItem)
-		self.Bind(wx.EVT_MENU, self.OnPref, prefItem)
-		self.Bind(wx.EVT_MENU, self.OnPref, prefTool)
 		# End Bindings #
 
 		self.SetSize((700,390))
@@ -201,6 +191,13 @@ class WiFiz(wx.Frame):
 				f.write(r'Key=\"' + thepass + "\n")
 			else:
 				f.write(r'Key=None\n')
+			pref = wx.TextEntryDialog(self, "Is this network preferred? (In range of multiple profiles, connect to this first?)"
+			                          "Preferred Network?",
+			                          "")
+			if pref.ShowModal() == wx.ID_OK:
+				f.write("#preferred=yes\n")
+			else:
+				f.write("#preferred=no\n")
 			f.write("IP=dhcp\n")
 			f.close()
 			os.system("ifconfig " + self.UIDValue + " down")
@@ -275,12 +272,12 @@ class WiFiz(wx.Frame):
 				final = mid.replace('"', "")
 				self.APList.SetStringItem(self.index, 0, final)
 				line = open(ilogfile).readline()
-
 				if final.strip() in line.strip():
 					connect = "yes"
 				else:
 					connect = "no"
-				self.APList.SetStringItem(self.index, 3, connect)                
+				self.APList.SetStringItem(self.index, 3, connect) 
+				profiles = os.listdir("/etc/network.d/")				
 			if "Quality" in line:
 				lines = "Line %s" % self.index 
 				self.APList.InsertStringItem(self.index, lines)
@@ -342,66 +339,6 @@ class WiFiz(wx.Frame):
 		info.AddTranslator('Cody Dostal (English)')
 
 		wx.AboutBox(info)
-
-
-class Preferences(wx.Dialog):
-	def __init(self, parent, title):
-		super(Preferences, self).__init__(self, None, title="Preferences")
-		self.InitUI()
-	
-	def InitUI(self):
-		pass		
-
-	
-class EditProfile(wx.Dialog):
-	def __init__(self, parent):
-		super(EditProfile, self).__init__(None)
-		self.InitUI()
-
-	def InitUI(self):
-		wizard = wx.wizard.Wizard(None, -1, "New Profile Wizard")
-		page1 = TitledPage(wizard, "Profile")
-		page1.Sizer.Add(wx.StaticText(page1, -1, "Please choose the name of the profile you will be editing."))
-		page1.Sizer.Add(wx.StaticText(page1, -1, ""))
-		profiles = os.listdir("/etc/network.d/")
-		for i in profiles:
-			if os.path.isfile("/etc/network.d/" + i):
-				page1.Sizer.Add(wx.RadioButton(page1, wx.ID_ANY, i))
-			else:
-				pass
-		page2 = TitledPage(wizard, "Settings")
-		page2.Sizer.Add(wx.StaticText(page2, -1, "Description"))
-		page2.Sizer.Add(wx.TextCtrl(page2, -1, size=(250, 25)))
-		page2.Sizer.Add(wx.StaticText(page2, -1, "Interface"))
-		page2.Sizer.Add(wx.TextCtrl(page2, -1, size=(250, 25)))
-		page2.Sizer.Add(wx.StaticText(page2, -1, "Connection"))
-		page2.Sizer.Add(wx.TextCtrl(page2, -1, size=(250, 25)))
-		page2.Sizer.Add(wx.StaticText(page2, -1, "Security"))
-		page2.Sizer.Add(wx.TextCtrl(page2, -1, size=(250, 25)))
-		page2.Sizer.Add(wx.StaticText(page2, -1, "ESSID"))
-		page2.Sizer.Add(wx.TextCtrl(page2, -1, size=(250, 25)))
-		page2.Sizer.Add(wx.StaticText(page2, -1, "Key"))
-		page2.Sizer.Add(wx.TextCtrl(page2, -1, size=(250, 25)))
-		wx.wizard.WizardPageSimple.Chain(page1, page2)
-		wizard.FitToPage(page1)
-		wizard.RunWizard(page1)
-		wizard.Destroy()
-
-		self.Bind(wiz.EVT_WIZARD_CANCEL, self.closeDialog)
-		self.Bind(wiz.EVT_WIZARD_FINISHED, self.saveProfile)
-
-	def saveProfile(self, e):
-		wx.MessageBox(self.interfaceName, self.interfaceName, wx.ID_OK)
-		wx.MessageBox(self.connectionType, self.connectionType, wx.ID_OK)
-
-	def closeDialog(self, e):
-		dial = wx.MessageDialog(None, "Are you sure you want to cancel?", "Cancel?", wx.YES_NO|wx.NO_DEFAULT|wx.ICON_QUESTION)
-		ret = dial.ShowModal()
-		if ref == wx.ID_YES:
-			self.Destroy()
-		else:
-			e.Veto()
-
 
 class NewProfile(wx.Dialog):
 	def __init__(self, parent):
