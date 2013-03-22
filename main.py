@@ -34,7 +34,9 @@ fp = open(pid_file, 'w')
 try:
 	fcntl.lockf(fp, fcntl.LOCK_EX|fcntl.LOCK_NB)
 except IOError:
-	sys.exit(0)
+	# TODO Add current pid incase the user needs to kill it 
+	print "We only allow one instance of WiFiz at a time for now."
+	sys.exit(1)
 
 # main class #
 class WiFiz(wx.Frame):
