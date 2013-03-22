@@ -83,12 +83,12 @@ class WiFiz(wx.Frame):
 
 		# Create Toolbar #
 		toolbar = self.CreateToolBar()
-		newTool = toolbar.AddLabelTool(wx.ID_NEW, 'New', wx.ArtProvider.GetBitmap(wx.ART_NEW))
-		ReScanAPs = toolbar.AddLabelTool(wx.ID_ANY, 'Scan', wx.Bitmap('APScan.png'))
-		connectSe = toolbar.AddLabelTool(wx.ID_ANY, 'Connect', wx.Bitmap('connect.png'))
-		dConnectSe = toolbar.AddLabelTool(wx.ID_ANY, 'Disconnect', wx.Bitmap('disconnect.png'))
+		newTool = toolbar.AddLabelTool(wx.ID_NEW, 'New', wx.ArtProvider.GetBitmap(wx.ART_NEW), wx.NullBitmap, wx.ITEM_NORMAL, 'New Connection')
+		ReScanAPs = toolbar.AddLabelTool(wx.ID_ANY, 'Scan', wx.Bitmap('APScan.png'), wx.NullBitmap, wx.ITEM_NORMAL, 'Scan')
+		connectSe = toolbar.AddLabelTool(wx.ID_ANY, 'Connect', wx.Bitmap('connect.png'), wx.NullBitmap, wx.ITEM_NORMAL, 'Connect')
+		dConnectSe = toolbar.AddLabelTool(wx.ID_ANY, 'Disconnect', wx.Bitmap('disconnect.png'), wx.NullBitmap, wx.ITEM_NORMAL, 'Disconnect')
 		toolbar.AddSeparator()
-		quitTool = toolbar.AddLabelTool(wx.ID_EXIT, 'Quit', wx.ArtProvider.GetBitmap(wx.ART_QUIT))
+		quitTool = toolbar.AddLabelTool(wx.ID_EXIT, 'Quit', wx.ArtProvider.GetBitmap(wx.ART_QUIT), wx.NullBitmap, wx.ITEM_NORMAL, 'Quit')
 		toolbar.Realize()
 		# End Toolbar #
 
