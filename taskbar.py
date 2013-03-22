@@ -22,9 +22,9 @@ class Icon(wx.TaskBarIcon):
         topen = self.menu.Append(wx.ID_ANY, '&Open')
         self.menu.Bind(wx.EVT_MENU, self.OnOpen, topen)
         self.menu.AppendSeparator()
-        profiles = os.listdir("/etc/network.d/")
+        profiles = os.listdir("/etc/netctl/")
         for i in profiles:
-            if os.path.isfile("/etc/network.d/" + i):
+            if os.path.isfile("/etc/netctl/" + i):
                 profile = self.menu.Append(wx.ID_ANY, i)
                 self.menu.Bind(wx.EVT_MENU, self.OnConnect, profile)
             else:

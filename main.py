@@ -16,33 +16,40 @@ import wx.lib.mixins.listctrl as listmix
 from wx import wizard as wiz
 import taskbar as tbi
 
+# Setting some base app information #
 progVer = 0.8
 logfile = os.getcwd() + '/iwlist.log'
 intFile = os.getcwd() + "/interface.cfg"
 
 pid_file = 'program.pid'
 
+# Lets make sure we're root as well #
 euid = os.geteuid()
 if euid != 0:
+	print "WiFiz needs to be run as root, we're going to sudo for you. You can ctrl-c to exit.\n"
 	args = ['gksudo', sys.executable] + sys.argv + [os.environ]
 	os.execlpe('sudo', *args)
 
+# Allow only one instance #
 fp = open(pid_file, 'w')
 try:
 	fcntl.lockf(fp, fcntl.LOCK_EX|fcntl.LOCK_NB)
 except IOError:
-	sys.exit(0)
+	# TODO Add current pid incase the user wants to kill it 
+	print "We only allow one instance of WiFiz at a time for now."
+	sys.exit(1)
 
+# main class #
 class WiFiz(wx.Frame):
 	def __init__(self, parent, title):
 		super(WiFiz, self).__init__(None, title="WiFiz", style = wx.DEFAULT_FRAME_STYLE)
-		self.TrayIcon = tbi.Icon(self, wx.Icon("./logo.png", wx.BITMAP_TYPE_PNG), "WiFiz")
+		self.TrayIcon = tbi.Icon(self, wx.Icon("./imgs/logo.png", wx.BITMAP_TYPE_PNG), "WiFiz")
 		self.index = 0
 		self.InitUI()
 
 	def InitUI(self):
 
-		iconFile = "./logo.png"
+		iconFile = "./imgs/logo.png"
 		mainIcon = wx.Icon(iconFile, wx.BITMAP_TYPE_PNG)
 		self.SetIcon(mainIcon)
 
@@ -56,9 +63,9 @@ class WiFiz(wx.Frame):
 		self.mainMenu.Append(fileMenu, "&File")
 		
 		profilesMenu = wx.Menu()
-		profiles = os.listdir("/etc/network.d/")
+		profiles = os.listdir("/etc/netctl/")
 		for i in profiles:
-			if os.path.isfile("/etc/network.d/" + i):
+			if os.path.isfile("/etc/netctl/" + i):
 				profile = profilesMenu.Append(wx.ID_ANY, i)
 				self.Bind(wx.EVT_MENU, self.OnMConnect, profile)
 		self.mainMenu.Append(profilesMenu, "Profiles")
@@ -83,12 +90,12 @@ class WiFiz(wx.Frame):
 
 		# Create Toolbar #
 		toolbar = self.CreateToolBar()
-		newTool = toolbar.AddLabelTool(wx.ID_NEW, 'New', wx.ArtProvider.GetBitmap(wx.ART_NEW))
-		ReScanAPs = toolbar.AddLabelTool(wx.ID_ANY, 'Scan', wx.Bitmap('APScan.png'))
-		connectSe = toolbar.AddLabelTool(wx.ID_ANY, 'Connect', wx.Bitmap('connect.png'))
-		dConnectSe = toolbar.AddLabelTool(wx.ID_ANY, 'Disconnect', wx.Bitmap('disconnect.png'))
+		newTool = toolbar.AddLabelTool(wx.ID_NEW, 'New', wx.ArtProvider.GetBitmap(wx.ART_NEW), wx.NullBitmap, wx.ITEM_NORMAL, 'New Connection')
+		ReScanAPs = toolbar.AddLabelTool(wx.ID_ANY, 'Scan', wx.Bitmap('imgs/APScan.png'), wx.NullBitmap, wx.ITEM_NORMAL, 'Scan')
+		connectSe = toolbar.AddLabelTool(wx.ID_ANY, 'Connect', wx.Bitmap('imgs/connect.png'), wx.NullBitmap, wx.ITEM_NORMAL, 'Connect')
+		dConnectSe = toolbar.AddLabelTool(wx.ID_ANY, 'Disconnect', wx.Bitmap('imgs/disconnect.png'), wx.NullBitmap, wx.ITEM_NORMAL, 'Disconnect')
 		toolbar.AddSeparator()
-		quitTool = toolbar.AddLabelTool(wx.ID_EXIT, 'Quit', wx.ArtProvider.GetBitmap(wx.ART_QUIT))
+		quitTool = toolbar.AddLabelTool(wx.ID_EXIT, 'Quit', wx.ArtProvider.GetBitmap(wx.ART_QUIT), wx.NullBitmap, wx.ITEM_NORMAL, 'Quit')
 		toolbar.Realize()
 		# End Toolbar #
 
@@ -136,7 +143,7 @@ class WiFiz(wx.Frame):
 				f = open(intFile, 'w')
 				f.write(self.UIDValue)
 				f.close()
-		os.system("ifconfig " + self.UIDValue + " up")
+		os.system("ip link set up dev" + self.UIDValue)
 		self.OnScan(self)
 		
 	def OnMConnect(self, e):
@@ -163,11 +170,11 @@ class WiFiz(wx.Frame):
 		typeofSecurity = str(typeofSecurity).strip()
 		typeofSecurity = typeofSecurity.lower()
 
-		workDir = "/etc/network.d/"
+		workDir = "/etc/netctl/"
 		filename = str("wifiz-" + nameofProfile).strip()
 		filename = filename.strip()
 		if os.path.isfile(workDir + filename):
-			os.system("ifconfig " + self.UIDValue + " down")
+			os.system("ip link set down dev " + self.UIDValue)
 			os.system("netctl start wifiz-" + str(nameofProfile).strip())
 			self.OnScan(self)
 			wx.MessageBox("You are now connected to " + str(nameofProfile).strip() + ".", "Connected.")
@@ -200,7 +207,7 @@ class WiFiz(wx.Frame):
 				f.write("#preferred=no\n")
 			f.write("IP=dhcp\n")
 			f.close()
-			os.system("ifconfig " + self.UIDValue + " down")
+			os.system("ip link set down dev " + self.UIDValue)
 			os.system("netctl enable wifiz-" + str(nameofProfile).strip())
 			os.system("netctl start wifiz-" + str(nameofProfile).strip())
 			wx.MessageBox("You are now connected to " + str(nameofProfile).strip() + ".", "Connected.")
@@ -236,7 +243,7 @@ class WiFiz(wx.Frame):
 		item = self.APList.GetItem(index, 0)
 		nameofProfile = item.GetText()
 		os.system("netctl stop wifiz-" + nameofProfile)
-		os.system("ifconfig " + self.UIDValue + " up")
+		os.system("ip link set down dev " + self.UIDValue)
 		self.OnScan(self)
 		wx.MessageBox("You are now disconnected from " + nameofProfile + ".", "Disconnected.")
 
@@ -277,7 +284,7 @@ class WiFiz(wx.Frame):
 				else:
 					connect = "no"
 				self.APList.SetStringItem(self.index, 3, connect) 
-				profiles = os.listdir("/etc/network.d/")				
+				profiles = os.listdir("/etc/netctl/")				
 			if "Quality" in line:
 				lines = "Line %s" % self.index 
 				self.APList.InsertStringItem(self.index, lines)
@@ -326,7 +333,7 @@ class WiFiz(wx.Frame):
 
 		info = wx.AboutDialogInfo()
 
-		info.SetIcon(wx.Icon('./aboutLogo.png', wx.BITMAP_TYPE_PNG))
+		info.SetIcon(wx.Icon('./imgs/aboutLogo.png', wx.BITMAP_TYPE_PNG))
 		info.SetName('WiFiz')
 		info.SetVersion(str(progVer))
 		info.SetDescription(description)
@@ -425,6 +432,7 @@ class TitledPage(wiz.WizardPageSimple):
 		sizer.Add(title, 0, wx.ALIGN_CENTER_HORIZONTAL|wx.ALL, 5)
 		sizer.Add(wx.StaticLine(self, -1), 0, wx.EXPAND|wx.ALL, 5)
 
+# Start App #
 if __name__ == "__main__":
 	app = wx.App()
 	WiFiz(None, title="WiFiz")
