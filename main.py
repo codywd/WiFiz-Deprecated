@@ -34,7 +34,7 @@ fp = open(pid_file, 'w')
 try:
 	fcntl.lockf(fp, fcntl.LOCK_EX|fcntl.LOCK_NB)
 except IOError:
-	# TODO Add current pid incase the user needs to kill it 
+	# TODO Add current pid incase the user wants to kill it 
 	print "We only allow one instance of WiFiz at a time for now."
 	sys.exit(1)
 
@@ -62,9 +62,9 @@ class WiFiz(wx.Frame):
 		self.mainMenu.Append(fileMenu, "&File")
 		
 		profilesMenu = wx.Menu()
-		profiles = os.listdir("/etc/network.d/")
+		profiles = os.listdir("/etc/netctl/")
 		for i in profiles:
-			if os.path.isfile("/etc/network.d/" + i):
+			if os.path.isfile("/etc/netctl/" + i):
 				profile = profilesMenu.Append(wx.ID_ANY, i)
 				self.Bind(wx.EVT_MENU, self.OnMConnect, profile)
 		self.mainMenu.Append(profilesMenu, "Profiles")
@@ -169,7 +169,7 @@ class WiFiz(wx.Frame):
 		typeofSecurity = str(typeofSecurity).strip()
 		typeofSecurity = typeofSecurity.lower()
 
-		workDir = "/etc/network.d/"
+		workDir = "/etc/netctl/"
 		filename = str("wifiz-" + nameofProfile).strip()
 		filename = filename.strip()
 		if os.path.isfile(workDir + filename):
@@ -283,7 +283,7 @@ class WiFiz(wx.Frame):
 				else:
 					connect = "no"
 				self.APList.SetStringItem(self.index, 3, connect) 
-				profiles = os.listdir("/etc/network.d/")				
+				profiles = os.listdir("/etc/netctl/")				
 			if "Quality" in line:
 				lines = "Line %s" % self.index 
 				self.APList.InsertStringItem(self.index, lines)
