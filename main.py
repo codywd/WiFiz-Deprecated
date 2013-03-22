@@ -42,13 +42,13 @@ except IOError:
 class WiFiz(wx.Frame):
 	def __init__(self, parent, title):
 		super(WiFiz, self).__init__(None, title="WiFiz", style = wx.DEFAULT_FRAME_STYLE)
-		self.TrayIcon = tbi.Icon(self, wx.Icon("./logo.png", wx.BITMAP_TYPE_PNG), "WiFiz")
+		self.TrayIcon = tbi.Icon(self, wx.Icon("./imgs/logo.png", wx.BITMAP_TYPE_PNG), "WiFiz")
 		self.index = 0
 		self.InitUI()
 
 	def InitUI(self):
 
-		iconFile = "./logo.png"
+		iconFile = "./imgs/logo.png"
 		mainIcon = wx.Icon(iconFile, wx.BITMAP_TYPE_PNG)
 		self.SetIcon(mainIcon)
 
@@ -90,9 +90,9 @@ class WiFiz(wx.Frame):
 		# Create Toolbar #
 		toolbar = self.CreateToolBar()
 		newTool = toolbar.AddLabelTool(wx.ID_NEW, 'New', wx.ArtProvider.GetBitmap(wx.ART_NEW), wx.NullBitmap, wx.ITEM_NORMAL, 'New Connection')
-		ReScanAPs = toolbar.AddLabelTool(wx.ID_ANY, 'Scan', wx.Bitmap('APScan.png'), wx.NullBitmap, wx.ITEM_NORMAL, 'Scan')
-		connectSe = toolbar.AddLabelTool(wx.ID_ANY, 'Connect', wx.Bitmap('connect.png'), wx.NullBitmap, wx.ITEM_NORMAL, 'Connect')
-		dConnectSe = toolbar.AddLabelTool(wx.ID_ANY, 'Disconnect', wx.Bitmap('disconnect.png'), wx.NullBitmap, wx.ITEM_NORMAL, 'Disconnect')
+		ReScanAPs = toolbar.AddLabelTool(wx.ID_ANY, 'Scan', wx.Bitmap('imgs/APScan.png'), wx.NullBitmap, wx.ITEM_NORMAL, 'Scan')
+		connectSe = toolbar.AddLabelTool(wx.ID_ANY, 'Connect', wx.Bitmap('imgs/connect.png'), wx.NullBitmap, wx.ITEM_NORMAL, 'Connect')
+		dConnectSe = toolbar.AddLabelTool(wx.ID_ANY, 'Disconnect', wx.Bitmap('imgs/disconnect.png'), wx.NullBitmap, wx.ITEM_NORMAL, 'Disconnect')
 		toolbar.AddSeparator()
 		quitTool = toolbar.AddLabelTool(wx.ID_EXIT, 'Quit', wx.ArtProvider.GetBitmap(wx.ART_QUIT), wx.NullBitmap, wx.ITEM_NORMAL, 'Quit')
 		toolbar.Realize()
@@ -332,7 +332,7 @@ class WiFiz(wx.Frame):
 
 		info = wx.AboutDialogInfo()
 
-		info.SetIcon(wx.Icon('./aboutLogo.png', wx.BITMAP_TYPE_PNG))
+		info.SetIcon(wx.Icon('./imgs/aboutLogo.png', wx.BITMAP_TYPE_PNG))
 		info.SetName('WiFiz')
 		info.SetVersion(str(progVer))
 		info.SetDescription(description)
