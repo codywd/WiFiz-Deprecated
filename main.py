@@ -142,7 +142,7 @@ class WiFiz(wx.Frame):
 				f = open(intFile, 'w')
 				f.write(self.UIDValue)
 				f.close()
-		os.system("ifconfig " + self.UIDValue + " up")
+		os.system("ip link set up dev" + self.UIDValue)
 		self.OnScan(self)
 		
 	def OnMConnect(self, e):
@@ -173,7 +173,7 @@ class WiFiz(wx.Frame):
 		filename = str("wifiz-" + nameofProfile).strip()
 		filename = filename.strip()
 		if os.path.isfile(workDir + filename):
-			os.system("ifconfig " + self.UIDValue + " down")
+			os.system("ip link set down dev " + self.UIDValue)
 			os.system("netctl start wifiz-" + str(nameofProfile).strip())
 			self.OnScan(self)
 			wx.MessageBox("You are now connected to " + str(nameofProfile).strip() + ".", "Connected.")
@@ -206,7 +206,7 @@ class WiFiz(wx.Frame):
 				f.write("#preferred=no\n")
 			f.write("IP=dhcp\n")
 			f.close()
-			os.system("ifconfig " + self.UIDValue + " down")
+			os.system("ip link set down dev " + self.UIDValue)
 			os.system("netctl enable wifiz-" + str(nameofProfile).strip())
 			os.system("netctl start wifiz-" + str(nameofProfile).strip())
 			wx.MessageBox("You are now connected to " + str(nameofProfile).strip() + ".", "Connected.")
@@ -242,7 +242,7 @@ class WiFiz(wx.Frame):
 		item = self.APList.GetItem(index, 0)
 		nameofProfile = item.GetText()
 		os.system("netctl stop wifiz-" + nameofProfile)
-		os.system("ifconfig " + self.UIDValue + " up")
+		os.system("ip link set down dev " + self.UIDValue)
 		self.OnScan(self)
 		wx.MessageBox("You are now disconnected from " + nameofProfile + ".", "Disconnected.")
 
