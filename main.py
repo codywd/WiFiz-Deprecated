@@ -16,23 +16,27 @@ import wx.lib.mixins.listctrl as listmix
 from wx import wizard as wiz
 import taskbar as tbi
 
+# Setting some base app information #
 progVer = 0.8
 logfile = os.getcwd() + '/iwlist.log'
 intFile = os.getcwd() + "/interface.cfg"
 
 pid_file = 'program.pid'
 
+# Lets make sure we're root as well #
 euid = os.geteuid()
 if euid != 0:
 	args = ['gksudo', sys.executable] + sys.argv + [os.environ]
 	os.execlpe('sudo', *args)
 
+# Allow only one instance #
 fp = open(pid_file, 'w')
 try:
 	fcntl.lockf(fp, fcntl.LOCK_EX|fcntl.LOCK_NB)
 except IOError:
 	sys.exit(0)
 
+# main class #
 class WiFiz(wx.Frame):
 	def __init__(self, parent, title):
 		super(WiFiz, self).__init__(None, title="WiFiz", style = wx.DEFAULT_FRAME_STYLE)
@@ -425,6 +429,7 @@ class TitledPage(wiz.WizardPageSimple):
 		sizer.Add(title, 0, wx.ALIGN_CENTER_HORIZONTAL|wx.ALL, 5)
 		sizer.Add(wx.StaticLine(self, -1), 0, wx.EXPAND|wx.ALL, 5)
 
+# Start App #
 if __name__ == "__main__":
 	app = wx.App()
 	WiFiz(None, title="WiFiz")
