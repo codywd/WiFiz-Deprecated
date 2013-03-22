@@ -256,6 +256,7 @@ class WiFiz(wx.Frame):
 			f.close()
 		else:
 			pass
+			#why is this here again?
 
 		output = str(subprocess.check_output("iwlist " + self.UIDValue + " scan", shell=True))
 		f = open(logfile, 'w')
@@ -273,6 +274,7 @@ class WiFiz(wx.Frame):
 		f = open(logfile).read()
 		for line in open(logfile):
 			if "ESSID" in line:
+				#this breaks ESSID's with spaces in their name
 				begin = line.replace(" ", "")
 				mid = begin.replace("ESSID:", "")
 				final = mid.replace('"', "")
