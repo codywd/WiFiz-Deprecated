@@ -26,6 +26,7 @@ pid_file = 'program.pid'
 # Lets make sure we're root as well #
 euid = os.geteuid()
 if euid != 0:
+	print "WiFiz needs to be run as root, we're going to sudo for you. You can ctrl-c to exit.\n"
 	args = ['gksudo', sys.executable] + sys.argv + [os.environ]
 	os.execlpe('sudo', *args)
 
