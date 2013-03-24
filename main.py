@@ -160,7 +160,7 @@ class WiFiz(wx.Frame):
                 f = open(intFile, 'w')
                 f.write(self.UIDValue)
                 f.close()
-        os.system("ip link set up dev" + self.UIDValue)
+        os.system("ip link set up dev " + self.UIDValue)
         self.OnScan(self)
         
     def OnMConnect(self, e):
