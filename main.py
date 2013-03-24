@@ -17,16 +17,17 @@ import taskbar as tbi
 
 # Setting some base app information #
 progVer = 0.8
-logfile = os.getcwd() + '/iwlist.log'
-intFile = os.getcwd() + "/interface.cfg"
-
+log_file = os.getcwd() + '/iwlist.log'
+ilog_file = os.getcwd() + "/iwconfig.log"
+int_file = os.getcwd() + "/interface.cfg"
 pid_file = 'program.pid'
+pid_number = os.getpid()
 
 # Lets make sure we're root as well #
 euid = os.geteuid()
 if euid != 0:
-    print ("WiFiz needs to be run as root, we're going to sudo for you. "
-            "You can ctrl-c to exit.\n")
+    print ("WiFiz needs to be run as root, we're going to sudo for you. \n"
+            "You can ctrl-c to exit.")
     args = ['gksudo', sys.executable] + sys.argv + [os.environ]
     os.execlpe('sudo', *args)
 
@@ -38,6 +39,8 @@ except IOError:
     # TODO Add current pid incase the user wants to kill it 
     print "We only allow one instance of WiFiz at a time for now."
     sys.exit(1)
+fp.write(str(pid_number) + "\n")
+fp.flush()
 
 # main class #
 class WiFiz(wx.Frame):
@@ -147,8 +150,8 @@ class WiFiz(wx.Frame):
         self.SetSize((700,390))
         self.Center()
         self.Show()
-        if os.path.isfile(intFile):
-            f = open(intFile)
+        if os.path.isfile(int_file):
+            f = open(int_file)
             self.UIDValue = f.readline()
             str(self.UIDValue).strip()
             f.close()
@@ -157,7 +160,7 @@ class WiFiz(wx.Frame):
                 "(wlan0, wlp2s0)", "Wireless Interface", "")
             if self.UID.ShowModal() == wx.ID_OK:
                 self.UIDValue = self.UID.GetValue()
-                f = open(intFile, 'w')
+                f = open(int_file, 'w')
                 f.write(self.UIDValue)
                 f.close()
         os.system("ip link set up dev " + self.UIDValue)
@@ -273,8 +276,8 @@ class WiFiz(wx.Frame):
         newProf = NewProfile(parent=None)       
 
     def OnScan(self, e):
-        if os.path.isfile(logfile):
-            f = open(logfile, 'r+')
+        if os.path.isfile(log_file):
+            f = open(log_file, 'r+')
             f.truncate()
             f.close()
         else:
@@ -283,28 +286,27 @@ class WiFiz(wx.Frame):
 
         output = str(subprocess.check_output("iwlist " + self.UIDValue + 
                                                     " scan", shell=True))
-        f = open(logfile, 'w')
+        f = open(log_file, 'w')
         f.write(output)
         f.close()
 
         self.APList.DeleteAllItems()
         self.index = 0 
-        ilogfile = os.getcwd() + "/iwconfig.log"
         outputs = str(subprocess.check_output("iwconfig " + 
                                 self.UIDValue , shell=True))  
-        d = open(ilogfile, 'w')
+        d = open(ilog_file, 'w')
         d.write(outputs)
         d.close()
-        v = open(ilogfile).read()
-        f = open(logfile).read()
-        for line in open(logfile):
+        # v = open(ilog_file).read()
+        # f = open(log_file).read()
+        for line in open(log_file):
             if "ESSID" in line:
                 #this breaks ESSID's with spaces in their name
                 begin = line.replace(" ", "")
                 mid = begin.replace("ESSID:", "")
                 final = mid.replace('"', "")
                 self.APList.SetStringItem(self.index, 0, final)
-                line = open(ilogfile).readline()
+                line = open(ilog_file).readline()
                 if final.strip() in line.strip():
                     connect = "yes"
                 else:
@@ -333,7 +335,7 @@ class WiFiz(wx.Frame):
             else:
                 pass
 
-        f = open(ilogfile, 'w')
+        f = open(ilog_file, 'w')
         f.write(outputs)
         f.close()
 
@@ -344,7 +346,7 @@ class WiFiz(wx.Frame):
         self.Hide()
 
     def OnFullClose(self, e):
-        f = open(logfile, 'r+')
+        f = open(log_file, 'r+')
         f.truncate()
         f.close()        
         app.Exit()      
@@ -475,3 +477,12 @@ if __name__ == "__main__":
     app = wx.App()
     WiFiz(None, title="WiFiz")
     app.MainLoop()
+    
+    # Clean up time
+    # TODO move to fuction
+    fcntl.lockf(fp, fcntl.LOCK_UN)
+    fp.close()
+    os.unlink(pid_file)
+    os.unlink(int_file)
+    os.unlink(log_file)
+    os.unlink(ilog_file)
