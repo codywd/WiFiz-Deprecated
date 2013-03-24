@@ -6,6 +6,7 @@ import sys
 import re
 import subprocess
 import fcntl
+import signal
 
 # Importing Third Party Libraries #
 from wx import *
@@ -160,6 +161,7 @@ class WiFiz(wx.Frame):
                 "(wlan0, wlp2s0)", "Wireless Interface", "")
             if self.UID.ShowModal() == wx.ID_OK:
                 self.UIDValue = self.UID.GetValue()
+                # TODO error checking for null values
                 f = open(int_file, 'w')
                 f.write(self.UIDValue)
                 f.close()
@@ -472,17 +474,29 @@ class TitledPage(wiz.WizardPageSimple):
         sizer.Add(title, 0, wx.ALIGN_CENTER_HORIZONTAL|wx.ALL, 5)
         sizer.Add(wx.StaticLine(self, -1), 0, wx.EXPAND|wx.ALL, 5)
 
-# Start App #
-if __name__ == "__main__":
-    app = wx.App()
-    WiFiz(None, title="WiFiz")
-    app.MainLoop()
-    
+def cleanUp():
     # Clean up time
-    # TODO move to fuction
     fcntl.lockf(fp, fcntl.LOCK_UN)
     fp.close()
     os.unlink(pid_file)
-    os.unlink(int_file)
+    # os.unlink(int_file)   # I cant decide if we want to keep this file or 
+                            # or do something else with it?
     os.unlink(log_file)
     os.unlink(ilog_file)
+
+def sigInt(signal, frame):
+    print "CTRL-C Caught, cleaning up..."
+    cleanUp()
+    print "done. BYE!"
+    sys.exit(0)
+
+
+# Start App #
+if __name__ == "__main__":
+    app = wx.App()
+    # We'll handle ctrl-c for wx
+    signal.signal(signal.SIGINT, sigInt)
+    WiFiz(None, title="WiFiz")
+    app.MainLoop()
+    cleanUp()
+    sys.exit(0)
