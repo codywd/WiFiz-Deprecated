@@ -385,8 +385,8 @@ class NewProfile(wx.Dialog):
     def InitUI(self):
         wizard = wx.wizard.Wizard(None, -1, "New Profile Wizard")
         page1 = TitledPage(wizard, "Interface")
-        page1.Sizer.Add(wx.StaticText(page1, -1, "Please type the name of the "
-            "interface you will be \nusing to connect to the network. "
+        page1.Sizer.Add(wx.StaticText(page1, -1, "Please type the name of the"
+            " interface you will be \nusing to connect to the network. "
             "Examples are \nwlan0, eth0, etc..."))
         page1.Sizer.Add(wx.StaticText(page1, -1, ""))
         intFaces = os.listdir("/sys/class/net")
