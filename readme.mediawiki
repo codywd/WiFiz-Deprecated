@@ -3,3 +3,8 @@
 WiFiz is a brand new NetCTL frontend. The reason why it uses NetCTL as a 
 backend, is due to the fact that it better integrates with systemd, 
 Arch Linux's new(ish) init scripts.
+
+WiFiz is still alpha based software, It depends on python2, wxpython, 
+wireless-tools, and obviouily netctl. (And maybe a few others as well.) 
+
+
