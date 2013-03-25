@@ -212,8 +212,7 @@ class WiFiz(wx.Frame):
             f.write("ESSID='" + str(nameofProfile).strip() + "'\n")
             if str(typeofSecurity).strip() != "none":  
                 passw = wx.TextEntryDialog(self, "What is the password?",
-                                           "Password",
-                                           "")
+                                           "Password", "")
                 if passw.ShowModal() == wx.ID_OK:
                     thepass = passw.GetValue()  
                 else:
@@ -278,12 +277,8 @@ class WiFiz(wx.Frame):
 
     def OnScan(self, e):
         if os.path.isfile(log_file):
-            f = open(log_file, 'r+')
-            f.truncate()
-            f.close()
-        else:
-            pass
-            #why is this here again?
+            open(log_file, 'w').close()
+        # why is this here again?
 
         output = str(subprocess.check_output("iwlist " + self.UIDValue + 
                                                     " scan", shell=True))
@@ -344,9 +339,7 @@ class WiFiz(wx.Frame):
         self.Hide()
 
     def OnFullClose(self, e):
-        f = open(log_file, 'r+')
-        f.truncate()
-        f.close()        
+        open(log_file, 'w').close()
         app.Exit()      
 
     def OnAbout(self, e):
@@ -377,6 +370,7 @@ class WiFiz(wx.Frame):
 
         wx.AboutBox(info)
 
+# Class to manually create new network profile
 class NewProfile(wx.Dialog):
     def __init__(self, parent):
         super(NewProfile, self).__init__(None)
