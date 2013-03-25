@@ -18,6 +18,7 @@ import taskbar as tbi
 
 # Setting some base app information #
 progVer = 0.8
+profile = ""
 logfile = os.getcwd() + '/iwlist.log'
 intFile = os.getcwd() + "/interface.cfg"
 
@@ -124,7 +125,7 @@ class WiFiz(wx.Frame):
         self.Bind(wx.EVT_CONTEXT_MENU, self.OnConnect, popCon)
         self.Bind(wx.EVT_CONTEXT_MENU, self.OnDConnect, popDCon)
         self.Bind(wx.EVT_MENU, self.OnReport, reportIssue)
-        # End Bindings #
+        # End Bindings #	
 
         self.SetSize((700,390))
         self.Center()
@@ -295,7 +296,16 @@ class WiFiz(wx.Frame):
                 else:
                     connect = "no"
                 self.APList.SetStringItem(self.index, 3, connect) 
-                profiles = os.listdir("/etc/netctl/")				
+                profiles = os.listdir("/etc/netctl/")
+                if any(final.strip() in s for s in profiles):
+                    workDir = "/etc/netctl/"
+                    profile = "wifiz-" + final.strip()
+                    for line in open(workDir + profile):
+                        if "#preferred" in line:
+                            if "yes" in line:
+                                profile = profile
+                            else:
+                                pass
             if "Quality" in line:
                 lines = "Line %s" % self.index 
                 self.APList.InsertStringItem(self.index, lines)
@@ -318,7 +328,23 @@ class WiFiz(wx.Frame):
         f = open(ilogfile, 'w')
         f.write(outputs)
         f.close()
-
+        
+        try:
+            self.AutoConnect()   
+        except:
+            print "FAIL!"   
+        else:
+            pass
+            
+    def AutoConnect(self, e):
+        try:
+            os.system("ip link set down " + self.UIDValue)
+            os.system("netctl disable " + self.profile)
+            os.system("netctl enable " + self.profile)
+            os.system("netctl start " + self.profile)
+            wx.MessageBox("You are now connected to " + str(self.profile).strip() + ".", "Connected.")
+        except:
+            wx.MessageBox("There has been an error, please try again. If it persists, please contact Cody Dostal at dostalcody@gmail.com.", "Error!")        
 
 
 
