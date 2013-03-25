@@ -21,7 +21,7 @@ progVer = 0.8
 log_file = os.getcwd() + '/iwlist.log'
 ilog_file = os.getcwd() + "/iwconfig.log"
 int_file = os.getcwd() + "/interface.cfg"
-pid_file = 'program.pid'
+pid_file = os.getcwd() + 'program.pid'
 pid_number = os.getpid()
 
 # Lets make sure we're root as well #
@@ -37,7 +37,6 @@ fp = open(pid_file, 'w')
 try:
     fcntl.lockf(fp, fcntl.LOCK_EX|fcntl.LOCK_NB)
 except IOError:
-    # TODO Add current pid incase the user wants to kill it 
     print "We only allow one instance of WiFiz at a time for now."
     sys.exit(1)
 fp.write(str(pid_number) + "\n")
@@ -100,7 +99,7 @@ class WiFiz(wx.Frame):
         popDCon = self.PopupMenu.Append(wx.ID_ANY, "Disconnect from Network", 
                                         "Disconnect from selected network.")
 
-        # Create Toolbar #
+        # Create Toolbar Buttons #
         toolbar = self.CreateToolBar()
         newTool = toolbar.AddLabelTool(wx.ID_NEW, 'New', 
             wx.ArtProvider.GetBitmap(wx.ART_NEW), wx.NullBitmap, 
@@ -341,9 +340,6 @@ class WiFiz(wx.Frame):
         f.write(outputs)
         f.close()
 
-
-
-
     def OnClose(self, e):
         self.Hide()
 
@@ -496,7 +492,9 @@ if __name__ == "__main__":
     app = wx.App()
     # We'll handle ctrl-c for wx
     signal.signal(signal.SIGINT, sigInt)
+    # Prepare app
     WiFiz(None, title="WiFiz")
+    # Run app
     app.MainLoop()
     cleanUp()
     sys.exit(0)
