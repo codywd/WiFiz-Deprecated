@@ -220,13 +220,14 @@ class WiFiz(wx.Frame):
                 f.write(r'Key=\"' + thepass + "\n")
             else:
                 f.write(r'Key=None\n')
-            pref = wx.TextEntryDialog(self, "Is this network preferred? "
-                "(In range of multiple profiles, connect to this first?)"
-                                                "Preferred Network?", "")
-            if pref.ShowModal() == wx.ID_OK:
-                f.write("#preferred=yes\n")
-            else:
-                f.write("#preferred=no\n")
+            # Currently unworking TODO!
+            # pref = wx.TextEntryDialog(self, "Is this network preferred? "
+            #     "(In range of multiple profiles, connect to this first?)"
+            #                                     "Preferred Network?", "")
+            # if pref.ShowModal() == wx.ID_OK:
+            #     f.write("#preferred=yes\n")
+            # else:
+            #     f.write("#preferred=no\n")
             f.write("IP=dhcp\n")
             f.close()
             os.system("ip link set down dev " + self.UIDValue)
@@ -325,8 +326,10 @@ class WiFiz(wx.Frame):
                     encrypt = "WPA"
                 elif "off" in line:
                     encrypt = "None"
-                else:
+                elif "WEP" in line:
                     encrypt = "WEP"
+                else:
+                    encrypt = "UNKNOWN"
                 self.APList.SetStringItem(self.index, 2, encrypt)
             else:
                 pass
