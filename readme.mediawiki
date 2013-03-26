@@ -1,10 +1,14 @@
 '''''WiFiz (A NetCTL GUI Frontend)'''''
 
-WiFiz is a brand new NetCTL frontend. The reason why it uses NetCTL as a 
-backend, is due to the fact that it better integrates with systemd, 
+WiFiz is a brand new GUI NetCTL frontend. The reason why it uses NetCTL 
+as a 
+backend over NetCFG, is due to the fact that it better integrates with 
+systemd, 
 Arch Linux's new(ish) init scripts.
 
-WiFiz is still alpha based software, It depends on python2, wxpython, 
-wireless-tools, and obviouily netctl. (And maybe a few others as well.) 
+WiFiz is currently in alpha state, and as such, the program is in a very volatile state. Anything can be changed. Trust nothing!
+
+WiFiz depends on python2, wxpython, 
+wireless-tools, and obviously netctl. (And maybe a few others as well.) 
 
 

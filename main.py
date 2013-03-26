@@ -6,7 +6,6 @@ import sys
 import re
 import subprocess
 import fcntl
-import signal
 
 # Importing Third Party Libraries #
 from wx import *
@@ -192,14 +191,18 @@ class WiFiz(wx.Frame):
         typeofSecurity = typeofSecurity.lower()
 
         workDir = "/etc/netctl/"
-        filename = str("wifiz-" + nameofProfile).strip()
+        filename = str("wifiz" + u'-' + nameofProfile).strip()
         filename = filename.strip()
+        print filename
         if os.path.isfile(workDir + filename):
-            os.system("ip link set down dev " + self.UIDValue)
-            os.system("netctl start wifiz-" + str(nameofProfile).strip())
-            self.OnScan(self)
-            wx.MessageBox("You are now connected to " + 
-                str(nameofProfile).strip() + ".", "Connected.")
+            try:
+                os.system("ip link set down " + self.UIDValue)
+                os.system("netctl disable " + filename)
+                os.system("netctl enable " + filename)
+                os.system("netctl start " + filename)
+                wx.MessageBox("You are now connected to " + str(nameofProfile).strip() + ".", "Connected.")
+            except:
+                wx.MessageBox("There has been an error, please try again. If it persists, please contact Cody Dostal at dostalcody@gmail.com.", "Error!")
         else:
             f = open(workDir + filename, "w")
             f.write("Description='A profile made by Wifiz for " + 
@@ -230,11 +233,14 @@ class WiFiz(wx.Frame):
             #     f.write("#preferred=no\n")
             f.write("IP=dhcp\n")
             f.close()
-            os.system("ip link set down dev " + self.UIDValue)
-            os.system("netctl enable wifiz-" + str(nameofProfile).strip())
-            os.system("netctl start wifiz-" + str(nameofProfile).strip())
-            wx.MessageBox("You are now connected to " + 
-                str(nameofProfile).strip() + ".", "Connected.")
+            try:
+                os.system("ip link set down " + self.UIDValue)
+                os.system("netctl disable " + filename)
+                os.system("netctl enable " + filename)
+                os.system("netctl start " + filename)
+                wx.MessageBox("You are now connected to " + str(nameofProfile).strip() + ".", "Connected.")
+            except:
+                wx.MessageBox("There has been an error, please try again. If it persists, please contact Cody Dostal at dostalcody@gmail.com.", "Error!")
             self.OnScan(self)
 
     def getSelectedIndices( self, state =  wx.LIST_STATE_SELECTED):
@@ -267,8 +273,9 @@ class WiFiz(wx.Frame):
         index = int(index)
         item = self.APList.GetItem(index, 0)
         nameofProfile = item.GetText()
-        os.system("netctl stop wifiz-" + nameofProfile)
-        os.system("ip link set down dev " + self.UIDValue)
+        os.system("netctl stop " + filename)
+        os.system("ip link set down " + self.UIDValue)
+        os.system("netctl disable " + filename)
         self.OnScan(self)
         wx.MessageBox("You are now disconnected from " + 
                     nameofProfile + ".", "Disconnected.")
@@ -281,8 +288,8 @@ class WiFiz(wx.Frame):
             open(log_file, 'w').close()
         # why is this here again?
 
-        output = str(subprocess.check_output("iwlist " + self.UIDValue + 
-                                                    " scan", shell=True))
+        os.system("ip link set up " + self.UIDValue)
+        output = str(subprocess.check_output("iwlist " + self.UIDValue + " scan", shell=True))
         f = open(log_file, 'w')
         f.write(output)
         f.close()
@@ -294,9 +301,9 @@ class WiFiz(wx.Frame):
         d = open(ilog_file, 'w')
         d.write(outputs)
         d.close()
-        # v = open(ilog_file).read()
-        # f = open(log_file).read()
-        for line in open(log_file):
+        v = open(ilogfile).read()
+        f = open(logfile).read()
+        for line in open(logfile):
             if "ESSID" in line:
                 #this breaks ESSID's with spaces in their name
                 begin = line.replace(" ", "")
@@ -309,7 +316,16 @@ class WiFiz(wx.Frame):
                 else:
                     connect = "no"
                 self.APList.SetStringItem(self.index, 3, connect) 
-                profiles = os.listdir("/etc/netctl/")               
+                profiles = os.listdir("/etc/netctl/")
+                if any(final.strip() in s for s in profiles):
+                    workDir = "/etc/netctl/"
+                    profile = "wifiz-" + final.strip()
+                    for line in open(workDir + profile):
+                        if "#preferred" in line:
+                            if "yes" in line:
+                                profile = profile
+                            else:
+                                pass
             if "Quality" in line:
                 lines = "Line %s" % self.index 
                 self.APList.InsertStringItem(self.index, lines)
@@ -337,6 +353,22 @@ class WiFiz(wx.Frame):
         f = open(ilog_file, 'w')
         f.write(outputs)
         f.close()
+        try:
+            self.AutoConnect()   
+        except:
+            print "FAIL!"   
+        else:
+            pass
+            
+    def AutoConnect(self, e):
+        try:
+            os.system("ip link set down " + self.UIDValue)
+            os.system("netctl disable " + self.profile)
+            os.system("netctl enable " + self.profile)
+            os.system("netctl start " + self.profile)
+            wx.MessageBox("You are now connected to " + str(self.profile).strip() + ".", "Connected.")
+        except:
+            wx.MessageBox("There has been an error, please try again. If it persists, please contact Cody Dostal at dostalcody@gmail.com.", "Error!")        
 
     def OnClose(self, e):
         self.Hide()
