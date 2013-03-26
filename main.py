@@ -19,11 +19,18 @@ import taskbar as tbi
 # Setting some base app information #
 progVer = 0.8
 iwlist_file = os.getcwd() + '/iwlist.log'
-iwconfig = os.getcwd() + "/iwconfig.log"
+iwconfig_file = os.getcwd() + "/iwconfig.log"
 int_file = os.getcwd() + "/interface.cfg"
 pid_file = os.getcwd() + 'program.pid'
 conf_dir = "/etc/netctl/"
 pid_number = os.getpid()
+
+#print sys.argv
+# do as we're told #
+for arg in sys.argv:
+    if arg == '--help' or '-h':
+        print "WiFiz; The netctl gui! \nNeeds to be root."
+        sys.exit(0)
 
 # Lets make sure we're root as well #
 euid = os.geteuid()
@@ -299,10 +306,10 @@ class WiFiz(wx.Frame):
         self.index = 0 
         outputs = str(subprocess.check_output("iwconfig " + 
                                 self.UIDValue , shell=True))  
-        d = open(iwconfig, 'w')
+        d = open(iwconfig_file, 'w')
         d.write(outputs)
         d.close()
-        v = open(iwconfig).read()
+        v = open(iwconfig_file).read()
         f = open(iwlist_file).read()
         for line in open(iwlist_file):
             if "ESSID" in line:
@@ -311,7 +318,7 @@ class WiFiz(wx.Frame):
                 mid = begin.replace("ESSID:", "")
                 final = mid.replace('"', "")
                 self.APList.SetStringItem(self.index, 0, final)
-                line = open(iwconfig).readline()
+                line = open(iwconfig_file).readline()
                 if final.strip() in line.strip():
                     connect = "yes"
                 else:
@@ -351,7 +358,7 @@ class WiFiz(wx.Frame):
             else:
                 pass
 
-        f = open(iwconfig, 'w')
+        f = open(iwconfig_file, 'w')
         f.write(outputs)
         f.close()
         try:
@@ -508,7 +515,7 @@ def cleanUp():
     # os.unlink(int_file)   # I cant decide if we want to keep this file or 
                             # or do something else with it?
     os.unlink(iwlist_file)
-    os.unlink(iwconfig)
+    os.unlink(iwconfig_file)
 
 def sigInt(signal, frame):
     print "CTRL-C Caught, cleaning up..."
