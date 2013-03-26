@@ -28,7 +28,7 @@ pid_number = os.getpid()
 #print sys.argv
 # do as we're told #
 for arg in sys.argv:
-    if arg == '--help' or '-h':
+    if arg == '--help' or arg == '-h':
         print "WiFiz; The netctl gui! \nNeeds to be root."
         sys.exit(0)
 
@@ -514,8 +514,12 @@ def cleanUp():
     os.unlink(pid_file)
     # os.unlink(int_file)   # I cant decide if we want to keep this file or 
                             # or do something else with it?
-    os.unlink(iwlist_file)
-    os.unlink(iwconfig_file)
+    try:
+        os.unlink(iwlist_file)
+        os.unlink(iwconfig_file)
+    except:
+        pass
+
 
 def sigInt(signal, frame):
     print "CTRL-C Caught, cleaning up..."
