@@ -6,7 +6,6 @@ import sys
 import re
 import subprocess
 import fcntl
-import signal
 
 # Importing Third Party Libraries #
 from wx import *
@@ -192,7 +191,7 @@ class WiFiz(wx.Frame):
         typeofSecurity = typeofSecurity.lower()
 
         workDir = "/etc/netctl/"
-        filename = str("wifiz-" + nameofProfile).strip()
+        filename = str("wifiz" + u'-' + nameofProfile).strip()
         filename = filename.strip()
         print filename
         if os.path.isfile(workDir + filename):
