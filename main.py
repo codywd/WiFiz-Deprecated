@@ -27,7 +27,7 @@ pid_number = os.getpid()
 euid = os.geteuid()
 if euid != 0:
     print ("WiFiz needs to be run as root, we're going to sudo for you. \n"
-            "You can ctrl-c to exit.")
+            "You can ctrl-c to exit... (maybe)")
     args = ['gksudo', sys.executable] + sys.argv + [os.environ]
     os.execlpe('sudo', *args)
 
@@ -215,8 +215,7 @@ class WiFiz(wx.Frame):
             f.write("ESSID='" + str(nameofProfile).strip() + "'\n")
             if str(typeofSecurity).strip() != "none":  
                 passw = wx.TextEntryDialog(self, "What is the password?",
-                                           "Password",
-                                           "")
+                                           "Password", "")
                 if passw.ShowModal() == wx.ID_OK:
                     thepass = passw.GetValue()  
                 else:
@@ -224,13 +223,14 @@ class WiFiz(wx.Frame):
                 f.write(r'Key=\"' + thepass + "\n")
             else:
                 f.write(r'Key=None\n')
-            pref = wx.TextEntryDialog(self, "Is this network preferred? "
-                "(In range of multiple profiles, connect to this first?)"
-                                                "Preferred Network?", "")
-            if pref.ShowModal() == wx.ID_OK:
-                f.write("#preferred=yes\n")
-            else:
-                f.write("#preferred=no\n")
+            # Currently unworking TODO!
+            # pref = wx.TextEntryDialog(self, "Is this network preferred? "
+            #     "(In range of multiple profiles, connect to this first?)"
+            #                                     "Preferred Network?", "")
+            # if pref.ShowModal() == wx.ID_OK:
+            #     f.write("#preferred=yes\n")
+            # else:
+            #     f.write("#preferred=no\n")
             f.write("IP=dhcp\n")
             f.close()
             try:
@@ -285,12 +285,8 @@ class WiFiz(wx.Frame):
 
     def OnScan(self, e):
         if os.path.isfile(log_file):
-            f = open(log_file, 'r+')
-            f.truncate()
-            f.close()
-        else:
-            pass
-            #why is this here again?
+            open(log_file, 'w').close()
+        # why is this here again?
 
         os.system("ip link set up " + self.UIDValue)
         output = str(subprocess.check_output("iwlist " + self.UIDValue + " scan", shell=True))
@@ -346,8 +342,10 @@ class WiFiz(wx.Frame):
                     encrypt = "WPA"
                 elif "off" in line:
                     encrypt = "None"
-                else:
+                elif "WEP" in line:
                     encrypt = "WEP"
+                else:
+                    encrypt = "UNKNOWN"
                 self.APList.SetStringItem(self.index, 2, encrypt)
             else:
                 pass
@@ -376,9 +374,7 @@ class WiFiz(wx.Frame):
         self.Hide()
 
     def OnFullClose(self, e):
-        f = open(log_file, 'r+')
-        f.truncate()
-        f.close()        
+        open(log_file, 'w').close()
         app.Exit()      
 
     def OnAbout(self, e):
@@ -409,6 +405,7 @@ class WiFiz(wx.Frame):
 
         wx.AboutBox(info)
 
+# Class to manually create new network profile
 class NewProfile(wx.Dialog):
     def __init__(self, parent):
         super(NewProfile, self).__init__(None)
@@ -518,15 +515,19 @@ def sigInt(signal, frame):
     print "done. BYE!"
     sys.exit(0)
 
-
 # Start App #
 if __name__ == "__main__":
-    app = wx.App()
-    # We'll handle ctrl-c for wx
-    signal.signal(signal.SIGINT, sigInt)
-    # Prepare app
-    WiFiz(None, title="WiFiz")
-    # Run app
-    app.MainLoop()
-    cleanUp()
-    sys.exit(0)
+    wxAppPid = os.fork() # Consider pty module instead? TODO
+    if wxAppPid:
+        # We'll handle ctrl-c for wx
+        signal.signal(signal.SIGINT, sigInt)
+        os.waitpid(wxAppPid,0)
+        cleanUp()
+        sys.exit(0)
+    else:
+        # Child mode
+        # Prepare app
+        app = wx.App(False)
+        WiFiz(None, title="WiFiz")
+        # Run app
+        app.MainLoop()
