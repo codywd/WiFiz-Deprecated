@@ -6,6 +6,7 @@ import sys
 import re
 import subprocess
 import fcntl
+import signal
 
 # Importing Third Party Libraries #
 from wx import *
@@ -21,6 +22,7 @@ log_file = os.getcwd() + '/iwlist.log'
 ilog_file = os.getcwd() + "/iwconfig.log"
 int_file = os.getcwd() + "/interface.cfg"
 pid_file = os.getcwd() + 'program.pid'
+conf_dir = "/etc/netctl/"
 pid_number = os.getpid()
 
 # Lets make sure we're root as well #
@@ -190,11 +192,10 @@ class WiFiz(wx.Frame):
         typeofSecurity = str(typeofSecurity).strip()
         typeofSecurity = typeofSecurity.lower()
 
-        workDir = "/etc/netctl/"
         filename = str("wifiz" + u'-' + nameofProfile).strip()
         filename = filename.strip()
         print filename
-        if os.path.isfile(workDir + filename):
+        if os.path.isfile(conf_dir + filename):
             try:
                 os.system("ip link set down " + self.UIDValue)
                 os.system("netctl disable " + filename)
@@ -204,11 +205,11 @@ class WiFiz(wx.Frame):
             except:
                 wx.MessageBox("There has been an error, please try again. If it persists, please contact Cody Dostal at dostalcody@gmail.com.", "Error!")
         else:
-            f = open(workDir + filename, "w")
+            f = open(conf_dir + filename, "w")
             f.write("Description='A profile made by Wifiz for " + 
                 str(nameofProfile).strip() + "'\n")
             f.close()
-            f = open(workDir + filename, 'a')
+            f = open(conf_dir + filename, 'a')
             f.write("Interface=" + str(self.UIDValue).strip() + "\n")
             f.write("Connection=wireless\n")
             f.write("Security=" + typeofSecurity + "\n")
@@ -318,14 +319,14 @@ class WiFiz(wx.Frame):
                 self.APList.SetStringItem(self.index, 3, connect) 
                 profiles = os.listdir("/etc/netctl/")
                 if any(final.strip() in s for s in profiles):
-                    workDir = "/etc/netctl/"
                     profile = "wifiz-" + final.strip()
-                    for line in open(workDir + profile):
-                        if "#preferred" in line:
-                            if "yes" in line:
-                                profile = profile
-                            else:
-                                pass
+                    if os.path.isfile(conf_dir + profile):
+                        for line in open(conf_dir + profile):
+                            if "#preferred" in line:
+                                if "yes" in line:
+                                    profile = profile
+                                else:
+                                    pass
             if "Quality" in line:
                 lines = "Line %s" % self.index 
                 self.APList.InsertStringItem(self.index, lines)
@@ -522,6 +523,7 @@ if __name__ == "__main__":
         # We'll handle ctrl-c for wx
         signal.signal(signal.SIGINT, sigInt)
         os.waitpid(wxAppPid,0)
+        print "Child died here\n"
         cleanUp()
         sys.exit(0)
     else:
