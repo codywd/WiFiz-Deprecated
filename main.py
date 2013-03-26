@@ -3,6 +3,7 @@
 # Importing Standard Libraries #
 import os
 import sys
+import re
 import subprocess
 import fcntl
 import signal
@@ -17,8 +18,8 @@ import taskbar as tbi
 
 # Setting some base app information #
 progVer = 0.8
-log_file = os.getcwd() + '/iwlist.log'
-ilog_file = os.getcwd() + "/iwconfig.log"
+iwlist_file = os.getcwd() + '/iwlist.log'
+iwconfig = os.getcwd() + "/iwconfig.log"
 int_file = os.getcwd() + "/interface.cfg"
 pid_file = os.getcwd() + 'program.pid'
 conf_dir = "/etc/netctl/"
@@ -102,7 +103,7 @@ class WiFiz(wx.Frame):
         # Create Toolbar Buttons #
         toolbar = self.CreateToolBar()
         newTool = toolbar.AddLabelTool(wx.ID_NEW, 'New', 
-            wx.Bitmap('imgs/newprofile.png'), wx.NullBitmap, 
+            wx.ArtProvider.GetBitmap(wx.ART_NEW), wx.NullBitmap, 
             wx.ITEM_NORMAL, 'New Connection')
         ReScanAPs = toolbar.AddLabelTool(wx.ID_ANY, 'Scan', 
             wx.Bitmap('imgs/APScan.png'), wx.NullBitmap, 
@@ -115,7 +116,7 @@ class WiFiz(wx.Frame):
             wx.ITEM_NORMAL, 'Disconnect')
         toolbar.AddSeparator()
         quitTool = toolbar.AddLabelTool(wx.ID_EXIT, 'Quit', 
-            wx.Bitmap('imgs/exit.png'), wx.NullBitmap, 
+            wx.ArtProvider.GetBitmap(wx.ART_QUIT), wx.NullBitmap, 
             wx.ITEM_NORMAL, 'Quit')
         toolbar.Realize()
         # End Toolbar #
@@ -166,7 +167,7 @@ class WiFiz(wx.Frame):
                 f.close()
         os.system("ip link set up dev " + self.UIDValue)
         self.OnScan(self)
-                
+        
     def OnMConnect(self, e):
         item = self.mainMenu.FindItemById(e.GetId())
         profile = item.GetText()
@@ -284,13 +285,13 @@ class WiFiz(wx.Frame):
         newProf = NewProfile(parent=None)       
 
     def OnScan(self, e):
-        if os.path.isfile(log_file):
-            open(log_file, 'w').close()
+        if os.path.isfile(iwlist_file):
+            open(iwlist_file, 'w').close()
         # why is this here again?
 
         os.system("ip link set up " + self.UIDValue)
         output = str(subprocess.check_output("iwlist " + self.UIDValue + " scan", shell=True))
-        f = open(log_file, 'w')
+        f = open(iwlist_file, 'w')
         f.write(output)
         f.close()
 
@@ -298,19 +299,19 @@ class WiFiz(wx.Frame):
         self.index = 0 
         outputs = str(subprocess.check_output("iwconfig " + 
                                 self.UIDValue , shell=True))  
-        d = open(ilog_file, 'w')
+        d = open(iwconfig, 'w')
         d.write(outputs)
         d.close()
-        v = open(ilog_file).read()
-        f = open(log_file).read()
-        for line in open(log_file):
+        v = open(iwconfig).read()
+        f = open(iwlist_file).read()
+        for line in open(iwlist_file):
             if "ESSID" in line:
                 #this breaks ESSID's with spaces in their name
                 begin = line.replace(" ", "")
                 mid = begin.replace("ESSID:", "")
                 final = mid.replace('"', "")
                 self.APList.SetStringItem(self.index, 0, final)
-                line = open(ilog_file).readline()
+                line = open(iwconfig).readline()
                 if final.strip() in line.strip():
                     connect = "yes"
                 else:
@@ -350,7 +351,7 @@ class WiFiz(wx.Frame):
             else:
                 pass
 
-        f = open(ilog_file, 'w')
+        f = open(iwconfig, 'w')
         f.write(outputs)
         f.close()
         try:
@@ -374,7 +375,7 @@ class WiFiz(wx.Frame):
         self.Hide()
 
     def OnFullClose(self, e):
-        open(log_file, 'w').close()
+        open(iwlist_file, 'w').close()
         app.Exit()      
 
     def OnAbout(self, e):
@@ -506,8 +507,8 @@ def cleanUp():
     os.unlink(pid_file)
     # os.unlink(int_file)   # I cant decide if we want to keep this file or 
                             # or do something else with it?
-    os.unlink(log_file)
-    os.unlink(ilog_file)
+    os.unlink(iwlist_file)
+    os.unlink(iwconfig)
 
 def sigInt(signal, frame):
     print "CTRL-C Caught, cleaning up..."
