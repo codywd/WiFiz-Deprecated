@@ -6,6 +6,7 @@ import sys
 import re
 import subprocess
 import fcntl
+import signal
 
 # Importing Third Party Libraries #
 from wx import *
@@ -27,7 +28,7 @@ pid_number = os.getpid()
 euid = os.geteuid()
 if euid != 0:
     print ("WiFiz needs to be run as root, we're going to sudo for you. \n"
-            "You can ctrl-c to exit.")
+            "You can ctrl-c to exit... (maybe)")
     args = ['gksudo', sys.executable] + sys.argv + [os.environ]
     os.execlpe('sudo', *args)
 
@@ -305,9 +306,9 @@ class WiFiz(wx.Frame):
         d = open(ilog_file, 'w')
         d.write(outputs)
         d.close()
-        v = open(ilogfile).read()
-        f = open(logfile).read()
-        for line in open(logfile):
+        v = open(ilog_file).read()
+        f = open(log_file).read()
+        for line in open(log_file):
             if "ESSID" in line:
                 #this breaks ESSID's with spaces in their name
                 begin = line.replace(" ", "")
@@ -523,7 +524,7 @@ def sigInt(signal, frame):
 if __name__ == "__main__":
     app = wx.App()
     # We'll handle ctrl-c for wx
-    signal.signal(signal.SIGINT, sigInt)
+    # signal.signal(signal.SIGINT, sigInt) #unworking FIXED in local dev branch
     # Prepare app
     WiFiz(None, title="WiFiz")
     # Run app
