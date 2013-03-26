@@ -483,15 +483,19 @@ def sigInt(signal, frame):
     print "done. BYE!"
     sys.exit(0)
 
-
 # Start App #
 if __name__ == "__main__":
-    app = wx.App()
-    # We'll handle ctrl-c for wx
-    signal.signal(signal.SIGINT, sigInt)
-    # Prepare app
-    WiFiz(None, title="WiFiz")
-    # Run app
-    app.MainLoop()
-    cleanUp()
-    sys.exit(0)
+    wxAppPid = os.fork() # Consider pty module instead? TODO
+    if wxAppPid:
+        # We'll handle ctrl-c for wx
+        signal.signal(signal.SIGINT, sigInt)
+        os.waitpid(wxAppPid,0)
+        cleanUp()
+        sys.exit(0)
+    else:
+        # Child mode
+        # Prepare app
+        app = wx.App(False)
+        WiFiz(None, title="WiFiz")
+        # Run app
+        app.MainLoop()
