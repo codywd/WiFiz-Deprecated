@@ -3,9 +3,9 @@
 # Importing Standard Libraries #
 import os
 import sys
-import re
 import subprocess
 import fcntl
+import signal
 
 # Importing Third Party Libraries #
 from wx import *
@@ -101,7 +101,7 @@ class WiFiz(wx.Frame):
         # Create Toolbar Buttons #
         toolbar = self.CreateToolBar()
         newTool = toolbar.AddLabelTool(wx.ID_NEW, 'New', 
-            wx.ArtProvider.GetBitmap(wx.ART_NEW), wx.NullBitmap, 
+            wx.Bitmap('imgs/newprofile.png'), wx.NullBitmap, 
             wx.ITEM_NORMAL, 'New Connection')
         ReScanAPs = toolbar.AddLabelTool(wx.ID_ANY, 'Scan', 
             wx.Bitmap('imgs/APScan.png'), wx.NullBitmap, 
@@ -114,7 +114,7 @@ class WiFiz(wx.Frame):
             wx.ITEM_NORMAL, 'Disconnect')
         toolbar.AddSeparator()
         quitTool = toolbar.AddLabelTool(wx.ID_EXIT, 'Quit', 
-            wx.ArtProvider.GetBitmap(wx.ART_QUIT), wx.NullBitmap, 
+            wx.Bitmap('imgs/exit.png'), wx.NullBitmap, 
             wx.ITEM_NORMAL, 'Quit')
         toolbar.Realize()
         # End Toolbar #
@@ -165,7 +165,7 @@ class WiFiz(wx.Frame):
                 f.close()
         os.system("ip link set up dev " + self.UIDValue)
         self.OnScan(self)
-        
+                
     def OnMConnect(self, e):
         item = self.mainMenu.FindItemById(e.GetId())
         profile = item.GetText()
@@ -305,9 +305,9 @@ class WiFiz(wx.Frame):
         d = open(ilog_file, 'w')
         d.write(outputs)
         d.close()
-        v = open(ilogfile).read()
-        f = open(logfile).read()
-        for line in open(logfile):
+        v = open(ilog_file).read()
+        f = open(log_file).read()
+        for line in open(log_file):
             if "ESSID" in line:
                 #this breaks ESSID's with spaces in their name
                 begin = line.replace(" ", "")
