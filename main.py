@@ -347,7 +347,7 @@ class WiFiz(wx.Frame):
                 if "WPA2" in line:
                     encrypt = "WPA"
                 elif "off" in line:
-                    encrypt = "None"
+                    encrypt = "Open"
                 elif "WEP" in line:
                     encrypt = "WEP"
                 else:
