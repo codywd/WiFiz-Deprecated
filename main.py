@@ -313,13 +313,13 @@ class WiFiz(wx.Frame):
         f = open(iwlist_file).read()
         for line in open(iwlist_file):
             if "ESSID" in line:
-                #this breaks ESSID's with spaces in their name
-                begin = line.replace(" ", "")
+                begin = line.strip()
                 mid = begin.replace("ESSID:", "")
                 final = mid.replace('"', "")
                 self.APList.SetStringItem(self.index, 0, final)
                 line = open(iwconfig_file).readline()
-                if final.strip() in line.strip():
+                # Check by ap mac 
+                if final.strip() in line.strip() and final.strip() != '':
                     connect = "yes"
                 else:
                     connect = "no"
@@ -364,19 +364,21 @@ class WiFiz(wx.Frame):
         try:
             self.AutoConnect()   
         except:
-            print "FAIL!"   
+            print "Auto connect failed!"   
         else:
             pass
             
     def AutoConnect(self, e):
         try:
             os.system("ip link set down " + self.UIDValue)
-            os.system("netctl disable " + self.profile)
-            os.system("netctl enable " + self.profile)
+            # os.system("netctl disable " + self.profile)
+            # os.system("netctl enable " + self.profile)
             os.system("netctl start " + self.profile)
             wx.MessageBox("You are now connected to " + str(self.profile).strip() + ".", "Connected.")
         except:
-            wx.MessageBox("There has been an error, please try again. If it persists, please contact Cody Dostal at dostalcody@gmail.com.", "Error!")        
+            wx.MessageBox("There has been an error, please try again. "
+                        "If it persists, please contact Cody Dostal "
+                        "at dostalcody@gmail.com.", "Error!")        
 
     def OnClose(self, e):
         self.Hide()
