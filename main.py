@@ -36,7 +36,7 @@ for arg in sys.argv:
 euid = os.geteuid()
 if euid != 0:
     print ("WiFiz needs to be run as root, we're going to sudo for you. \n"
-            "You can ctrl-c to exit... (maybe)")
+            "You can Ctrl+c to exit... (maybe)")
     args = ['gksudo', sys.executable] + sys.argv + [os.environ]
     os.execlpe('sudo', *args)
 
@@ -158,6 +158,7 @@ class WiFiz(wx.Frame):
         self.SetSize((700,390))
         self.Center()
         self.Show()
+        # Get interface name: From file or from user.
         if os.path.isfile(int_file):
             f = open(int_file)
             self.UIDValue = f.readline()
@@ -292,10 +293,7 @@ class WiFiz(wx.Frame):
         newProf = NewProfile(parent=None)       
 
     def OnScan(self, e):
-        if os.path.isfile(iwlist_file):
-            open(iwlist_file, 'w').close()
-        # why is this here again?
-
+        '''Scan on [device], save output'''
         os.system("ip link set up " + self.UIDValue)
         output = str(subprocess.check_output("iwlist " + self.UIDValue + " scan", shell=True))
         f = open(iwlist_file, 'w')
