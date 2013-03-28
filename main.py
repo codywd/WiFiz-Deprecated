@@ -16,6 +16,10 @@ import wx.lib.mixins.listctrl as listmix
 from wx import wizard as wiz
 import taskbar as tbi
 
+# Import local libraries #
+import interface
+import netctl
+
 # Setting some base app information #
 progVer = 0.8
 iwlist_file = os.getcwd() + '/iwlist.log'
@@ -168,19 +172,20 @@ class WiFiz(wx.Frame):
             self.UID = wx.TextEntryDialog(self, "What is your Interface Name? "
                 "(wlan0, wlp2s0)", "Wireless Interface", "")
             if self.UID.ShowModal() == wx.ID_OK:
+                # rename this var!! TODO 
                 self.UIDValue = self.UID.GetValue()
                 # TODO error checking for null values
                 f = open(int_file, 'w')
                 f.write(self.UIDValue)
                 f.close()
-        os.system("ip link set up dev " + self.UIDValue)
+        interface.up(self.UIDValue)
         self.OnScan(self)
         
     def OnMConnect(self, e):
         item = self.mainMenu.FindItemById(e.GetId())
         profile = item.GetText()
-        os.system("netctl stop-all")
-        os.system("netctl start " + profile)        
+        netctl.stopall()
+        netctl.start(profile)
     
     def OnPref(self, e):
         prefWindow = Preferences(self, wx.ID_ANY, title="Preferences")
@@ -205,10 +210,8 @@ class WiFiz(wx.Frame):
         print filename
         if os.path.isfile(conf_dir + filename):
             try:
-                os.system("ip link set down " + self.UIDValue)
-                os.system("netctl disable " + filename)
-                os.system("netctl enable " + filename)
-                os.system("netctl start " + filename)
+                interface.down(self.UIDValue)
+                netctl.start(filename)
                 wx.MessageBox("You are now connected to " + str(nameofProfile).strip() + ".", "Connected.")
             except:
                 wx.MessageBox("There has been an error, please try again. If it persists, please contact Cody Dostal at dostalcody@gmail.com.", "Error!")
@@ -243,10 +246,8 @@ class WiFiz(wx.Frame):
             f.write("IP=dhcp\n")
             f.close()
             try:
-                os.system("ip link set down " + self.UIDValue)
-                os.system("netctl disable " + filename)
-                os.system("netctl enable " + filename)
-                os.system("netctl start " + filename)
+                interface.down(self.UIDValue)
+                netctl.start(filename)
                 wx.MessageBox("You are now connected to " + str(nameofProfile).strip() + ".", "Connected.")
             except:
                 wx.MessageBox("There has been an error, please try again. If it persists, please contact Cody Dostal at dostalcody@gmail.com.", "Error!")
@@ -282,9 +283,8 @@ class WiFiz(wx.Frame):
         index = int(index)
         item = self.APList.GetItem(index, 0)
         nameofProfile = item.GetText()
-        os.system("netctl stop " + filename)
-        os.system("ip link set down " + self.UIDValue)
-        os.system("netctl disable " + filename)
+        netctl.stop(filename)
+        interface.down(self.UIDValue)
         self.OnScan(self)
         wx.MessageBox("You are now disconnected from " + 
                     nameofProfile + ".", "Disconnected.")
@@ -294,7 +294,7 @@ class WiFiz(wx.Frame):
 
     def OnScan(self, e):
         '''Scan on [device], save output'''
-        os.system("ip link set up " + self.UIDValue)
+        interface.up(self.UIDValue)
         output = str(subprocess.check_output("iwlist " + self.UIDValue + " scan", shell=True))
         f = open(iwlist_file, 'w')
         f.write(output)
@@ -368,10 +368,8 @@ class WiFiz(wx.Frame):
             
     def AutoConnect(self, e):
         try:
-            os.system("ip link set down " + self.UIDValue)
-            # os.system("netctl disable " + self.profile)
-            # os.system("netctl enable " + self.profile)
-            os.system("netctl start " + self.profile)
+            interface.down(self.UIDValue)
+            netctl.start(self.profile)
             wx.MessageBox("You are now connected to " + str(self.profile).strip() + ".", "Connected.")
         except:
             wx.MessageBox("There has been an error, please try again. "
