@@ -294,37 +294,36 @@ class WiFiz(wx.Frame):
 
     def OnScan(self, e):
         '''Scan on [device], save output'''
+        # Scan for access points
         interface.up(self.UIDValue)
-        output = str(subprocess.check_output("iwlist " + self.UIDValue + " scan", shell=True))
+        output = str(subprocess.check_output("iwlist " + self.UIDValue + 
+                                                        " scan", shell=True))
         f = open(iwlist_file, 'w')
         f.write(output)
         f.close()
-
+        # Clear APList
         self.APList.DeleteAllItems()
-        self.index = 0 
-        outputs = str(subprocess.check_output("iwconfig " + 
-                                self.UIDValue , shell=True))  
+        self.index = 0
+        # Write iwconfig status
+        outputs = str(subprocess.check_output("iwconfig " + self.UIDValue , 
+                                                                shell=True))  
         d = open(iwconfig_file, 'w')
         d.write(outputs)
         d.close()
-        v = open(iwconfig_file).read()
-        f = open(iwlist_file).read()
         for line in open(iwlist_file):
             if "ESSID" in line:
-                begin = line.strip()
-                mid = begin.replace("ESSID:", "")
-                final = mid.replace('"', "")
-                self.APList.SetStringItem(self.index, 0, final)
+                essid = line.strip().replace("ESSID:", "").replace('"', "")
+                self.APList.SetStringItem(self.index, 0, essid)
                 line = open(iwconfig_file).readline()
-                # Check by ap mac 
-                if final.strip() in line.strip() and final.strip() != '':
+                # Check by ap mac TODO 
+                if essid.strip() in line.strip() and essid.strip() != '':
                     connect = "yes"
                 else:
                     connect = "no"
                 self.APList.SetStringItem(self.index, 3, connect) 
                 profiles = os.listdir("/etc/netctl/")
-                if any(final.strip() in s for s in profiles):
-                    profile = "wifiz-" + final.strip()
+                if any(essid.strip() in s for s in profiles):
+                    profile = "wifiz-" + essid.strip()
                     if os.path.isfile(conf_dir + profile):
                         for line in open(conf_dir + profile):
                             if "#preferred" in line:
@@ -336,12 +335,10 @@ class WiFiz(wx.Frame):
                 lines = "Line %s" % self.index 
                 self.APList.InsertStringItem(self.index, lines)
                 self.index + 1                
-                s = str(line)
-                s2 = s[28:33]
+                s = str(line)[28:33]
                 # Courtesy of gohu's iwlistparse.py, slightly modified. 
                 # https://bbs.archlinux.org/viewtopic.php?id=88967
-                s3 = str(int(round(float(s2[0]) / float(s2[3]) 
-                * 100))).rjust(3) + " %" 
+                s3 = str(int(round(float(s[0])/float(s[3])*100))).rjust(3)+" %" 
                 self.APList.SetStringItem(self.index, 1, s3)
             if "Encryption" in line:
                 if "WPA2" in line:
