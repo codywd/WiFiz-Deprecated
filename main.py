@@ -180,7 +180,8 @@ class WiFiz(wx.Frame):
                 f.close()
         interface.up(self.UIDValue)
         self.OnScan(self)
-        
+
+    # TODO rename this funct        
     def OnMConnect(self, e):
         item = self.mainMenu.FindItemById(e.GetId())
         profile = item.GetText()
@@ -195,7 +196,10 @@ class WiFiz(wx.Frame):
     def OnEdit(self, e):
         editWindow = EditProfile(None)
         
+    # TODO rename this section.
     def OnConnect(self, e):
+        # TODO rewrite this section, we sould be grabbing this
+        # info from eleswhere.
         index = str(self.getSelectedIndices()).strip('[]')
         index = int(index)
         nmp = self.APList.GetItem(index, 0)
@@ -204,9 +208,15 @@ class WiFiz(wx.Frame):
         typeofSecurity = tos.GetText()
         typeofSecurity = str(typeofSecurity).strip()
         typeofSecurity = typeofSecurity.lower()
+        # HACK TODO REMOVE
+        if typeofSecurity == open:
+            typeofSecurity = 'none'
 
         filename = str("wifiz" + u'-' + nameofProfile).strip()
         filename = filename.strip()
+
+        # We need to make this section optional
+        # TODO and move it out of here
         print filename
         if os.path.isfile(conf_dir + filename):
             try:
@@ -245,6 +255,8 @@ class WiFiz(wx.Frame):
             #     f.write("#preferred=no\n")
             f.write("IP=dhcp\n")
             f.close()
+
+
             try:
                 interface.down(self.UIDValue)
                 netctl.start(filename)
@@ -326,6 +338,7 @@ class WiFiz(wx.Frame):
                 if kv[0] == "Encryption key":
                     if kv[1] == "off":
                         encrypt = "Open"
+                        file_encrypt = "none"
                     elif kv[1] == "on":
                         encrypt = "Probably WEP"                        
                     self.APList.SetStringItem(self.index, 2, encrypt)
@@ -361,13 +374,15 @@ class WiFiz(wx.Frame):
         f = open(iwconfig_file, 'w')
         f.write(outputs)
         f.close()
-        try:
-            self.AutoConnect()   
-        except:
-            print "Auto connect failed!"   
-        else:
-            pass
-            
+
+        # TODO if atocnnt enabled DO 
+        # try:
+        #     self.AutoConnect()   
+        # except:
+        #     print "Auto connect failed!"   
+        # else:
+        #     pass
+    # TODO unworking            
     def AutoConnect(self, e):
         try:
             interface.down(self.UIDValue)
