@@ -310,48 +310,53 @@ class WiFiz(wx.Frame):
         d = open(iwconfig_file, 'w')
         d.write(outputs)
         d.close()
-        for line in open(iwlist_file):
-            if "ESSID" in line:
-                essid = line.strip().replace("ESSID:", "").replace('"', "")
-                self.APList.SetStringItem(self.index, 0, essid)
-                line = open(iwconfig_file).readline()
-                # Check by ap mac TODO 
-                if essid.strip() in line.strip() and essid.strip() != '':
-                    connect = "yes"
-                else:
-                    connect = "no"
-                self.APList.SetStringItem(self.index, 3, connect) 
-                profiles = os.listdir("/etc/netctl/")
-                if any(essid.strip() in s for s in profiles):
-                    profile = "wifiz-" + essid.strip()
-                    if os.path.isfile(conf_dir + profile):
-                        for line in open(conf_dir + profile):
-                            if "#preferred" in line:
-                                if "yes" in line:
-                                    profile = profile
-                                else:
-                                    pass
-            if "Quality" in line:
-                lines = "Line %s" % self.index 
-                self.APList.InsertStringItem(self.index, lines)
-                self.index + 1                
-                s = str(line)[28:33]
-                # Courtesy of gohu's iwlistparse.py, slightly modified. 
-                # https://bbs.archlinux.org/viewtopic.php?id=88967
-                s3 = str(int(round(float(s[0])/float(s[3])*100))).rjust(3)+" %" 
-                self.APList.SetStringItem(self.index, 1, s3)
-            if "Encryption" in line:
-                if "WPA2" in line:
+        # I'd rather use regex and get an array
+        iwlist = open(iwlist_file, 'r').read()
+        # Split by access point
+        ap_list = re.split(r'Cell \d\d -', iwlist)
+
+        for ap in ap_list:
+            # Split by line
+            ap_data = re.split("\n+",ap)
+            for line in ap_data:
+                kv = re.split(":", line.strip())
+                if kv[0] == "ESSID":
+                    self.APList.SetStringItem(self.index, 0, 
+                            kv[1].strip().replace('"', ""))
+                if kv[0] == "Encryption key":
+                    if kv[1] == "off":
+                        encrypt = "Open"
+                    elif kv[1] == "on":
+                        encrypt = "Probably WEP"                        
+                    self.APList.SetStringItem(self.index, 2, encrypt)
+                if "WPA" in line:
                     encrypt = "WPA"
-                elif "off" in line:
-                    encrypt = "Open"
-                elif "WEP" in line:
-                    encrypt = "WEP"
-                else:
-                    encrypt = "UNKNOWN"
-                self.APList.SetStringItem(self.index, 2, encrypt)
-            else:
-                pass
+                    self.APList.SetStringItem(self.index, 2, encrypt)
+                if "WPA2" in line:
+                    encrypt = "WPA2"
+                    self.APList.SetStringItem(self.index, 2, encrypt)
+                
+                # TODO conver this line!
+                if "Quality" in line:
+                    lines = "Line %s" % self.index 
+                    self.APList.InsertStringItem(self.index, lines)
+                    self.index + 1                
+                    s = str(line)[28:33]
+                    # Courtesy of gohu's iwlistparse.py, slightly modified. 
+                    # https://bbs.archlinux.org/viewtopic.php?id=88967
+                    s3 = str(int(round(float(s[0])/float(s[3])*100))).rjust(3)+" %" 
+                    self.APList.SetStringItem(self.index, 1, s3)
+                
+                # profiles = os.listdir("/etc/netctl/")
+                # if any(essid.strip() in s for s in profiles):
+                #     profile = "wifiz-" + essid.strip()
+                #     if os.path.isfile(conf_dir + profile):
+                #         for line in open(conf_dir + profile):
+                #             if "#preferred" in line:
+                #                 if "yes" in line:
+                #                     profile = profile
+                #                 else:
+                #                     pass
 
         f = open(iwconfig_file, 'w')
         f.write(outputs)
