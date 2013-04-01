@@ -16,7 +16,7 @@ def stop(network):
 
 def stopall():
     os.system("netctl stop-all")
-    print "stop-all " + network
+    print "stop-all"
 
 def restart(network):
     os.system("netctl restart " + profile)

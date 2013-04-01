@@ -53,4 +53,6 @@ class Icon(wx.TaskBarIcon):
             self.parent.Iconize(False)
         if not self.parent.IsShown():
             self.parent.Show(True)
-        self.parent.Raise()
+            self.parent.Raise()
+        else:
+            self.parent.Show(False)

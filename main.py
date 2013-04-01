@@ -519,6 +519,23 @@ class TitledPage(wiz.WizardPageSimple):
         sizer.Add(title, 0, wx.ALIGN_CENTER_HORIZONTAL|wx.ALL, 5)
         sizer.Add(wx.StaticLine(self, -1), 0, wx.EXPAND|wx.ALL, 5)
 
+def GetInterface(wxobj):
+    if os.path.isfile(int_file):
+        f = open(int_file)
+        interface = f.readline()
+        f.close()
+        return str(interface).strip()
+    else:
+        wxobj.UID = wx.TextEntryDialog(wxobj, "What is your Interface Name? "
+            "(wlan0, wlp2s0)", "Wireless Interface", "")
+        if wxobj.UID.ShowModal() == wx.ID_OK:
+            # rename this var!! TODO 
+            wxobj.UIDValue = wxobj.UID.GetValue()
+            # TODO error checking for null values
+            f = open(int_file, 'w')
+            f.write(wxobj.UIDValue)
+            f.close()
+
 def CreateConfig(name, interface, security, key=None, ip='dhcp'):
     print "Creating Config File!\n"
     # TODO genertate better filename
@@ -555,7 +572,6 @@ def cleanUp():
         os.unlink(iwconfig_file)
     except:
         pass
-
 
 def sigInt(signal, frame):
     print "CTRL-C Caught, cleaning up..."
