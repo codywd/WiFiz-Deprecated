@@ -21,7 +21,7 @@ import interface
 import netctl
 
 # Setting some base app information #
-progVer = 0.8
+progVer = '0.9.0'
 iwlist_file = os.getcwd() + '/iwlist.log'
 iwconfig_file = os.getcwd() + "/iwconfig.log"
 int_file = os.getcwd() + "/interface.cfg"
