@@ -219,12 +219,16 @@ class WiFiz(wx.Frame):
         # TODO and move it out of here
         print filename
         if os.path.isfile(conf_dir + filename):
-            try:
-                interface.down(self.UIDValue)
-                netctl.start(filename)
-                wx.MessageBox("You are now connected to " + str(nameofProfile).strip() + ".", "Connected.")
-            except:
-                wx.MessageBox("There has been an error, please try again. If it persists, please contact Cody Dostal at dostalcody@gmail.com.", "Error!")
+            interface.down(self.UIDValue)
+            netctl.start(filename)
+            # Missing function TODO 
+            if IsConnected():
+                wx.MessageBox("You are now connected to " + 
+                    str(nameofProfile) + ".", "Connected.")
+            else:
+                wx.MessageBox("There has been an error, please try again. "
+                    "If it persists, please contact Cody Dostal at "
+                    "dostalcody@gmail.com.", "Error!")
         else:
             f = open(conf_dir + filename, "w")
             f.write("Description='A profile made by Wifiz for " + 
@@ -522,6 +526,14 @@ class TitledPage(wiz.WizardPageSimple):
         sizer.Add(title, 0, wx.ALIGN_CENTER_HORIZONTAL|wx.ALL, 5)
         sizer.Add(wx.StaticLine(self, -1), 0, wx.EXPAND|wx.ALL, 5)
 
+
+def IsConnected(interface):
+    '''Query the selected interface, return True if up else return False'''
+    ip = subprocess.check_output('ip -o link show '+ interface)
+    status = re.split('\s', ip)
+    if status[9] == 'UP': return True 
+    else: return False
+
 def cleanUp():
     # Clean up time
     fcntl.lockf(fp, fcntl.LOCK_UN)
@@ -546,7 +558,7 @@ def sigInt(signal, frame):
 if __name__ == "__main__":
     wxAppPid = os.fork() # Consider pty module instead? TODO
     if wxAppPid:
-        # We'll handle ctrl-c for wx
+        # We'll handle ctrl-c
         signal.signal(signal.SIGINT, sigInt)
         os.waitpid(wxAppPid,0)
         print "Child died here\n"
