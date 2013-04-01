@@ -21,7 +21,7 @@ import interface
 import netctl
 
 # Setting some base app information #
-progVer = 0.8
+progVer = '0.9.0'
 iwlist_file = os.getcwd() + '/iwlist.log'
 iwconfig_file = os.getcwd() + "/iwconfig.log"
 int_file = os.getcwd() + "/interface.cfg"
@@ -161,29 +161,19 @@ class WiFiz(wx.Frame):
 
         self.SetSize((700,390))
         self.Center()
-        self.Show()
+        #self.Show()
+
         # Get interface name: From file or from user.
-        if os.path.isfile(int_file):
-            f = open(int_file)
-            self.UIDValue = f.readline()
-            str(self.UIDValue).strip()
-            f.close()
-        else:
-            self.UID = wx.TextEntryDialog(self, "What is your Interface Name? "
-                "(wlan0, wlp2s0)", "Wireless Interface", "")
-            if self.UID.ShowModal() == wx.ID_OK:
-                # rename this var!! TODO 
-                self.UIDValue = self.UID.GetValue()
-                # TODO error checking for null values
-                f = open(int_file, 'w')
-                f.write(self.UIDValue)
-                f.close()
-        interface.up(self.UIDValue)
-        self.OnScan(self)
-        
-    def OnMConnect(self, e):
-        item = self.mainMenu.FindItemById(e.GetId())
-        profile = item.GetText()
+        self.UIDvalue = GetInterface(self)
+        #interface.up(self.UIDValue)
+        #self.OnScan(self)
+
+    # TODO rename this funct        
+    def OnMConnect(self, profile):
+        #item = self.mainMenu.FindItemById(e.GetId())
+        #profile = item.GetText()
+        netinterface = GetInterface(self)
+        interface.down(netinterface)
         netctl.stopall()
         netctl.start(profile)
     
@@ -195,7 +185,10 @@ class WiFiz(wx.Frame):
     def OnEdit(self, e):
         editWindow = EditProfile(None)
         
+    # TODO rename this section.
     def OnConnect(self, e):
+        # TODO rewrite this section, we sould be grabbing this
+        # info from eleswhere.
         index = str(self.getSelectedIndices()).strip('[]')
         index = int(index)
         nmp = self.APList.GetItem(index, 0)
@@ -204,37 +197,40 @@ class WiFiz(wx.Frame):
         typeofSecurity = tos.GetText()
         typeofSecurity = str(typeofSecurity).strip()
         typeofSecurity = typeofSecurity.lower()
+        # HACK TODO REMOVE
+        if typeofSecurity == open:
+            typeofSecurity = 'none'
 
         filename = str("wifiz" + u'-' + nameofProfile).strip()
         filename = filename.strip()
+
+        # We need to make this section optional
+        # TODO and move it out of here
         print filename
         if os.path.isfile(conf_dir + filename):
-            try:
-                interface.down(self.UIDValue)
-                netctl.start(filename)
-                wx.MessageBox("You are now connected to " + str(nameofProfile).strip() + ".", "Connected.")
-            except:
-                wx.MessageBox("There has been an error, please try again. If it persists, please contact Cody Dostal at dostalcody@gmail.com.", "Error!")
+            interface.down(self.UIDValue)
+            netctl.start(filename)
+            # Missing function TODO 
+            if IsConnected():
+                wx.MessageBox("You are now connected to " + 
+                    str(nameofProfile) + ".", "Connected.")
+            else:
+                wx.MessageBox("There has been an error, please try again. "
+                    "If it persists, please contact Cody Dostal at "
+                    "dostalcody@gmail.com.", "Error!")
         else:
-            f = open(conf_dir + filename, "w")
-            f.write("Description='A profile made by Wifiz for " + 
-                str(nameofProfile).strip() + "'\n")
-            f.close()
-            f = open(conf_dir + filename, 'a')
-            f.write("Interface=" + str(self.UIDValue).strip() + "\n")
-            f.write("Connection=wireless\n")
-            f.write("Security=" + typeofSecurity + "\n")
-            f.write("ESSID='" + str(nameofProfile).strip() + "'\n")
-            if str(typeofSecurity).strip() != "none":  
+            if str(typeofSecurity).strip() is not "none":  
                 passw = wx.TextEntryDialog(self, "What is the password?",
                                            "Password", "")
                 if passw.ShowModal() == wx.ID_OK:
-                    thepass = passw.GetValue()  
+                    network_key = passw.GetValue()
                 else:
-                    f.close()
-                f.write(r'Key=\"' + thepass + "\n")
+                    print "Something went wrong getting the network password.\n"
+                    network_key = None
             else:
-                f.write(r'Key=None\n')
+                network_key = None
+
+            CreateConfig(nameofProfile, self.UIDValue, typeofSecurity, key)
             # Currently unworking TODO!
             # pref = wx.TextEntryDialog(self, "Is this network preferred? "
             #     "(In range of multiple profiles, connect to this first?)"
@@ -245,6 +241,8 @@ class WiFiz(wx.Frame):
             #     f.write("#preferred=no\n")
             f.write("IP=dhcp\n")
             f.close()
+
+
             try:
                 interface.down(self.UIDValue)
                 netctl.start(filename)
@@ -253,7 +251,7 @@ class WiFiz(wx.Frame):
                 wx.MessageBox("There has been an error, please try again. If it persists, please contact Cody Dostal at dostalcody@gmail.com.", "Error!")
             self.OnScan(self)
 
-    def getSelectedIndices( self, state =  wx.LIST_STATE_SELECTED):
+    def getSelectedIndices(self, state =  wx.LIST_STATE_SELECTED):
         indices = []
         lastFound = -1
         while True:
@@ -326,6 +324,7 @@ class WiFiz(wx.Frame):
                 if kv[0] == "Encryption key":
                     if kv[1] == "off":
                         encrypt = "Open"
+                        file_encrypt = "none"
                     elif kv[1] == "on":
                         encrypt = "Probably WEP"                        
                     self.APList.SetStringItem(self.index, 2, encrypt)
@@ -361,13 +360,15 @@ class WiFiz(wx.Frame):
         f = open(iwconfig_file, 'w')
         f.write(outputs)
         f.close()
-        try:
-            self.AutoConnect()   
-        except:
-            print "Auto connect failed!"   
-        else:
-            pass
-            
+
+        # TODO if atocnnt enabled DO 
+        # try:
+        #     self.AutoConnect()   
+        # except:
+        #     print "Auto connect failed!"   
+        # else:
+        #     pass
+    # TODO unworking            
     def AutoConnect(self, e):
         try:
             interface.down(self.UIDValue)
@@ -507,6 +508,47 @@ class TitledPage(wiz.WizardPageSimple):
         sizer.Add(title, 0, wx.ALIGN_CENTER_HORIZONTAL|wx.ALL, 5)
         sizer.Add(wx.StaticLine(self, -1), 0, wx.EXPAND|wx.ALL, 5)
 
+def GetInterface(wxobj):
+    if os.path.isfile(int_file):
+        f = open(int_file)
+        interface = f.readline()
+        f.close()
+        return str(interface).strip()
+    else:
+        wxobj.UID = wx.TextEntryDialog(wxobj, "What is your Interface Name? "
+            "(wlan0, wlp2s0)", "Wireless Interface", "")
+        if wxobj.UID.ShowModal() == wx.ID_OK:
+            # rename this var!! TODO 
+            wxobj.UIDValue = wxobj.UID.GetValue()
+            # TODO error checking for null values
+            f = open(int_file, 'w')
+            f.write(wxobj.UIDValue)
+            f.close()
+
+def CreateConfig(name, interface, security, key=None, ip='dhcp'):
+    print "Creating Config File!\n"
+    # TODO genertate better filename
+    filename =  name + "-wifiz"
+    f = open(conf_dir + filename, "w")
+    f.write("Description='A profile generated by Wifiz for "+str(name)+"'\n" +
+    "Interface=" + str(interface) + "\n" + 
+    "Connection=wireless\n" +
+    "Security=" + str(security) + "\n" +
+    "ESSID='" + str(name) + "'\n")
+    if key:
+        f.write(r'Key=\"' + key + "\n")
+    else:
+        f.write(r'Key=None\n')
+    f.write("IP=dhcp\n")
+    f.close()
+
+def IsConnected(interface):
+    '''Query the selected interface, return True if up else return False'''
+    ip = subprocess.check_output('ip -o link show '+ interface)
+    status = re.split('\s', ip)
+    if status[9] == 'UP': return True 
+    else: return False
+
 def cleanUp():
     # Clean up time
     fcntl.lockf(fp, fcntl.LOCK_UN)
@@ -520,7 +562,6 @@ def cleanUp():
     except:
         pass
 
-
 def sigInt(signal, frame):
     print "CTRL-C Caught, cleaning up..."
     cleanUp()
@@ -531,7 +572,7 @@ def sigInt(signal, frame):
 if __name__ == "__main__":
     wxAppPid = os.fork() # Consider pty module instead? TODO
     if wxAppPid:
-        # We'll handle ctrl-c for wx
+        # We'll handle ctrl-c
         signal.signal(signal.SIGINT, sigInt)
         os.waitpid(wxAppPid,0)
         print "Child died here\n"
