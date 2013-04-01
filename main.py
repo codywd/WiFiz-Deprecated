@@ -6,6 +6,7 @@ import sys
 import re
 import subprocess
 import fcntl
+import signal
 
 # Importing Third Party Libraries #
 from wx import *
@@ -15,19 +16,31 @@ import wx.lib.mixins.listctrl as listmix
 from wx import wizard as wiz
 import taskbar as tbi
 
+# Import local libraries #
+import interface
+import netctl
+
 # Setting some base app information #
-progVer = 0.8
-log_file = os.getcwd() + '/iwlist.log'
-ilog_file = os.getcwd() + "/iwconfig.log"
+progVer = '0.9.0'
+iwlist_file = os.getcwd() + '/iwlist.log'
+iwconfig_file = os.getcwd() + "/iwconfig.log"
 int_file = os.getcwd() + "/interface.cfg"
 pid_file = os.getcwd() + 'program.pid'
+conf_dir = "/etc/netctl/"
 pid_number = os.getpid()
+
+#print sys.argv
+# do as we're told #
+for arg in sys.argv:
+    if arg == '--help' or arg == '-h':
+        print "WiFiz; The netctl gui! \nNeeds to be root."
+        sys.exit(0)
 
 # Lets make sure we're root as well #
 euid = os.geteuid()
 if euid != 0:
     print ("WiFiz needs to be run as root, we're going to sudo for you. \n"
-            "You can ctrl-c to exit.")
+            "You can Ctrl+c to exit... (maybe)")
     args = ['gksudo', sys.executable] + sys.argv + [os.environ]
     os.execlpe('sudo', *args)
 
@@ -148,29 +161,21 @@ class WiFiz(wx.Frame):
 
         self.SetSize((700,390))
         self.Center()
-        self.Show()
-        if os.path.isfile(int_file):
-            f = open(int_file)
-            self.UIDValue = f.readline()
-            str(self.UIDValue).strip()
-            f.close()
-        else:
-            self.UID = wx.TextEntryDialog(self, "What is your Interface Name? "
-                "(wlan0, wlp2s0)", "Wireless Interface", "")
-            if self.UID.ShowModal() == wx.ID_OK:
-                self.UIDValue = self.UID.GetValue()
-                # TODO error checking for null values
-                f = open(int_file, 'w')
-                f.write(self.UIDValue)
-                f.close()
-        os.system("ip link set up dev " + self.UIDValue)
-        self.OnScan(self)
-        
-    def OnMConnect(self, e):
-        item = self.mainMenu.FindItemById(e.GetId())
-        profile = item.GetText()
-        os.system("netctl stop-all")
-        os.system("netctl start " + profile)        
+        #self.Show()
+
+        # Get interface name: From file or from user.
+        self.UIDvalue = GetInterface(self)
+        #interface.up(self.UIDValue)
+        #self.OnScan(self)
+
+    # TODO rename this funct        
+    def OnMConnect(self, profile):
+        #item = self.mainMenu.FindItemById(e.GetId())
+        #profile = item.GetText()
+        netinterface = GetInterface(self)
+        interface.down(netinterface)
+        netctl.stopall()
+        netctl.start(profile)
     
     def OnPref(self, e):
         prefWindow = Preferences(self, wx.ID_ANY, title="Preferences")
@@ -180,7 +185,10 @@ class WiFiz(wx.Frame):
     def OnEdit(self, e):
         editWindow = EditProfile(None)
         
+    # TODO rename this section.
     def OnConnect(self, e):
+        # TODO rewrite this section, we sould be grabbing this
+        # info from eleswhere.
         index = str(self.getSelectedIndices()).strip('[]')
         index = int(index)
         nmp = self.APList.GetItem(index, 0)
@@ -189,61 +197,61 @@ class WiFiz(wx.Frame):
         typeofSecurity = tos.GetText()
         typeofSecurity = str(typeofSecurity).strip()
         typeofSecurity = typeofSecurity.lower()
+        # HACK TODO REMOVE
+        if typeofSecurity == open:
+            typeofSecurity = 'none'
 
-        workDir = "/etc/netctl/"
         filename = str("wifiz" + u'-' + nameofProfile).strip()
         filename = filename.strip()
+
+        # We need to make this section optional
+        # TODO and move it out of here
         print filename
-        if os.path.isfile(workDir + filename):
-            try:
-                os.system("ip link set down " + self.UIDValue)
-                os.system("netctl disable " + filename)
-                os.system("netctl enable " + filename)
-                os.system("netctl start " + filename)
-                wx.MessageBox("You are now connected to " + str(nameofProfile).strip() + ".", "Connected.")
-            except:
-                wx.MessageBox("There has been an error, please try again. If it persists, please contact Cody Dostal at dostalcody@gmail.com.", "Error!")
+        if os.path.isfile(conf_dir + filename):
+            interface.down(self.UIDValue)
+            netctl.start(filename)
+            # Missing function TODO 
+            if IsConnected():
+                wx.MessageBox("You are now connected to " + 
+                    str(nameofProfile) + ".", "Connected.")
+            else:
+                wx.MessageBox("There has been an error, please try again. "
+                    "If it persists, please contact Cody Dostal at "
+                    "dostalcody@gmail.com.", "Error!")
         else:
-            f = open(workDir + filename, "w")
-            f.write("Description='A profile made by Wifiz for " + 
-                str(nameofProfile).strip() + "'\n")
-            f.close()
-            f = open(workDir + filename, 'a')
-            f.write("Interface=" + str(self.UIDValue).strip() + "\n")
-            f.write("Connection=wireless\n")
-            f.write("Security=" + typeofSecurity + "\n")
-            f.write("ESSID='" + str(nameofProfile).strip() + "'\n")
-            if str(typeofSecurity).strip() != "none":  
+            if str(typeofSecurity).strip() is not "none":  
                 passw = wx.TextEntryDialog(self, "What is the password?",
-                                           "Password",
-                                           "")
+                                           "Password", "")
                 if passw.ShowModal() == wx.ID_OK:
-                    thepass = passw.GetValue()  
+                    network_key = passw.GetValue()
                 else:
-                    f.close()
-                f.write(r'Key=\"' + thepass + "\n")
+                    print "Something went wrong getting the network password.\n"
+                    network_key = None
             else:
-                f.write(r'Key=None\n')
-            pref = wx.TextEntryDialog(self, "Is this network preferred? "
-                "(In range of multiple profiles, connect to this first?)"
-                                                "Preferred Network?", "")
-            if pref.ShowModal() == wx.ID_OK:
-                f.write("#preferred=yes\n")
-            else:
-                f.write("#preferred=no\n")
+                network_key = None
+
+            CreateConfig(nameofProfile, self.UIDValue, typeofSecurity, key)
+            # Currently unworking TODO!
+            # pref = wx.TextEntryDialog(self, "Is this network preferred? "
+            #     "(In range of multiple profiles, connect to this first?)"
+            #                                     "Preferred Network?", "")
+            # if pref.ShowModal() == wx.ID_OK:
+            #     f.write("#preferred=yes\n")
+            # else:
+            #     f.write("#preferred=no\n")
             f.write("IP=dhcp\n")
             f.close()
+
+
             try:
-                os.system("ip link set down " + self.UIDValue)
-                os.system("netctl disable " + filename)
-                os.system("netctl enable " + filename)
-                os.system("netctl start " + filename)
+                interface.down(self.UIDValue)
+                netctl.start(filename)
                 wx.MessageBox("You are now connected to " + str(nameofProfile).strip() + ".", "Connected.")
             except:
                 wx.MessageBox("There has been an error, please try again. If it persists, please contact Cody Dostal at dostalcody@gmail.com.", "Error!")
             self.OnScan(self)
 
-    def getSelectedIndices( self, state =  wx.LIST_STATE_SELECTED):
+    def getSelectedIndices(self, state =  wx.LIST_STATE_SELECTED):
         indices = []
         lastFound = -1
         while True:
@@ -273,9 +281,8 @@ class WiFiz(wx.Frame):
         index = int(index)
         item = self.APList.GetItem(index, 0)
         nameofProfile = item.GetText()
-        os.system("netctl stop " + filename)
-        os.system("ip link set down " + self.UIDValue)
-        os.system("netctl disable " + filename)
+        netctl.stop(filename)
+        interface.down(self.UIDValue)
         self.OnScan(self)
         wx.MessageBox("You are now disconnected from " + 
                     nameofProfile + ".", "Disconnected.")
@@ -284,101 +291,99 @@ class WiFiz(wx.Frame):
         newProf = NewProfile(parent=None)       
 
     def OnScan(self, e):
-        if os.path.isfile(log_file):
-            f = open(log_file, 'r+')
-            f.truncate()
-            f.close()
-        else:
-            pass
-            #why is this here again?
-
-        os.system("ip link set up " + self.UIDValue)
-        output = str(subprocess.check_output("iwlist " + self.UIDValue + " scan", shell=True))
-        f = open(log_file, 'w')
+        '''Scan on [device], save output'''
+        # Scan for access points
+        interface.up(self.UIDValue)
+        output = str(subprocess.check_output("iwlist " + self.UIDValue + 
+                                                        " scan", shell=True))
+        f = open(iwlist_file, 'w')
         f.write(output)
         f.close()
-
+        # Clear APList
         self.APList.DeleteAllItems()
-        self.index = 0 
-        outputs = str(subprocess.check_output("iwconfig " + 
-                                self.UIDValue , shell=True))  
-        d = open(ilog_file, 'w')
+        self.index = 0
+        # Write iwconfig status
+        outputs = str(subprocess.check_output("iwconfig " + self.UIDValue , 
+                                                                shell=True))  
+        d = open(iwconfig_file, 'w')
         d.write(outputs)
         d.close()
-        v = open(ilogfile).read()
-        f = open(logfile).read()
-        for line in open(logfile):
-            if "ESSID" in line:
-                #this breaks ESSID's with spaces in their name
-                begin = line.replace(" ", "")
-                mid = begin.replace("ESSID:", "")
-                final = mid.replace('"', "")
-                self.APList.SetStringItem(self.index, 0, final)
-                line = open(ilog_file).readline()
-                if final.strip() in line.strip():
-                    connect = "yes"
-                else:
-                    connect = "no"
-                self.APList.SetStringItem(self.index, 3, connect) 
-                profiles = os.listdir("/etc/netctl/")
-                if any(final.strip() in s for s in profiles):
-                    workDir = "/etc/netctl/"
-                    profile = "wifiz-" + final.strip()
-                    for line in open(workDir + profile):
-                        if "#preferred" in line:
-                            if "yes" in line:
-                                profile = profile
-                            else:
-                                pass
-            if "Quality" in line:
-                lines = "Line %s" % self.index 
-                self.APList.InsertStringItem(self.index, lines)
-                self.index + 1                
-                s = str(line)
-                s2 = s[28:33]
-                # Courtesy of gohu's iwlistparse.py, slightly modified. 
-                # https://bbs.archlinux.org/viewtopic.php?id=88967
-                s3 = str(int(round(float(s2[0]) / float(s2[3]) 
-                * 100))).rjust(3) + " %" 
-                self.APList.SetStringItem(self.index, 1, s3)
-            if "Encryption" in line:
-                if "WPA2" in line:
-                    encrypt = "WPA"
-                elif "off" in line:
-                    encrypt = "None"
-                else:
-                    encrypt = "WEP"
-                self.APList.SetStringItem(self.index, 2, encrypt)
-            else:
-                pass
+        # I'd rather use regex and get an array
+        iwlist = open(iwlist_file, 'r').read()
+        # Split by access point
+        ap_list = re.split(r'Cell \d\d -', iwlist)
 
-        f = open(ilog_file, 'w')
+        for ap in ap_list:
+            # Split by line
+            ap_data = re.split("\n+",ap)
+            for line in ap_data:
+                kv = re.split(":", line.strip())
+                if kv[0] == "ESSID":
+                    self.APList.SetStringItem(self.index, 0, 
+                            kv[1].strip().replace('"', ""))
+                if kv[0] == "Encryption key":
+                    if kv[1] == "off":
+                        encrypt = "Open"
+                        file_encrypt = "none"
+                    elif kv[1] == "on":
+                        encrypt = "Probably WEP"                        
+                    self.APList.SetStringItem(self.index, 2, encrypt)
+                if "WPA" in line:
+                    encrypt = "WPA"
+                    self.APList.SetStringItem(self.index, 2, encrypt)
+                if "WPA2" in line:
+                    encrypt = "WPA2"
+                    self.APList.SetStringItem(self.index, 2, encrypt)
+                
+                # TODO conver this line!
+                if "Quality" in line:
+                    lines = "Line %s" % self.index 
+                    self.APList.InsertStringItem(self.index, lines)
+                    self.index + 1                
+                    s = str(line)[28:33]
+                    # Courtesy of gohu's iwlistparse.py, slightly modified. 
+                    # https://bbs.archlinux.org/viewtopic.php?id=88967
+                    s3 = str(int(round(float(s[0])/float(s[3])*100))).rjust(3)+" %" 
+                    self.APList.SetStringItem(self.index, 1, s3)
+                
+                # profiles = os.listdir("/etc/netctl/")
+                # if any(essid.strip() in s for s in profiles):
+                #     profile = "wifiz-" + essid.strip()
+                #     if os.path.isfile(conf_dir + profile):
+                #         for line in open(conf_dir + profile):
+                #             if "#preferred" in line:
+                #                 if "yes" in line:
+                #                     profile = profile
+                #                 else:
+                #                     pass
+
+        f = open(iwconfig_file, 'w')
         f.write(outputs)
         f.close()
-        try:
-            self.AutoConnect()   
-        except:
-            print "FAIL!"   
-        else:
-            pass
-            
+
+        # TODO if atocnnt enabled DO 
+        # try:
+        #     self.AutoConnect()   
+        # except:
+        #     print "Auto connect failed!"   
+        # else:
+        #     pass
+    # TODO unworking            
     def AutoConnect(self, e):
         try:
-            os.system("ip link set down " + self.UIDValue)
-            os.system("netctl disable " + self.profile)
-            os.system("netctl enable " + self.profile)
-            os.system("netctl start " + self.profile)
+            interface.down(self.UIDValue)
+            netctl.start(self.profile)
             wx.MessageBox("You are now connected to " + str(self.profile).strip() + ".", "Connected.")
         except:
-            wx.MessageBox("There has been an error, please try again. If it persists, please contact Cody Dostal at dostalcody@gmail.com.", "Error!")        
+            wx.MessageBox("There has been an error, please try again. "
+                        "If it persists, please contact Cody Dostal "
+                        "at dostalcody@gmail.com.", "Error!")        
 
     def OnClose(self, e):
         self.Hide()
 
     def OnFullClose(self, e):
-        f = open(log_file, 'r+')
-        f.truncate()
-        f.close()        
+        open(iwlist_file, 'w').close()
         app.Exit()      
 
     def OnAbout(self, e):
@@ -409,6 +414,7 @@ class WiFiz(wx.Frame):
 
         wx.AboutBox(info)
 
+# Class to manually create new network profile
 class NewProfile(wx.Dialog):
     def __init__(self, parent):
         super(NewProfile, self).__init__(None)
@@ -502,6 +508,47 @@ class TitledPage(wiz.WizardPageSimple):
         sizer.Add(title, 0, wx.ALIGN_CENTER_HORIZONTAL|wx.ALL, 5)
         sizer.Add(wx.StaticLine(self, -1), 0, wx.EXPAND|wx.ALL, 5)
 
+def GetInterface(wxobj):
+    if os.path.isfile(int_file):
+        f = open(int_file)
+        interface = f.readline()
+        f.close()
+        return str(interface).strip()
+    else:
+        wxobj.UID = wx.TextEntryDialog(wxobj, "What is your Interface Name? "
+            "(wlan0, wlp2s0)", "Wireless Interface", "")
+        if wxobj.UID.ShowModal() == wx.ID_OK:
+            # rename this var!! TODO 
+            wxobj.UIDValue = wxobj.UID.GetValue()
+            # TODO error checking for null values
+            f = open(int_file, 'w')
+            f.write(wxobj.UIDValue)
+            f.close()
+
+def CreateConfig(name, interface, security, key=None, ip='dhcp'):
+    print "Creating Config File!\n"
+    # TODO genertate better filename
+    filename =  name + "-wifiz"
+    f = open(conf_dir + filename, "w")
+    f.write("Description='A profile generated by Wifiz for "+str(name)+"'\n" +
+    "Interface=" + str(interface) + "\n" + 
+    "Connection=wireless\n" +
+    "Security=" + str(security) + "\n" +
+    "ESSID='" + str(name) + "'\n")
+    if key:
+        f.write(r'Key=\"' + key + "\n")
+    else:
+        f.write(r'Key=None\n')
+    f.write("IP=dhcp\n")
+    f.close()
+
+def IsConnected(interface):
+    '''Query the selected interface, return True if up else return False'''
+    ip = subprocess.check_output('ip -o link show '+ interface)
+    status = re.split('\s', ip)
+    if status[9] == 'UP': return True 
+    else: return False
+
 def cleanUp():
     # Clean up time
     fcntl.lockf(fp, fcntl.LOCK_UN)
@@ -509,8 +556,11 @@ def cleanUp():
     os.unlink(pid_file)
     # os.unlink(int_file)   # I cant decide if we want to keep this file or 
                             # or do something else with it?
-    os.unlink(log_file)
-    os.unlink(ilog_file)
+    try:
+        os.unlink(iwlist_file)
+        os.unlink(iwconfig_file)
+    except:
+        pass
 
 def sigInt(signal, frame):
     print "CTRL-C Caught, cleaning up..."
@@ -518,15 +568,20 @@ def sigInt(signal, frame):
     print "done. BYE!"
     sys.exit(0)
 
-
 # Start App #
 if __name__ == "__main__":
-    app = wx.App()
-    # We'll handle ctrl-c for wx
-    signal.signal(signal.SIGINT, sigInt)
-    # Prepare app
-    WiFiz(None, title="WiFiz")
-    # Run app
-    app.MainLoop()
-    cleanUp()
-    sys.exit(0)
+    wxAppPid = os.fork() # Consider pty module instead? TODO
+    if wxAppPid:
+        # We'll handle ctrl-c
+        signal.signal(signal.SIGINT, sigInt)
+        os.waitpid(wxAppPid,0)
+        print "Child died here\n"
+        cleanUp()
+        sys.exit(0)
+    else:
+        # Child mode
+        # Prepare app
+        app = wx.App(False)
+        WiFiz(None, title="WiFiz")
+        # Run app
+        app.MainLoop()
