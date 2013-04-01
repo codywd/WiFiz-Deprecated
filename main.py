@@ -161,30 +161,19 @@ class WiFiz(wx.Frame):
 
         self.SetSize((700,390))
         self.Center()
-        self.Show()
+        #self.Show()
+
         # Get interface name: From file or from user.
-        if os.path.isfile(int_file):
-            f = open(int_file)
-            self.UIDValue = f.readline()
-            str(self.UIDValue).strip()
-            f.close()
-        else:
-            self.UID = wx.TextEntryDialog(self, "What is your Interface Name? "
-                "(wlan0, wlp2s0)", "Wireless Interface", "")
-            if self.UID.ShowModal() == wx.ID_OK:
-                # rename this var!! TODO 
-                self.UIDValue = self.UID.GetValue()
-                # TODO error checking for null values
-                f = open(int_file, 'w')
-                f.write(self.UIDValue)
-                f.close()
-        interface.up(self.UIDValue)
-        self.OnScan(self)
+        self.UIDvalue = GetInterface(self)
+        #interface.up(self.UIDValue)
+        #self.OnScan(self)
 
     # TODO rename this funct        
-    def OnMConnect(self, e):
-        item = self.mainMenu.FindItemById(e.GetId())
-        profile = item.GetText()
+    def OnMConnect(self, profile):
+        #item = self.mainMenu.FindItemById(e.GetId())
+        #profile = item.GetText()
+        netinterface = GetInterface(self)
+        interface.down(netinterface)
         netctl.stopall()
         netctl.start(profile)
     

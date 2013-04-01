@@ -8,7 +8,6 @@ import wx
 import os
 
 class Icon(wx.TaskBarIcon):
-
     def __init__(self, parent, icon, tooltip):
         wx.TaskBarIcon.__init__(self)
         self.SetIcon(icon, tooltip)
@@ -26,18 +25,17 @@ class Icon(wx.TaskBarIcon):
         for i in profiles:
             if os.path.isfile("/etc/netctl/" + i):
                 profile = self.menu.Append(wx.ID_ANY, i)
-                self.menu.Bind(wx.EVT_MENU, self.OnConnect, profile)
+                self.menu.Bind(wx.EVT_MENU, self.CallConnect, profile)
             else:
                 pass
         self.menu.AppendSeparator()
         texit = self.menu.Append(wx.ID_EXIT, 'E&xit')
         self.menu.Bind(wx.EVT_MENU, self.OnExit, texit)
     
-    def OnConnect(self, e):
+    def CallConnect(self, e):
         item = self.menu.FindItemById(e.GetId())
         profile = item.GetText()
-        os.system("netctl stop-all")
-        os.system("netctl start " + profile)
+        self.parent.OnMConnect(profile)
     
     def OnExit(self, e):
         wx.CallAfter(self.Destroy)
