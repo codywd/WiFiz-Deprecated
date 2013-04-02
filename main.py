@@ -57,9 +57,9 @@ fp.flush()
 # main class #
 class WiFiz(wx.Frame):
     def __init__(self, parent, title):
-        super(WiFiz, self).__init__(None, title="WiFiz", 
+        super(WiFiz, self).__init__(None, title="WiFiz",
                             style = wx.DEFAULT_FRAME_STYLE)
-        self.TrayIcon = tbi.Icon(self, wx.Icon("./imgs/logo.png", 
+        self.TrayIcon = tbi.Icon(self, wx.Icon("./imgs/logo.png",
                                     wx.BITMAP_TYPE_PNG), "WiFiz")
         self.index = 0
         self.InitUI()
@@ -74,12 +74,12 @@ class WiFiz(wx.Frame):
         self.mainMenu = wx.MenuBar()
 
         fileMenu = wx.Menu()
-        ScanAPs = fileMenu.Append(wx.ID_ANY, "Scan for New Networks", 
+        ScanAPs = fileMenu.Append(wx.ID_ANY, "Scan for New Networks",
                                     "Scan for New Wireless Networks.")
         fileMenu.AppendSeparator()
         fileQuit = fileMenu.Append(wx.ID_EXIT, "Quit", "Exit the Program.")
         self.mainMenu.Append(fileMenu, "&File")
-        
+
         profilesMenu = wx.Menu()
         profiles = os.listdir("/etc/netctl/")
         for i in profiles:
@@ -89,14 +89,14 @@ class WiFiz(wx.Frame):
         self.mainMenu.Append(profilesMenu, "Profiles")
 
         helpMenu = wx.Menu()
-        helpItem = helpMenu.Append(wx.ID_HELP, "Help with WiFiz", 
+        helpItem = helpMenu.Append(wx.ID_HELP, "Help with WiFiz",
                                             "Get help with WiFiz")
         helpItem.Enable(False)
         helpMenu.AppendSeparator()
-        reportIssue = helpMenu.Append(wx.ID_ANY, "Report an Issue...", 
+        reportIssue = helpMenu.Append(wx.ID_ANY, "Report an Issue...",
                                     "Report a bug, or give a suggestion.")
         helpMenu.AppendSeparator()
-        aboutItem = helpMenu.Append(wx.ID_ABOUT, "About WiFiz", 
+        aboutItem = helpMenu.Append(wx.ID_ABOUT, "About WiFiz",
                                         "About this program...")
         self.mainMenu.Append(helpMenu, "&Help")
 
@@ -106,28 +106,28 @@ class WiFiz(wx.Frame):
 
         # Create Popup Menu #
         self.PopupMenu = wx.Menu()
-        popCon = self.PopupMenu.Append(wx.ID_ANY, "Connect to Network", 
+        popCon = self.PopupMenu.Append(wx.ID_ANY, "Connect to Network",
                                             "Connect to selected network.")
-        popDCon = self.PopupMenu.Append(wx.ID_ANY, "Disconnect from Network", 
+        popDCon = self.PopupMenu.Append(wx.ID_ANY, "Disconnect from Network",
                                         "Disconnect from selected network.")
 
         # Create Toolbar Buttons #
         toolbar = self.CreateToolBar()
-        newTool = toolbar.AddLabelTool(wx.ID_NEW, 'New', 
-            wx.ArtProvider.GetBitmap(wx.ART_NEW), wx.NullBitmap, 
+        newTool = toolbar.AddLabelTool(wx.ID_NEW, 'New',
+            wx.ArtProvider.GetBitmap(wx.ART_NEW), wx.NullBitmap,
             wx.ITEM_NORMAL, 'New Connection')
-        ReScanAPs = toolbar.AddLabelTool(wx.ID_ANY, 'Scan', 
-            wx.Bitmap('imgs/APScan.png'), wx.NullBitmap, 
+        ReScanAPs = toolbar.AddLabelTool(wx.ID_ANY, 'Scan',
+            wx.Bitmap('imgs/APScan.png'), wx.NullBitmap,
             wx.ITEM_NORMAL, 'Scan')
-        connectSe = toolbar.AddLabelTool(wx.ID_ANY, 'Connect', 
-            wx.Bitmap('imgs/connect.png'), wx.NullBitmap, 
+        connectSe = toolbar.AddLabelTool(wx.ID_ANY, 'Connect',
+            wx.Bitmap('imgs/connect.png'), wx.NullBitmap,
             wx.ITEM_NORMAL, 'Connect')
-        dConnectSe = toolbar.AddLabelTool(wx.ID_ANY, 'Disconnect', 
-            wx.Bitmap('imgs/disconnect.png'), wx.NullBitmap, 
+        dConnectSe = toolbar.AddLabelTool(wx.ID_ANY, 'Disconnect',
+            wx.Bitmap('imgs/disconnect.png'), wx.NullBitmap,
             wx.ITEM_NORMAL, 'Disconnect')
         toolbar.AddSeparator()
-        quitTool = toolbar.AddLabelTool(wx.ID_EXIT, 'Quit', 
-            wx.ArtProvider.GetBitmap(wx.ART_QUIT), wx.NullBitmap, 
+        quitTool = toolbar.AddLabelTool(wx.ID_EXIT, 'Quit',
+            wx.ArtProvider.GetBitmap(wx.ART_QUIT), wx.NullBitmap,
             wx.ITEM_NORMAL, 'Quit')
         toolbar.Realize()
         # End Toolbar #
@@ -152,7 +152,7 @@ class WiFiz(wx.Frame):
         self.Bind(wx.EVT_MENU, self.OnScan, ScanAPs)
         self.Bind(wx.EVT_TOOL, self.OnScan, ReScanAPs)
         self.Bind(wx.EVT_TOOL, self.OnNew, newTool)
-        self.Bind(wx.EVT_TOOL, self.OnDConnect, dConnectSe) 
+        self.Bind(wx.EVT_TOOL, self.OnDConnect, dConnectSe)
         self.Bind(wx.EVT_CONTEXT_MENU, self.OnShowPopup)
         self.Bind(wx.EVT_CONTEXT_MENU, self.OnConnect, popCon)
         self.Bind(wx.EVT_CONTEXT_MENU, self.OnDConnect, popDCon)
@@ -168,7 +168,7 @@ class WiFiz(wx.Frame):
         #interface.up(self.UIDValue)
         #self.OnScan(self)
 
-    # TODO rename this funct        
+    # TODO rename this funct
     def OnMConnect(self, profile):
         #item = self.mainMenu.FindItemById(e.GetId())
         #profile = item.GetText()
@@ -176,15 +176,15 @@ class WiFiz(wx.Frame):
         interface.down(netinterface)
         netctl.stopall()
         netctl.start(profile)
-    
+
     def OnPref(self, e):
         prefWindow = Preferences(self, wx.ID_ANY, title="Preferences")
         prefWindow.CenterOnParent()
         prefWindow.Show()
-        
+
     def OnEdit(self, e):
         editWindow = EditProfile(None)
-        
+
     # TODO rename this section.
     def OnConnect(self, e):
         # TODO rewrite this section, we sould be grabbing this
@@ -210,16 +210,16 @@ class WiFiz(wx.Frame):
         if os.path.isfile(conf_dir + filename):
             interface.down(self.UIDValue)
             netctl.start(filename)
-            # Missing function TODO 
+            # Missing function TODO
             if IsConnected():
-                wx.MessageBox("You are now connected to " + 
+                wx.MessageBox("You are now connected to " +
                     str(nameofProfile) + ".", "Connected.")
             else:
                 wx.MessageBox("There has been an error, please try again. "
                     "If it persists, please contact Cody Dostal at "
                     "dostalcody@gmail.com.", "Error!")
         else:
-            if str(typeofSecurity).strip() is not "none":  
+            if str(typeofSecurity).strip() is not "none":
                 passw = wx.TextEntryDialog(self, "What is the password?",
                                            "Password", "")
                 if passw.ShowModal() == wx.ID_OK:
@@ -246,9 +246,12 @@ class WiFiz(wx.Frame):
             try:
                 interface.down(self.UIDValue)
                 netctl.start(filename)
-                wx.MessageBox("You are now connected to " + str(nameofProfile).strip() + ".", "Connected.")
+                wx.MessageBox("You are now connected to " +
+                            str(nameofProfile).strip() + ".", "Connected.")
             except:
-                wx.MessageBox("There has been an error, please try again. If it persists, please contact Cody Dostal at dostalcody@gmail.com.", "Error!")
+                wx.MessageBox("There has been an error, please try again. If"
+                        " it persists, please contact Cody Dostal at "
+                        "dostalcody@gmail.com.", "Error!")
             self.OnScan(self)
 
     def getSelectedIndices(self, state =  wx.LIST_STATE_SELECTED):
@@ -265,7 +268,7 @@ class WiFiz(wx.Frame):
             else:
                 lastFound = index
                 indices.append( index )
-        return indices  
+        return indices
 
     def OnReport(self, e):
         wx.MessageBox("To report a message, send an email to "
@@ -284,17 +287,17 @@ class WiFiz(wx.Frame):
         netctl.stop(filename)
         interface.down(self.UIDValue)
         self.OnScan(self)
-        wx.MessageBox("You are now disconnected from " + 
+        wx.MessageBox("You are now disconnected from " +
                     nameofProfile + ".", "Disconnected.")
 
     def OnNew(self, e):
-        newProf = NewProfile(parent=None)       
+        newProf = NewProfile(parent=None)
 
     def OnScan(self, e):
         '''Scan on [device], save output'''
         # Scan for access points
         interface.up(self.UIDValue)
-        output = str(subprocess.check_output("iwlist " + self.UIDValue + 
+        output = str(subprocess.check_output("iwlist " + self.UIDValue +
                                                         " scan", shell=True))
         f = open(iwlist_file, 'w')
         f.write(output)
@@ -303,8 +306,8 @@ class WiFiz(wx.Frame):
         self.APList.DeleteAllItems()
         self.index = 0
         # Write iwconfig status
-        outputs = str(subprocess.check_output("iwconfig " + self.UIDValue , 
-                                                                shell=True))  
+        outputs = str(subprocess.check_output("iwconfig " + self.UIDValue ,
+                                                                shell=True))
         d = open(iwconfig_file, 'w')
         d.write(outputs)
         d.close()
@@ -319,14 +322,14 @@ class WiFiz(wx.Frame):
             for line in ap_data:
                 kv = re.split(":", line.strip())
                 if kv[0] == "ESSID":
-                    self.APList.SetStringItem(self.index, 0, 
+                    self.APList.SetStringItem(self.index, 0,
                             kv[1].strip().replace('"', ""))
                 if kv[0] == "Encryption key":
                     if kv[1] == "off":
                         encrypt = "Open"
                         file_encrypt = "none"
                     elif kv[1] == "on":
-                        encrypt = "Probably WEP"                        
+                        encrypt = "Probably WEP"
                     self.APList.SetStringItem(self.index, 2, encrypt)
                 if "WPA" in line:
                     encrypt = "WPA"
@@ -334,18 +337,18 @@ class WiFiz(wx.Frame):
                 if "WPA2" in line:
                     encrypt = "WPA2"
                     self.APList.SetStringItem(self.index, 2, encrypt)
-                
+
                 # TODO conver this line!
                 if "Quality" in line:
-                    lines = "Line %s" % self.index 
+                    lines = "Line %s" % self.index
                     self.APList.InsertStringItem(self.index, lines)
-                    self.index + 1                
+                    self.index + 1
                     s = str(line)[28:33]
-                    # Courtesy of gohu's iwlistparse.py, slightly modified. 
+                    # Courtesy of gohu's iwlistparse.py, slightly modified.
                     # https://bbs.archlinux.org/viewtopic.php?id=88967
-                    s3 = str(int(round(float(s[0])/float(s[3])*100))).rjust(3)+" %" 
+                    s3 = str(int(round(float(s[0])/float(s[3])*100))).rjust(3)+" %"
                     self.APList.SetStringItem(self.index, 1, s3)
-                
+
                 # profiles = os.listdir("/etc/netctl/")
                 # if any(essid.strip() in s for s in profiles):
                 #     profile = "wifiz-" + essid.strip()
@@ -361,14 +364,14 @@ class WiFiz(wx.Frame):
         f.write(outputs)
         f.close()
 
-        # TODO if atocnnt enabled DO 
+        # TODO if atocnnt enabled DO
         # try:
-        #     self.AutoConnect()   
+        #     self.AutoConnect()
         # except:
-        #     print "Auto connect failed!"   
+        #     print "Auto connect failed!"
         # else:
         #     pass
-    # TODO unworking            
+    # TODO unworking
     def AutoConnect(self, e):
         try:
             interface.down(self.UIDValue)
@@ -377,26 +380,18 @@ class WiFiz(wx.Frame):
         except:
             wx.MessageBox("There has been an error, please try again. "
                         "If it persists, please contact Cody Dostal "
-                        "at dostalcody@gmail.com.", "Error!")        
+                        "at dostalcody@gmail.com.", "Error!")
 
     def OnClose(self, e):
         self.Hide()
 
     def OnFullClose(self, e):
         open(iwlist_file, 'w').close()
-        app.Exit()      
+        app.Exit()
 
     def OnAbout(self, e):
-        # TODO move this to a file! It doesn't belong 'in code'
-        description = """WiFiz is a simple to use, elegant, and powerful frontend for NetCTL. NetCTL is a fork of NetCFG that focuses on being very well integrated into systemd."""
-
-        licence = """Copyright (c) 2013 Cody Dostal, Pivotraze
-
-        Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
-
-        The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software. The end-user documentation included with the redistribution, if any, must include the following acknowledgment: "This product includes software developed by Cody Dostal https://github.com/codywd and its contributors", in the same place and form as other third-party acknowledgments. Alternatively, this acknowledgment may appear in the software itself, in the same form and location as other such third-party acknowledgments.
-
-        THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE."""
+        description = """WiFiz is a simple to use, frontend for NetCTL."""
+        licence = open('Wifiz.licence', 'r').read()
 
         info = wx.AboutDialogInfo()
 
@@ -431,7 +426,7 @@ class NewProfile(wx.Dialog):
         for i in intFaces:
             page1.Sizer.Add(wx.RadioButton(page1, -1, i))
         page2 = TitledPage(wizard, "Connection Type")
-        page2.Sizer.Add(wx.StaticText(page2, -1, 
+        page2.Sizer.Add(wx.StaticText(page2, -1,
             "Please type the type of connection you will be using."))
         page2.Sizer.Add(wx.StaticText(page2, -1, ""))
         choiceWiFi = wx.RadioButton(page2, -1, "Wireless", style=wx.RB_GROUP)
@@ -439,7 +434,7 @@ class NewProfile(wx.Dialog):
         page2.Sizer.Add(choiceWiFi)
         page2.Sizer.Add(choiceEth)
         page3 = TitledPage(wizard, "Security Type")
-        page3.Sizer.Add(wx.StaticText(page3, -1, 
+        page3.Sizer.Add(wx.StaticText(page3, -1,
             "Please type the security type of the connection."))
         page3.Sizer.Add(wx.StaticText(page3, -1, ""))
         choiceWEP = wx.RadioButton(page3, -1, "WEP", style=wx.RB_GROUP)
@@ -447,21 +442,21 @@ class NewProfile(wx.Dialog):
         page3.Sizer.Add(choiceWEP)
         page3.Sizer.Add(choiceWPA)
         page4 = TitledPage(wizard, "SSID")
-        page4.Sizer.Add(wx.StaticText(page4, -1, 
+        page4.Sizer.Add(wx.StaticText(page4, -1,
             "Please type the name of the network you wish to connect to."))
         page4.Sizer.Add(wx.StaticText(page4, -1, ""))
         SSIDV = wx.TextCtrl(page4)
-        page4.Sizer.Add(SSIDV, flag=wx.EXPAND)  
+        page4.Sizer.Add(SSIDV, flag=wx.EXPAND)
         SSID = SSIDV.GetValue()
         page5 = TitledPage(wizard, "Security Key")
-        page5.Sizer.Add(wx.StaticText(page5, -1, 
+        page5.Sizer.Add(wx.StaticText(page5, -1,
             "Please type the password of the network you wish to connect to."))
         page5.Sizer.Add(wx.StaticText(page5, -1, ""))
         self.securePass = wx.TextCtrl(page5, style=wx.TE_PASSWORD)
         page5.Sizer.Add(self.securePass, flag=wx.EXPAND)
         self.password = self.securePass.GetValue()
         page6 = TitledPage(wizard, "Hidden Network")
-        page6.Sizer.Add(wx.StaticText(page6, -1, 
+        page6.Sizer.Add(wx.StaticText(page6, -1,
             "Is the network hidden? If so, check the checkbox."))
         page6.Sizer.Add(wx.StaticText(page6, -1, ""))
         page6.Sizer.Add(wx.CheckBox(page6, -1, "Network is Hidden"))
@@ -483,7 +478,7 @@ class NewProfile(wx.Dialog):
         wx.MessageBox(self.connectionType, self.connectionType, wx.ID_OK)
 
     def closeDialog(self, e):
-        dial = wx.MessageDialog(None, "Are you sure you want to cancel?", 
+        dial = wx.MessageDialog(None, "Are you sure you want to cancel?",
             "Cancel?", wx.YES_NO|wx.NO_DEFAULT|wx.ICON_QUESTION)
         ret = dial.ShowModal()
         if ref == wx.ID_YES:
@@ -518,7 +513,7 @@ def GetInterface(wxobj):
         wxobj.UID = wx.TextEntryDialog(wxobj, "What is your Interface Name? "
             "(wlan0, wlp2s0)", "Wireless Interface", "")
         if wxobj.UID.ShowModal() == wx.ID_OK:
-            # rename this var!! TODO 
+            # rename this var!! TODO
             wxobj.UIDValue = wxobj.UID.GetValue()
             # TODO error checking for null values
             f = open(int_file, 'w')
@@ -531,7 +526,7 @@ def CreateConfig(name, interface, security, key=None, ip='dhcp'):
     filename =  name + "-wifiz"
     f = open(conf_dir + filename, "w")
     f.write("Description='A profile generated by Wifiz for "+str(name)+"'\n" +
-    "Interface=" + str(interface) + "\n" + 
+    "Interface=" + str(interface) + "\n" +
     "Connection=wireless\n" +
     "Security=" + str(security) + "\n" +
     "ESSID='" + str(name) + "'\n")
@@ -546,7 +541,7 @@ def IsConnected(interface):
     '''Query the selected interface, return True if up else return False'''
     ip = subprocess.check_output('ip -o link show '+ interface)
     status = re.split('\s', ip)
-    if status[9] == 'UP': return True 
+    if status[9] == 'UP': return True
     else: return False
 
 def cleanUp():
@@ -554,7 +549,7 @@ def cleanUp():
     fcntl.lockf(fp, fcntl.LOCK_UN)
     fp.close()
     os.unlink(pid_file)
-    # os.unlink(int_file)   # I cant decide if we want to keep this file or 
+    # os.unlink(int_file)   # I cant decide if we want to keep this file or
                             # or do something else with it?
     try:
         os.unlink(iwlist_file)
