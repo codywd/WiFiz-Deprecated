@@ -3,9 +3,15 @@ Thanks to FogleBird from stackoverflow.
 He responded to another questions that gave me the idea on how to do most of this.
 http://stackoverflow.com/questions/6389580/quick-and-easy-trayicon-with-python
 """
-
-import wx
+# Import Standard Libraries #
 import os
+
+# Import 3rd party libraries #
+import wx
+
+# Import Local Files #
+import interface
+import netctl
 
 class Icon(wx.TaskBarIcon):
     def __init__(self, parent, icon, tooltip):
@@ -42,6 +48,7 @@ class Icon(wx.TaskBarIcon):
         self.parent.Destroy()
 
     def OnOpen(self, e):
+        
         self.parent.Show()
     def OnPopup(self, event):
         self.PopupMenu(self.menu)

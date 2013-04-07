@@ -65,14 +65,15 @@ class WiFiz(wx.Frame):
         self.InitUI()
 
     def InitUI(self):
-
+        
+        # Set Icon
         iconFile = "./imgs/logo.png"
         mainIcon = wx.Icon(iconFile, wx.BITMAP_TYPE_PNG)
         self.SetIcon(mainIcon)
 
         # Menu Bar #
         self.mainMenu = wx.MenuBar()
-
+        
         fileMenu = wx.Menu()
         ScanAPs = fileMenu.Append(wx.ID_ANY, "Scan for New Networks", 
                                     "Scan for New Wireless Networks.")
@@ -82,6 +83,7 @@ class WiFiz(wx.Frame):
         
         profilesMenu = wx.Menu()
         profiles = os.listdir("/etc/netctl/")
+        # Iterate through profiles directory, find files, and add to "Profiles" Menu #
         for i in profiles:
             if os.path.isfile("/etc/netctl/" + i):
                 profile = profilesMenu.Append(wx.ID_ANY, i)
@@ -106,7 +108,6 @@ class WiFiz(wx.Frame):
         self.mainMenu.Append(helpMenu, "&Help")
 
         self.SetMenuBar(self.mainMenu)
-
         # End Menu Bar #
 
         # Create Popup Menu #
@@ -167,7 +168,6 @@ class WiFiz(wx.Frame):
 
         self.SetSize((700,390))
         self.Center()
-        #self.Show()
 
         # Get interface name: From file or from user.
         self.UIDvalue = GetInterface(self)
@@ -175,12 +175,15 @@ class WiFiz(wx.Frame):
         #self.OnScan(self)
         
     def OnCantConnect(self, e):
+        # This fixes an error where the interface stays up, but it disconnects from the network. Usually
+        # seems to happen after letting a computer (at least mine) go to sleep for a while.
         netinterface = GetInterface(self)
         netctl.stopall()
         interface.down(netinterface)
         
     # TODO rename this funct        
     def OnMConnect(self, profile):
+        # This figures out the profile we are trying to connect to by reading the just-recently-clicked profile
         #item = self.mainMenu.FindItemById(e.GetId())
         #profile = item.GetText()
         netinterface = GetInterface(self)
@@ -189,17 +192,21 @@ class WiFiz(wx.Frame):
         netctl.start(profile)
     
     def OnPref(self, e):
+        # Opens the preferences dialog... which is currently not functional
         prefWindow = Preferences(self, wx.ID_ANY, title="Preferences")
         prefWindow.CenterOnParent()
         prefWindow.Show()
         
     def OnEdit(self, e):
+        # Opens the edit window... which is currently not functional...
         editWindow = EditProfile(None)
         
     # TODO rename this section.
     def OnConnect(self, e):
         # TODO rewrite this section, we sould be grabbing this
         # info from eleswhere.
+        
+        # Here we start by getting the index of the row, then selected the name of the network, and getting the security
         index = str(self.getSelectedIndices()).strip('[]')
         index = int(index)
         nmp = self.APList.GetItem(index, 0)
@@ -211,7 +218,8 @@ class WiFiz(wx.Frame):
         # HACK TODO REMOVE
         if typeofSecurity == open:
             typeofSecurity = 'none'
-
+            
+        # Here we get the filename of a current profile
         filename = str("wifiz" + u'-' + nameofProfile).strip()
         filename = filename.strip()
 
@@ -283,11 +291,16 @@ class WiFiz(wx.Frame):
                             "cody@seafiresoftware.org", "e-Mail")
 
     def OnShowPopup(self, e):
+        # Here we get the position of the mouse, and show the popup where we clicked... although I am not
+        # entirely sure if the popup connect/disconnect works, and I may be removing
+        # the popup.
         x, y = e.GetPosition()
         pos = self.APList.ScreenToClientXY(x, y)
         self.APList.PopupMenu(self.PopupMenu, pos)
 
     def OnDConnect(self, e):
+        # Here we start by getting the selected row, and then finding the name of the profile
+        # shutting down that relevant profile, and turning of the interface
         index = str(self.getSelectedIndices()).strip('[]')
         index = int(index)
         item = self.APList.GetItem(index, 0)
@@ -299,6 +312,7 @@ class WiFiz(wx.Frame):
                     nameofProfile + ".", "Disconnected.")
 
     def OnNew(self, e):
+        # Here we run the NewProfile wizard
         newProf = NewProfile(parent=None)       
 
     def OnScan(self, e):
