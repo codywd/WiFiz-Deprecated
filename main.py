@@ -87,6 +87,11 @@ class WiFiz(wx.Frame):
                 profile = profilesMenu.Append(wx.ID_ANY, i)
                 self.Bind(wx.EVT_MENU, self.OnMConnect, profile)
         self.mainMenu.Append(profilesMenu, "Profiles")
+        
+        toolsMenu = wx.Menu()
+        cantCItem = toolsMenu.Append(wx.ID_ANY, "Can't Connect to Networks",
+                                                 "If you can't connect to any networks, run this.")
+        self.mainMenu.Append(toolsMenu, "Tools")
 
         helpMenu = wx.Menu()
         helpItem = helpMenu.Append(wx.ID_HELP, "Help with WiFiz", 
@@ -157,6 +162,7 @@ class WiFiz(wx.Frame):
         self.Bind(wx.EVT_CONTEXT_MENU, self.OnConnect, popCon)
         self.Bind(wx.EVT_CONTEXT_MENU, self.OnDConnect, popDCon)
         self.Bind(wx.EVT_MENU, self.OnReport, reportIssue)
+        self.Bind(wx.EVT_MENU, self.OnCantConnect, cantCItem)
         # End Bindings #
 
         self.SetSize((700,390))
@@ -167,7 +173,12 @@ class WiFiz(wx.Frame):
         self.UIDvalue = GetInterface(self)
         #interface.up(self.UIDValue)
         #self.OnScan(self)
-
+        
+    def OnCantConnect(self, e):
+        netinterface = GetInterface(self)
+        netctl.stopall()
+        interface.down(netinterface)
+        
     # TODO rename this funct        
     def OnMConnect(self, profile):
         #item = self.mainMenu.FindItemById(e.GetId())
