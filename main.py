@@ -113,9 +113,9 @@ class WiFiz(wx.Frame):
 
         # Create Toolbar Buttons #
         toolbar = self.CreateToolBar()
-        newTool = toolbar.AddLabelTool(wx.ID_NEW, 'New',
-            wx.ArtProvider.GetBitmap(wx.ART_NEW), wx.NullBitmap,
-            wx.ITEM_NORMAL, 'New Connection')
+        # newTool = toolbar.AddLabelTool(wx.ID_NEW, 'New',
+        #     wx.ArtProvider.GetBitmap(wx.ART_NEW), wx.NullBitmap,
+        #     wx.ITEM_NORMAL, 'New Connection')
         ReScanAPs = toolbar.AddLabelTool(wx.ID_ANY, 'Scan',
             wx.Bitmap('imgs/APScan.png'), wx.NullBitmap,
             wx.ITEM_NORMAL, 'Scan')

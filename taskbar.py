@@ -31,12 +31,12 @@ class Icon(wx.TaskBarIcon):
         self.menu.AppendSeparator()
         texit = self.menu.Append(wx.ID_EXIT, 'E&xit')
         self.menu.Bind(wx.EVT_MENU, self.OnExit, texit)
-    
+
     def CallConnect(self, e):
         item = self.menu.FindItemById(e.GetId())
         profile = item.GetText()
         self.parent.OnMConnect(profile)
-    
+
     def OnExit(self, e):
         wx.CallAfter(self.Destroy)
         self.parent.Destroy()
