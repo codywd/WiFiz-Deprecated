@@ -41,7 +41,7 @@ euid = os.geteuid()
 if euid != 0:
     print ("WiFiz needs to be run as root, we're going to sudo for you. \n"
             "You can Ctrl+c to exit... (maybe)")
-    args = ['gksudo', sys.executable] + sys.argv + [os.environ]
+    args = ['sudo', sys.executable] + sys.argv + [os.environ]
     os.execlpe('sudo', *args)
 
 # Allow only one instance #
@@ -439,8 +439,10 @@ class NewProfile(wx.Dialog):
         page3.Sizer.Add(wx.StaticText(page3, -1, ""))
         choiceWEP = wx.RadioButton(page3, -1, "WEP", style=wx.RB_GROUP)
         choiceWPA = wx.RadioButton(page3, -1, "WPA/WPA2")
+        choiceNONE = wx.RadioButton(page3, -1, "None")
         page3.Sizer.Add(choiceWEP)
         page3.Sizer.Add(choiceWPA)
+        page3.Sizer.Add(choiceNONE)
         page4 = TitledPage(wizard, "SSID")
         page4.Sizer.Add(wx.StaticText(page4, -1,
             "Please type the name of the network you wish to connect to."))
