@@ -14,7 +14,6 @@ from wx.lib.wordwrap import wordwrap
 from wx.lib.mixins.listctrl import ListCtrlAutoWidthMixin
 import wx.lib.mixins.listctrl as listmix
 from wx import wizard as wiz
-import taskbar as tbi
 
 # Import local libraries #
 import interface
@@ -54,12 +53,62 @@ except IOError:
 fp.write(str(pid_number) + "\n")
 fp.flush()
 
+# Taskbar Icon Class #
+
+class Icon(wx.TaskBarIcon):
+    def __init__(self, parent, icon, tooltip):
+        wx.TaskBarIcon.__init__(self)
+        self.SetIcon(icon, tooltip)
+        self.parent = parent
+        self.Bind(wx.EVT_TASKBAR_LEFT_DCLICK, self.OnLeftDClick)
+        self.CreateMenu()
+
+    def CreateMenu(self):
+        self.Bind(wx.EVT_TASKBAR_RIGHT_UP, self.OnPopup)
+        self.menu = wx.Menu()
+        topen = self.menu.Append(wx.ID_ANY, '&Open')
+        self.menu.Bind(wx.EVT_MENU, self.OnOpen, topen)
+        self.menu.AppendSeparator()
+        profiles = os.listdir("/etc/netctl/")
+        for i in profiles:
+            if os.path.isfile("/etc/netctl/" + i):
+                profile = self.menu.Append(wx.ID_ANY, i)
+                self.menu.Bind(wx.EVT_MENU, self.CallConnect, profile)
+            else:
+                pass
+        self.menu.AppendSeparator()
+        texit = self.menu.Append(wx.ID_EXIT, 'E&xit')
+        self.menu.Bind(wx.EVT_MENU, self.OnExit, texit)
+
+    def CallConnect(self, e):
+        item = self.menu.FindItemById(e.GetId())
+        profile = item.GetText()
+        self.parent.OnMConnect(profile)
+
+    def OnExit(self, e):
+        wx.CallAfter(self.Destroy)
+        self.parent.Destroy()
+
+    def OnOpen(self, e):
+        self.parent.Show()
+    def OnPopup(self, event):
+        self.PopupMenu(self.menu)
+
+    def OnLeftDClick(self, event):
+        if self.parent.IsIconized():
+            self.parent.Iconize(False)
+        if not self.parent.IsShown():
+            self.parent.Show(True)
+            self.parent.Raise()
+        else:
+            self.parent.Show(False)
+
 # main class #
 class WiFiz(wx.Frame):
     def __init__(self, parent, title):
         super(WiFiz, self).__init__(None, title="WiFiz",
                             style = wx.DEFAULT_FRAME_STYLE)
-        self.TrayIcon = tbi.Icon(self, wx.Icon("./imgs/logo.png",
+        self.TrayIcon = Icon(self, wx.Icon("./imgs/logo.png",
                                     wx.BITMAP_TYPE_PNG), "WiFiz")
         self.index = 0
         self.InitUI()
@@ -151,7 +200,7 @@ class WiFiz(wx.Frame):
         self.Bind(wx.EVT_MENU, self.OnAbout, aboutItem)
         self.Bind(wx.EVT_MENU, self.OnScan, ScanAPs)
         self.Bind(wx.EVT_TOOL, self.OnScan, ReScanAPs)
-        self.Bind(wx.EVT_TOOL, self.OnNew, newTool)
+        # self.Bind(wx.EVT_TOOL, self.OnNew, newTool)
         self.Bind(wx.EVT_TOOL, self.OnDConnect, dConnectSe)
         self.Bind(wx.EVT_CONTEXT_MENU, self.OnShowPopup)
         self.Bind(wx.EVT_CONTEXT_MENU, self.OnConnect, popCon)
@@ -505,6 +554,7 @@ class TitledPage(wiz.WizardPageSimple):
         sizer.Add(title, 0, wx.ALIGN_CENTER_HORIZONTAL|wx.ALL, 5)
         sizer.Add(wx.StaticLine(self, -1), 0, wx.EXPAND|wx.ALL, 5)
 
+# TODO return this to the main class
 def GetInterface(wxobj):
     if os.path.isfile(int_file):
         f = open(int_file)
