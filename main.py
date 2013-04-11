@@ -1,26 +1,27 @@
 #! /usr/bin/python2
 
 # Importing Standard Libraries #
-import os
-import sys
-import re
-import subprocess
 import fcntl
+import os
+import re
 import signal
+import subprocess
+import sys
+import time
 
 # Importing wxpython Libraries #
 from wx import *
+from wx import wizard as wiz
 from wx.lib.mixins.listctrl import ListCtrlAutoWidthMixin
 import wx.lib.mixins.listctrl as listmix
-from wx import wizard as wiz
 
 # Setting some base app information #
 progVer = '0.9.0'
-iwlist_file = os.getcwd() + '/iwlist.log'
-iwconfig_file = os.getcwd() + "/iwconfig.log"
-int_file = os.getcwd() + "/interface.cfg"
-pid_file = os.getcwd() + 'program.pid'
 conf_dir = "/etc/netctl/"
+int_file = os.getcwd() + "/interface.cfg"
+iwconfig_file = os.getcwd() + "/iwconfig.log"
+iwlist_file = os.getcwd() + '/iwlist.log'
+pid_file = os.getcwd() + 'program.pid'
 pid_number = os.getpid()
 
 #print sys.argv
@@ -318,11 +319,11 @@ class WiFiz(wx.Frame):
                     elif kv[1] == "on":
                         encrypt = "Probably WEP"
                     self.APList.SetStringItem(self.index, 2, encrypt)
-                if "WPA" in line:
-                    encrypt = "WPA"
-                    self.APList.SetStringItem(self.index, 2, encrypt)
                 if "WPA2" in line:
                     encrypt = "WPA2"
+                    self.APList.SetStringItem(self.index, 2, encrypt)
+                elif "WPA" in line:
+                    encrypt = "WPA"
                     self.APList.SetStringItem(self.index, 2, encrypt)
 
                 # TODO conver this line!
@@ -358,6 +359,8 @@ class WiFiz(wx.Frame):
         #     print "Auto connect failed!"
         # else:
         #     pass
+        print "Scanning:: Done"
+
     # TODO unworking
     def AutoConnect(self, e):
         try:
