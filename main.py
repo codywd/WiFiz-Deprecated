@@ -304,7 +304,7 @@ class WiFiz(wx.Frame):
         # Split by access point
         ap_list = re.split(r'Cell \d\d -', iwlist)
 
-        for ap in ap_list:
+        for ap in reversed(ap_list):
             # Split by line
             ap_data = re.split("\n+",ap)
             for line in ap_data:
