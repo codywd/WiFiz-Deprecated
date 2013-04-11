@@ -35,7 +35,7 @@ for arg in sys.argv:
 euid = os.geteuid()
 if euid != 0:
     print ("WiFiz needs to be run as root, we're going to sudo for you. \n"
-            "You can Ctrl+c to exit... (maybe)")
+           "You can Ctrl+c to exit... (maybe)")
     args = ['sudo', sys.executable] + sys.argv + [os.environ]
     os.execlpe('sudo', *args)
 
