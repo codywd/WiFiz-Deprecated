@@ -15,10 +15,6 @@ from wx.lib.mixins.listctrl import ListCtrlAutoWidthMixin
 import wx.lib.mixins.listctrl as listmix
 from wx import wizard as wiz
 
-# Import local libraries #
-import interface
-import netctl
-
 # Setting some base app information #
 progVer = '0.9.0'
 iwlist_file = os.getcwd() + '/iwlist.log'
@@ -53,57 +49,8 @@ except IOError:
 fp.write(str(pid_number) + "\n")
 fp.flush()
 
-# Taskbar Icon Class #
 
-class Icon(wx.TaskBarIcon):
-    def __init__(self, parent, icon, tooltip):
-        wx.TaskBarIcon.__init__(self)
-        self.SetIcon(icon, tooltip)
-        self.parent = parent
-        self.Bind(wx.EVT_TASKBAR_LEFT_DCLICK, self.OnLeftDClick)
-        self.CreateMenu()
-
-    def CreateMenu(self):
-        self.Bind(wx.EVT_TASKBAR_RIGHT_UP, self.OnPopup)
-        self.menu = wx.Menu()
-        topen = self.menu.Append(wx.ID_ANY, '&Open')
-        self.menu.Bind(wx.EVT_MENU, self.OnOpen, topen)
-        self.menu.AppendSeparator()
-        profiles = os.listdir("/etc/netctl/")
-        for i in profiles:
-            if os.path.isfile("/etc/netctl/" + i):
-                profile = self.menu.Append(wx.ID_ANY, i)
-                self.menu.Bind(wx.EVT_MENU, self.CallConnect, profile)
-            else:
-                pass
-        self.menu.AppendSeparator()
-        texit = self.menu.Append(wx.ID_EXIT, 'E&xit')
-        self.menu.Bind(wx.EVT_MENU, self.OnExit, texit)
-
-    def CallConnect(self, e):
-        item = self.menu.FindItemById(e.GetId())
-        profile = item.GetText()
-        self.parent.OnMConnect(profile)
-
-    def OnExit(self, e):
-        wx.CallAfter(self.Destroy)
-        self.parent.Destroy()
-
-    def OnOpen(self, e):
-        self.parent.Show()
-    def OnPopup(self, event):
-        self.PopupMenu(self.menu)
-
-    def OnLeftDClick(self, event):
-        if self.parent.IsIconized():
-            self.parent.Iconize(False)
-        if not self.parent.IsShown():
-            self.parent.Show(True)
-            self.parent.Raise()
-        else:
-            self.parent.Show(False)
-
-# main class #
+# __main__ Class #
 class WiFiz(wx.Frame):
     def __init__(self, parent, title):
         super(WiFiz, self).__init__(None, title="WiFiz",
@@ -458,6 +405,55 @@ class WiFiz(wx.Frame):
 
         wx.AboutBox(info)
 
+# Taskbar Icon Class #
+class Icon(wx.TaskBarIcon):
+    def __init__(self, parent, icon, tooltip):
+        wx.TaskBarIcon.__init__(self)
+        self.SetIcon(icon, tooltip)
+        self.parent = parent
+        self.Bind(wx.EVT_TASKBAR_LEFT_DCLICK, self.OnLeftDClick)
+        self.CreateMenu()
+
+    def CreateMenu(self):
+        self.Bind(wx.EVT_TASKBAR_RIGHT_UP, self.OnPopup)
+        self.menu = wx.Menu()
+        topen = self.menu.Append(wx.ID_ANY, '&Open')
+        self.menu.Bind(wx.EVT_MENU, self.OnOpen, topen)
+        self.menu.AppendSeparator()
+        profiles = os.listdir("/etc/netctl/")
+        for i in profiles:
+            if os.path.isfile("/etc/netctl/" + i):
+                profile = self.menu.Append(wx.ID_ANY, i)
+                self.menu.Bind(wx.EVT_MENU, self.CallConnect, profile)
+            else:
+                pass
+        self.menu.AppendSeparator()
+        texit = self.menu.Append(wx.ID_EXIT, 'E&xit')
+        self.menu.Bind(wx.EVT_MENU, self.OnExit, texit)
+
+    def CallConnect(self, e):
+        item = self.menu.FindItemById(e.GetId())
+        profile = item.GetText()
+        self.parent.OnMConnect(profile)
+
+    def OnExit(self, e):
+        wx.CallAfter(self.Destroy)
+        self.parent.Destroy()
+
+    def OnOpen(self, e):
+        self.parent.Show()
+    def OnPopup(self, event):
+        self.PopupMenu(self.menu)
+
+    def OnLeftDClick(self, event):
+        if self.parent.IsIconized():
+            self.parent.Iconize(False)
+        if not self.parent.IsShown():
+            self.parent.Show(True)
+            self.parent.Raise()
+        else:
+            self.parent.Show(False)
+
 # Class to manually create new network profile
 class NewProfile(wx.Dialog):
     def __init__(self, parent):
@@ -537,11 +533,13 @@ class NewProfile(wx.Dialog):
         else:
             e.Veto()
 
+# Class to control network list #
 class AutoWidthListCtrl(wx.ListCtrl, ListCtrlAutoWidthMixin):
     def __init__(self, parent):
         wx.ListCtrl.__init__(self, parent, -1, style=wx.LC_REPORT)
         ListCtrlAutoWidthMixin.__init__(self)
 
+# Class to do something #
 class TitledPage(wiz.WizardPageSimple):
     def __init__(self, parent, title):
         wiz.WizardPageSimple.__init__(self, parent)
@@ -553,6 +551,40 @@ class TitledPage(wiz.WizardPageSimple):
         title.SetFont(wx.Font(18, wx.SWISS, wx.NORMAL, wx.BOLD))
         sizer.Add(title, 0, wx.ALIGN_CENTER_HORIZONTAL|wx.ALL, 5)
         sizer.Add(wx.StaticLine(self, -1), 0, wx.EXPAND|wx.ALL, 5)
+
+class Netctl(object):
+    """Functions to control netctl"""
+    def __init__(self):
+        super(Netctl, self).__init__()
+
+    def start(self, network):
+        print "netctl:: start " + network
+        subprocess.call(["netctl", "start", network])
+
+    def stop(self, network):
+        print "netctl:: stop " + network
+        subprocess.call(["netctl", "stop", network])
+
+    def stopall(self):
+        print "netctl:: stop-all"
+        subprocess.call(["netctl", "stop-all"])
+
+    def restart(self, network):
+        print "netctl:: restart " + network
+        subprocess.call(["netctl", "restart", profile])
+
+class InterfaceCtl(object):
+    """Control the network interface"""
+    def __init__(self):
+        super(InterfaceCtl, self).__init__()
+    def down(self, interface):
+        print "interface:: down: " + interface
+        subprocess.call(["ip", "link", "set", "down", "dev", interface])
+    def up(self, interface):
+        print "interface:: up: " + interface
+        subprocess.call(["ip", "link", "set", "up", "dev", interface])
+
+# Helper Functions #
 
 # TODO return this to the main class
 def GetInterface(wxobj):
@@ -610,13 +642,15 @@ def cleanUp():
         pass
 
 def sigInt(signal, frame):
-    print "CTRL-C Caught, cleaning up..."
+    print "\nCTRL-C Caught, cleaning up..."
     cleanUp()
     print "done. BYE!"
     sys.exit(0)
 
 # Start App #
 if __name__ == "__main__":
+    netctl = Netctl()
+    interface = InterfaceCtl()
     wxAppPid = os.fork() # Consider pty module instead? TODO
     if wxAppPid:
         # We'll handle ctrl-c
@@ -629,6 +663,7 @@ if __name__ == "__main__":
         # Child mode
         # Prepare app
         app = wx.App(False)
+        print "Starting Wifiz"
         WiFiz(None, title="WiFiz")
         # Run app
         app.MainLoop()
