@@ -10,7 +10,7 @@ import signal
 
 # Importing Third Party Libraries #
 from wx import *
-from wx.lib.wordwrap import wordwrap
+#from wx.lib.wordwrap import wordwrap
 from wx.lib.mixins.listctrl import ListCtrlAutoWidthMixin
 import wx.lib.mixins.listctrl as listmix
 from wx import wizard as wiz
@@ -160,8 +160,7 @@ class WiFiz(wx.Frame):
         #self.Show()
 
         # Get interface name: From file or from user.
-        self.UIDvalue = GetInterface(self)
-        #interface.up(self.UIDValue)
+        self.UIDValue = GetInterface(self)
         #self.OnScan(self)
 
     # TODO rename this funct
@@ -227,14 +226,6 @@ class WiFiz(wx.Frame):
                 network_key = None
 
             CreateConfig(nameofProfile, self.UIDValue, typeofSecurity, key)
-            # Currently unworking TODO!
-            # pref = wx.TextEntryDialog(self, "Is this network preferred? "
-            #     "(In range of multiple profiles, connect to this first?)"
-            #                                     "Preferred Network?", "")
-            # if pref.ShowModal() == wx.ID_OK:
-            #     f.write("#preferred=yes\n")
-            # else:
-            #     f.write("#preferred=no\n")
             f.write("IP=dhcp\n")
             f.close()
 
@@ -248,7 +239,7 @@ class WiFiz(wx.Frame):
                 wx.MessageBox("There has been an error, please try again. If"
                         " it persists, please contact Cody Dostal at "
                         "dostalcody@gmail.com.", "Error!")
-            self.OnScan(self)
+            self.OnScan()
 
     def getSelectedIndices(self, state =  wx.LIST_STATE_SELECTED):
         indices = []
@@ -282,14 +273,14 @@ class WiFiz(wx.Frame):
         nameofProfile = item.GetText()
         netctl.stop(filename)
         interface.down(self.UIDValue)
-        self.OnScan(self)
+        self.OnScan()
         wx.MessageBox("You are now disconnected from " +
                     nameofProfile + ".", "Disconnected.")
 
     def OnNew(self, e):
         newProf = NewProfile(parent=None)
 
-    def OnScan(self, e):
+    def OnScan(self):
         '''Scan on [device], save output'''
         # Scan for access points
         interface.up(self.UIDValue)
