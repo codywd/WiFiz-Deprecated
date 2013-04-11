@@ -61,7 +61,7 @@ class WiFiz(wx.Frame):
         self.InitUI()
 
     def InitUI(self):
-        
+
         # Set Icon
         iconFile = "./imgs/logo.png"
         mainIcon = wx.Icon(iconFile, wx.BITMAP_TYPE_PNG)
@@ -85,7 +85,7 @@ class WiFiz(wx.Frame):
                 profile = profilesMenu.Append(wx.ID_ANY, i)
                 self.Bind(wx.EVT_MENU, self.OnMConnect, profile)
         self.mainMenu.Append(profilesMenu, "Profiles")
-        
+
         toolsMenu = wx.Menu()
         cantCItem = toolsMenu.Append(wx.ID_ANY, "Can't Connect to Networks",
                                                  "If you can't connect to any networks, run this.")
@@ -169,15 +169,15 @@ class WiFiz(wx.Frame):
         # Get interface name: From file or from user.
         self.UIDValue = GetInterface(self)
         #self.OnScan(self)
-        
+
     def OnCantConnect(self, e):
         # This fixes an error where the interface stays up, but it disconnects from the network. Usually
         # seems to happen after letting a computer (at least mine) go to sleep for a while.
         netinterface = GetInterface(self)
         netctl.stopall()
         interface.down(netinterface)
-        
-    # TODO rename this funct        
+
+    # TODO rename this funct
     def OnMConnect(self, profile):
         # This figures out the profile we are trying to connect to by reading the just-recently-clicked profile
         #item = self.mainMenu.FindItemById(e.GetId())
@@ -201,7 +201,7 @@ class WiFiz(wx.Frame):
     def OnConnect(self, e):
         # TODO rewrite this section, we sould be grabbing this
         # info from eleswhere.
-        
+
         # Here we start by getting the index of the row, then selected the name of the network, and getting the security
         index = str(self.getSelectedIndices()).strip('[]')
         index = int(index)
@@ -214,7 +214,7 @@ class WiFiz(wx.Frame):
         # HACK TODO REMOVE
         if typeofSecurity == open:
             typeofSecurity = 'none'
-            
+
         # Here we get the filename of a current profile
         filename = str("wifiz" + u'-' + nameofProfile).strip()
         filename = filename.strip()
@@ -304,7 +304,7 @@ class WiFiz(wx.Frame):
 
     def OnNew(self, e):
         # Here we run the NewProfile wizard
-        newProf = NewProfile(parent=None)       
+        newProf = NewProfile(parent=None)
 
     def OnScan(self, e=None):
         '''Scan on [device], save output'''
