@@ -79,7 +79,7 @@ class WiFiz(wx.Frame):
 
         profilesMenu = wx.Menu()
         profiles = os.listdir("/etc/netctl/")
-        # Iterate through profiles directory, find files, and add to "Profiles" Menu #
+        # Iterate through profiles directory, and add to "Profiles" Menu #
         for i in profiles:
             if os.path.isfile("/etc/netctl/" + i):
                 profile = profilesMenu.Append(wx.ID_ANY, i)
@@ -88,7 +88,7 @@ class WiFiz(wx.Frame):
 
         toolsMenu = wx.Menu()
         cantCItem = toolsMenu.Append(wx.ID_ANY, "Can't Connect to Networks",
-                                                 "If you can't connect to any networks, run this.")
+                             "If you can't connect to any networks, run this.")
         self.mainMenu.Append(toolsMenu, "Tools")
 
         helpMenu = wx.Menu()
@@ -171,15 +171,17 @@ class WiFiz(wx.Frame):
         #self.OnScan(self)
 
     def OnCantConnect(self, e):
-        # This fixes an error where the interface stays up, but it disconnects from the network. Usually
-        # seems to happen after letting a computer (at least mine) go to sleep for a while.
+        # This fixes an error where the interface stays up, but it disconnects
+        # from the network. Usually seems to happen after letting a computer
+        # (at least mine) go to sleep for a while.
         netinterface = GetInterface(self)
         netctl.stopall()
         interface.down(netinterface)
 
     # TODO rename this funct
     def OnMConnect(self, profile):
-        # This figures out the profile we are trying to connect to by reading the just-recently-clicked profile
+        # This figures out the profile we are trying to connect to by reading
+        # the just-recently-clicked profile
         #item = self.mainMenu.FindItemById(e.GetId())
         #profile = item.GetText()
         netinterface = GetInterface(self)
@@ -202,7 +204,8 @@ class WiFiz(wx.Frame):
         # TODO rewrite this section, we sould be grabbing this
         # info from eleswhere.
 
-        # Here we start by getting the index of the row, then selected the name of the network, and getting the security
+        # Here we start by getting the index of the row, then selected the name
+        # of the network, and getting the security
         index = str(self.getSelectedIndices()).strip('[]')
         index = int(index)
         nmp = self.APList.GetItem(index, 0)
@@ -282,16 +285,17 @@ class WiFiz(wx.Frame):
                             "cody@seafiresoftware.org", "e-Mail")
 
     def OnShowPopup(self, e):
-        # Here we get the position of the mouse, and show the popup where we clicked... although I am not
-        # entirely sure if the popup connect/disconnect works, and I may be removing
-        # the popup.
+        # Here we get the position of the mouse, and show the popup where we
+        # clicked... although I am not entirely sure if the popup
+        # connect/disconnect works, and I may be removing the popup.
         x, y = e.GetPosition()
         pos = self.APList.ScreenToClientXY(x, y)
         self.APList.PopupMenu(self.PopupMenu, pos)
 
     def OnDConnect(self, e):
-        # Here we start by getting the selected row, and then finding the name of the profile
-        # shutting down that relevant profile, and turning of the interface
+        # Here we start by getting the selected row, and then finding the name
+        # of the profile shutting down that relevant profile, and turning of
+        # the interface
         index = str(self.getSelectedIndices()).strip('[]')
         index = int(index)
         item = self.APList.GetItem(index, 0)
@@ -392,7 +396,8 @@ class WiFiz(wx.Frame):
         try:
             interface.down(self.UIDValue)
             netctl.start(self.profile)
-            wx.MessageBox("You are now connected to " + str(self.profile).strip() + ".", "Connected.")
+            wx.MessageBox("You are now connected to "+str(self.profile).strip()
+                                                         + ".", "Connected.")
         except:
             wx.MessageBox("There has been an error, please try again. "
                         "If it persists, please contact Cody Dostal "
