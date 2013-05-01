@@ -1,6 +1,8 @@
-#!/bin/sh
+#!/usr/bin/python2
 # Hello, I launch WiFiz for you!
 
 # Good Luck, and god speed!
 
-exec /usr/bin/python2 -O /usr/share/wicd/gtk/wicd-client.py $@
+import wifiz
+
+wifiz.start()

@@ -674,7 +674,7 @@ def sigInt(signal, frame):
     sys.exit(0)
 
 # Start App #
-if __name__ == "__main__":
+def start():
     netctl = Netctl()
     interface = InterfaceCtl()
     wxAppPid = os.fork() # Consider pty module instead? TODO
@@ -693,3 +693,6 @@ if __name__ == "__main__":
         WiFiz(None, title="WiFiz")
         # Run app
         app.MainLoop()
+
+if __name__ == "__main__":
+    start()
