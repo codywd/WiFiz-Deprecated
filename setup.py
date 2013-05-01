@@ -11,7 +11,7 @@ setup(name='wifiz',
       #py_modules=['main'],
       #'runner' is in the root.
       scripts = ['scripts/wifiz'],
-      data_files=[('/usr/share/wifiz', 'main.py'),
-                  ('/usr/share/wifiz/imgs/', 'imgs/*.png')
+      data_files=[('/usr/share/wifiz', ['main.py']),
+                  ('/usr/share/wifiz/imgs/', ['imgs/*.png'])
                  ]
       )
