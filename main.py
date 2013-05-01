@@ -22,6 +22,7 @@ int_file = '/usr/lib/wifiz/interface.cfg'
 iwconfig_file = '/usr/lib/wifiz/iwconfig.log'
 iwlist_file = '/usr/lib/wifiz/iwlist.log'
 pid_file = '/usr/lib/wifiz/program.pid'
+img_loc = '/usr/share/wifiz/imgs/'
 pid_number = os.getpid()
 
 #print sys.argv
@@ -55,7 +56,7 @@ class WiFiz(wx.Frame):
     def __init__(self, parent, title):
         super(WiFiz, self).__init__(None, title="WiFiz",
                             style = wx.DEFAULT_FRAME_STYLE)
-        self.TrayIcon = Icon(self, wx.Icon("./imgs/logo.png",
+        self.TrayIcon = Icon(self, wx.Icon(img_loc + "logo.png",
                                     wx.BITMAP_TYPE_PNG), "WiFiz")
         self.index = 0
         self.InitUI()
@@ -63,7 +64,7 @@ class WiFiz(wx.Frame):
     def InitUI(self):
 
         # Set Icon
-        iconFile = "./imgs/logo.png"
+        iconFile = img_loc + "logo.png"
         mainIcon = wx.Icon(iconFile, wx.BITMAP_TYPE_PNG)
         self.SetIcon(mainIcon)
 
@@ -119,13 +120,13 @@ class WiFiz(wx.Frame):
         #     wx.ArtProvider.GetBitmap(wx.ART_NEW), wx.NullBitmap,
         #     wx.ITEM_NORMAL, 'New Connection')
         ReScanAPs = toolbar.AddLabelTool(wx.ID_ANY, 'Scan',
-            wx.Bitmap('imgs/APScan.png'), wx.NullBitmap,
+            wx.Bitmap(img_loc + 'APScan.png'), wx.NullBitmap,
             wx.ITEM_NORMAL, 'Scan')
         connectSe = toolbar.AddLabelTool(wx.ID_ANY, 'Connect',
-            wx.Bitmap('imgs/connect.png'), wx.NullBitmap,
+            wx.Bitmap(img_loc + 'connect.png'), wx.NullBitmap,
             wx.ITEM_NORMAL, 'Connect')
         dConnectSe = toolbar.AddLabelTool(wx.ID_ANY, 'Disconnect',
-            wx.Bitmap('imgs/disconnect.png'), wx.NullBitmap,
+            wx.Bitmap(img_loc + 'disconnect.png'), wx.NullBitmap,
             wx.ITEM_NORMAL, 'Disconnect')
         toolbar.AddSeparator()
         quitTool = toolbar.AddLabelTool(wx.ID_EXIT, 'Quit',
@@ -416,7 +417,7 @@ class WiFiz(wx.Frame):
 
         info = wx.AboutDialogInfo()
 
-        info.SetIcon(wx.Icon('./imgs/aboutLogo.png', wx.BITMAP_TYPE_PNG))
+        info.SetIcon(wx.Icon(img_loc + 'aboutLogo.png', wx.BITMAP_TYPE_PNG))
         info.SetName('WiFiz')
         info.SetVersion(str(progVer))
         info.SetDescription(description)
