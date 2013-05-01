@@ -10,7 +10,7 @@ setup(name='wifiz',
       url = "https://github.com/GrayHatter/WiFiz",
       #py_modules=['main'],
       #'runner' is in the root.
-      scripts = ['scripts/wifiz']
+      scripts = ['scripts/wifiz'],
       data_files=[('/usr/share/wifiz', 'main.py'),
                   ('/usr/share/wifiz/imgs/', 'imgs/*.png')
                  ]
