@@ -10,6 +10,5 @@ setup(name='wifiz',
       url = "https://github.com/GrayHatter/WiFiz",
       py_modules=['foo'],
       #'runner' is in the root.
-      scripts = ['scripts/wifiz'],
-      long_description = read('README.md')
+      scripts = ['scripts/wifiz']
       )
