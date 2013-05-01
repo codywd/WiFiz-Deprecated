@@ -17,11 +17,11 @@ import wx.lib.mixins.listctrl as listmix
 
 # Setting some base app information #
 progVer = '0.9.0'
-conf_dir = "/etc/netctl/"
-int_file = os.getcwd() + "/interface.cfg"
-iwconfig_file = os.getcwd() + "/iwconfig.log"
-iwlist_file = os.getcwd() + '/iwlist.log'
-pid_file = os.getcwd() + 'program.pid'
+conf_dir = '/etc/netctl/'
+int_file = '/usr/lib/wifiz/interface.cfg'
+iwconfig_file = '/usr/lib/wifiz/iwconfig.log'
+iwlist_file = '/usr/lib/wifiz/iwlist.log'
+pid_file = '/usr/lib/wifiz/program.pid'
 pid_number = os.getpid()
 
 #print sys.argv
