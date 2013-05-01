@@ -3,6 +3,6 @@
 
 # Good Luck, and god speed!
 
-import wifiz
+import main
 
-wifiz.start()
+main.start()
