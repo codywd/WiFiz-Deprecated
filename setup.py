@@ -12,6 +12,9 @@ setup(name='wifiz',
       #'runner' is in the root.
       scripts = ['scripts/wifiz'],
       data_files=[('/usr/share/wifiz', ['main.py']),
-                  ('/usr/share/wifiz/imgs/', ['imgs/*.png'])
+                  ('/usr/share/wifiz/imgs/',
+        ['imgs/APScan.png', 'imgs/connect.png', 'imgs/exit.png',
+        'imgs/newprofile.png', 'imgs/aboutLogo.png', 'imgs/disconnect.png',
+        'imgs/logo.png', 'imgs/preferences.png' ])
                  ]
       )
