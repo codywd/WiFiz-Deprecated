@@ -37,10 +37,8 @@ for arg in sys.argv:
 # Lets make sure we're root as well #
 euid = os.geteuid()
 if euid != 0:
-    print ("WiFiz needs to be run as root, we're going to sudo for you. \n"
-           "You can Ctrl+c to exit... (maybe)")
-    args = ['sudo', sys.executable] + sys.argv + [os.environ]
-    os.execlpe('sudo', *args)
+    print ("WiFiz needs to be run as root, please sudo and try again. \n")
+    sys.exit(2)
 
 # Allow only one instance #
 fp = open(pid_file, 'w')
@@ -70,6 +68,8 @@ class WiFiz(wx.Frame):
         self.APList.InsertColumn(1, "Connection Strength", width=200)
         self.APList.InsertColumn(2, "Security Type", width=150)
         self.APList.InsertColumn(3, "Connected?", width=150)
+        self.APList.SetStringItem(0, 0, 'scanning...')
+
         # Get interface name: From file or from user.
         self.UIDValue = GetInterface(self)
         self.SetSize((700,390))
@@ -337,14 +337,18 @@ class WiFiz(wx.Frame):
         # Clear APList
         self.APList.DeleteAllItems()
         self.APindex = 0
-        # I'd rather use regex and get an array
+        while self.scanning:
+            print "Scanning in progress, please hold!"
+            time.sleep(1)
+        # Open iwfile, if it's missing rescan now
         try:
             iwlist = open(iwlist_file, 'r').read()
         except:
             self.ScanWifi()
             iwlist = open(iwlist_file, 'r').read()
-        # Split by access point
+        # I'd rather use regex and get an array
         ap_list = re.split(r'Cell \d\d -', iwlist)
+        # Split by access point
         for ap in reversed(ap_list):
             # Split by line
             ap_data = re.split("\n+",ap)
