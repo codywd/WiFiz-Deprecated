@@ -7,6 +7,7 @@ import re
 import signal
 import subprocess
 import sys
+import thread
 import time
 
 # Importing wxpython Libraries #
@@ -51,16 +52,21 @@ except IOError:
 fp.write(str(pid_number) + "\n")
 fp.flush()
 
-
 # __main__ Class #
 class WiFiz(wx.Frame):
     def __init__(self, parent, title):
         super(WiFiz, self).__init__(None, title="WiFiz",
                             style = wx.DEFAULT_FRAME_STYLE)
+        # init objs
         self.TrayIcon = Icon(self, wx.Icon(img_loc + "APScan.png",
                                     wx.BITMAP_TYPE_PNG), "WiFiz")
         self.index = 0
         self.InitUI()
+        # init vars
+        self.scanning = False
+
+        # init processies
+        thread.start_new_thread(self.ScanWifi, (1,))
 
     def InitUI(self):
 
@@ -314,32 +320,36 @@ class WiFiz(wx.Frame):
         # Here we run the NewProfile wizard
         newProf = NewProfile(parent=None)
 
-    def OnScan(self, e=None):
-        '''Scan on [device], save output'''
+    def ScanWifi(self, e=None):
         # Scan for access points
-        while not self.IsShown:
-            pass
+        while self.scanning:
+            print "Scanning in progress, please hold!"
+            time.sleep(1)
         self.interface.up(self.UIDValue)
         print "Scanning:: " + self.UIDValue
+        self.scanning = True
         output = str(subprocess.check_output("iwlist " + self.UIDValue +
                                                         " scan", shell=True))
         f = open(iwlist_file, 'w')
         f.write(output)
         f.close()
+        print "Scanning:: Done"
+        self.scanning = False
+        self.OnScan(1)
+
+    def OnScan(self, e=None):
+        '''Process scan results.'''
         # Clear APList
         self.APList.DeleteAllItems()
         self.index = 0
-        # Write iwconfig status
-        outputs = str(subprocess.check_output("iwconfig " + self.UIDValue ,
-                                                                shell=True))
-        d = open(iwconfig_file, 'w')
-        d.write(outputs)
-        d.close()
         # I'd rather use regex and get an array
-        iwlist = open(iwlist_file, 'r').read()
+        try:
+            iwlist = open(iwlist_file, 'r').read()
+        except:
+            self.ScanWifi()
+            iwlist = open(iwlist_file, 'r').read()
         # Split by access point
         ap_list = re.split(r'Cell \d\d -', iwlist)
-
         for ap in reversed(ap_list):
             # Split by line
             ap_data = re.split("\n+",ap)
@@ -383,11 +393,8 @@ class WiFiz(wx.Frame):
                 #                     profile = profile
                 #                 else:
                 #                     pass
-
-        f = open(iwconfig_file, 'w')
-        f.write(outputs)
-        f.close()
-
+        if e is None:
+            thread.start_new_thread(self.ScanWifi, (1,))
         # TODO if atocnnt enabled DO
         # try:
         #     self.AutoConnect()
@@ -395,7 +402,6 @@ class WiFiz(wx.Frame):
         #     print "Auto connect failed!"
         # else:
         #     pass
-        print "Scanning:: Done"
 
     # TODO unworking
     def AutoConnect(self, e):
@@ -444,12 +450,14 @@ class Icon(wx.TaskBarIcon):
         self.parent = parent
         self.Bind(wx.EVT_TASKBAR_LEFT_DCLICK, self.OnLeftDClick)
         self.CreateMenu()
+        print "Starting Tray"
 
     def CreateMenu(self):
         self.Bind(wx.EVT_TASKBAR_RIGHT_UP, self.OnPopup)
         self.menu = wx.Menu()
         topen = self.menu.Append(wx.ID_ANY, '&Open')
         self.menu.Bind(wx.EVT_MENU, self.OnOpen, topen)
+
         self.menu.AppendSeparator()
         profiles = os.listdir("/etc/netctl/")
         for i in profiles:
@@ -480,7 +488,6 @@ class Icon(wx.TaskBarIcon):
         if self.parent.IsIconized():
             self.parent.Iconize(False)
         if not self.parent.IsShown():
-            wx.CallAfter(self.parent.OnScan)
             self.parent.Show(True)
             self.parent.Raise()
         else:
@@ -683,7 +690,7 @@ def sigInt(signal, frame):
 def start():
     netctl = Netctl()
     interface = InterfaceCtl()
-    wxAppPid = os.fork() # Consider pty module instead? TODO
+    wxAppPid = os.fork()
     if wxAppPid:
         # We'll handle ctrl-c
         signal.signal(signal.SIGINT, sigInt)
