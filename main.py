@@ -16,12 +16,13 @@ from wx.lib.mixins.listctrl import ListCtrlAutoWidthMixin
 import wx.lib.mixins.listctrl as listmix
 
 # Setting some base app information #
-progVer = '0.9.0'
+progVer = '0.9.1'
 conf_dir = '/etc/netctl/'
-int_file = '/usr/lib/wifiz/interface.cfg'
-iwconfig_file = '/usr/lib/wifiz/iwconfig.log'
-iwlist_file = '/usr/lib/wifiz/iwlist.log'
-pid_file = '/usr/lib/wifiz/program.pid'
+status_dir = '/usr/lib/wifiz/'
+int_file = status_dir + 'interface.cfg'
+iwconfig_file = status_dir + 'iwconfig.log'
+iwlist_file = status_dir + 'iwlist.log'
+pid_file = status_dir + 'program.pid'
 img_loc = '/usr/share/wifiz/imgs/'
 pid_number = os.getpid()
 
@@ -56,7 +57,7 @@ class WiFiz(wx.Frame):
     def __init__(self, parent, title):
         super(WiFiz, self).__init__(None, title="WiFiz",
                             style = wx.DEFAULT_FRAME_STYLE)
-        self.TrayIcon = Icon(self, wx.Icon(img_loc + "logo.png",
+        self.TrayIcon = Icon(self, wx.Icon(img_loc + "APScan.png",
                                     wx.BITMAP_TYPE_PNG), "WiFiz")
         self.index = 0
         self.InitUI()
@@ -169,6 +170,8 @@ class WiFiz(wx.Frame):
 
         # Get interface name: From file or from user.
         self.UIDValue = GetInterface(self)
+        # set up InterfaceCtl class
+        self.interface = InterfaceCtl()
         #self.OnScan(self)
 
     def OnCantConnect(self, e):
@@ -227,7 +230,7 @@ class WiFiz(wx.Frame):
         # TODO and move it out of here
         print filename
         if os.path.isfile(conf_dir + filename):
-            interface.down(self.UIDValue)
+            self.interface.down(self.UIDValue)
             netctl.start(filename)
             # Missing function TODO
             if IsConnected():
@@ -255,7 +258,7 @@ class WiFiz(wx.Frame):
 
 
             try:
-                interface.down(self.UIDValue)
+                self.interface.down(self.UIDValue)
                 netctl.start(filename)
                 wx.MessageBox("You are now connected to " +
                             str(nameofProfile).strip() + ".", "Connected.")
@@ -302,7 +305,7 @@ class WiFiz(wx.Frame):
         item = self.APList.GetItem(index, 0)
         nameofProfile = item.GetText()
         netctl.stop(filename)
-        interface.down(self.UIDValue)
+        self.interface.down(self.UIDValue)
         self.OnScan()
         wx.MessageBox("You are now disconnected from " +
                     nameofProfile + ".", "Disconnected.")
@@ -314,7 +317,9 @@ class WiFiz(wx.Frame):
     def OnScan(self, e=None):
         '''Scan on [device], save output'''
         # Scan for access points
-        interface.up(self.UIDValue)
+        while not self.IsShown:
+            pass
+        self.interface.up(self.UIDValue)
         print "Scanning:: " + self.UIDValue
         output = str(subprocess.check_output("iwlist " + self.UIDValue +
                                                         " scan", shell=True))
@@ -395,7 +400,7 @@ class WiFiz(wx.Frame):
     # TODO unworking
     def AutoConnect(self, e):
         try:
-            interface.down(self.UIDValue)
+            self.interface.down(self.UIDValue)
             netctl.start(self.profile)
             wx.MessageBox("You are now connected to "+str(self.profile).strip()
                                                          + ".", "Connected.")
@@ -603,11 +608,11 @@ class Netctl(object):
 class InterfaceCtl(object):
     """Control the network interface"""
     def __init__(self):
-        super(InterfaceCtl, self).__init__()
-    def down(self, interface):
+        pass
+    def down(self, interface=None):
         print "interface:: down: " + interface
         subprocess.call(["ip", "link", "set", "down", "dev", interface])
-    def up(self, interface):
+    def up(self, interface=None):
         print "interface:: up: " + interface
         subprocess.call(["ip", "link", "set", "up", "dev", interface])
 
@@ -674,7 +679,7 @@ def sigInt(signal, frame):
     print "done. BYE!"
     sys.exit(0)
 
-# Start App #
+# Main Job #
 def start():
     netctl = Netctl()
     interface = InterfaceCtl()
@@ -695,5 +700,6 @@ def start():
         # Run app
         app.MainLoop()
 
+# If called as an app, run start
 if __name__ == "__main__":
     start()
