@@ -58,15 +58,28 @@ class WiFiz(wx.Frame):
         super(WiFiz, self).__init__(None, title="WiFiz",
                             style = wx.DEFAULT_FRAME_STYLE)
         # init objs
+        self.InitUI()
         self.TrayIcon = Icon(self, wx.Icon(img_loc + "APScan.png",
                                     wx.BITMAP_TYPE_PNG), "WiFiz")
-        self.index = 0
-        self.InitUI()
         # init vars
         self.scanning = False
+        self.APindex = 0
+        self.APList = AutoWidthListCtrl(self)
+        self.APList.setResizeColumn(0)
+        self.APList.InsertColumn(0, "SSID", width=150)
+        self.APList.InsertColumn(1, "Connection Strength", width=200)
+        self.APList.InsertColumn(2, "Security Type", width=150)
+        self.APList.InsertColumn(3, "Connected?", width=150)
+        # Get interface name: From file or from user.
+        self.UIDValue = GetInterface(self)
+        self.SetSize((700,390))
+        self.Center()
 
         # init processies
+        # Pre scan in BG
         thread.start_new_thread(self.ScanWifi, (1,))
+        # set up InterfaceCtl class
+        self.interface = InterfaceCtl()
 
     def InitUI(self):
 
@@ -142,14 +155,6 @@ class WiFiz(wx.Frame):
         toolbar.Realize()
         # End Toolbar #
 
-        self.APList = AutoWidthListCtrl(self)
-
-        self.APList.setResizeColumn(0)
-        self.APList.InsertColumn(0, "SSID", width=150)
-        self.APList.InsertColumn(1, "Connection Strength", width=200)
-        self.APList.InsertColumn(2, "Security Type", width=150)
-        self.APList.InsertColumn(3, "Connected?", width=150)
-
         # Create Status Bar #
         self.CreateStatusBar()
         # End Status Bar #
@@ -169,16 +174,6 @@ class WiFiz(wx.Frame):
         self.Bind(wx.EVT_MENU, self.OnReport, reportIssue)
         self.Bind(wx.EVT_MENU, self.OnCantConnect, cantCItem)
         # End Bindings #
-
-        self.SetSize((700,390))
-        self.Center()
-        #self.Show()
-
-        # Get interface name: From file or from user.
-        self.UIDValue = GetInterface(self)
-        # set up InterfaceCtl class
-        self.interface = InterfaceCtl()
-        #self.OnScan(self)
 
     def OnCantConnect(self, e):
         # This fixes an error where the interface stays up, but it disconnects
@@ -341,7 +336,7 @@ class WiFiz(wx.Frame):
         '''Process scan results.'''
         # Clear APList
         self.APList.DeleteAllItems()
-        self.index = 0
+        self.APindex = 0
         # I'd rather use regex and get an array
         try:
             iwlist = open(iwlist_file, 'r').read()
@@ -356,7 +351,7 @@ class WiFiz(wx.Frame):
             for line in ap_data:
                 kv = re.split(":", line.strip())
                 if kv[0] == "ESSID":
-                    self.APList.SetStringItem(self.index, 0,
+                    self.APList.SetStringItem(self.APindex, 0,
                             kv[1].strip().replace('"', ""))
                 if kv[0] == "Encryption key":
                     if kv[1] == "off":
@@ -364,24 +359,24 @@ class WiFiz(wx.Frame):
                         file_encrypt = "none"
                     elif kv[1] == "on":
                         encrypt = "Probably WEP"
-                    self.APList.SetStringItem(self.index, 2, encrypt)
+                    self.APList.SetStringItem(self.APindex, 2, encrypt)
                 if "WPA2" in line:
                     encrypt = "WPA2"
-                    self.APList.SetStringItem(self.index, 2, encrypt)
+                    self.APList.SetStringItem(self.APindex, 2, encrypt)
                 elif "WPA" in line:
                     encrypt = "WPA"
-                    self.APList.SetStringItem(self.index, 2, encrypt)
+                    self.APList.SetStringItem(self.APindex, 2, encrypt)
 
                 # TODO conver this line!
                 if "Quality" in line:
-                    lines = "Line %s" % self.index
-                    self.APList.InsertStringItem(self.index, lines)
-                    self.index + 1
+                    lines = "Line %s" % self.APindex
+                    self.APList.InsertStringItem(self.APindex, lines)
+                    self.APindex + 1
                     s = str(line)[28:33]
                     # Courtesy of gohu's iwlistparse.py, slightly modified.
                     # https://bbs.archlinux.org/viewtopic.php?id=88967
                     s3 = str(int(round(float(s[0])/float(s[3])*100))).rjust(3)+" %"
-                    self.APList.SetStringItem(self.index, 1, s3)
+                    self.APList.SetStringItem(self.APindex, 1, s3)
 
                 # profiles = os.listdir("/etc/netctl/")
                 # if any(essid.strip() in s for s in profiles):
