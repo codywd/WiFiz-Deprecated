@@ -253,7 +253,7 @@ class WiFiz(wx.Frame):
             else:
                 network_key = None
 
-            CreateConfig(nameofProfile, self.UIDValue, typeofSecurity, key)
+            CreateConfig(nameofProfile, self.UIDValue, typeofSecurity, network_key)
             f.write("IP=dhcp\n")
             f.close()
 
@@ -659,12 +659,16 @@ def CreateConfig(name, interface, security, key=None, ip='dhcp'):
     f.write("IP=dhcp\n")
     f.close()
 
-def IsConnected(interface):
-    '''Query the selected interface, return True if up else return False'''
-    ip = subprocess.check_output('ip -o link show '+ interface)
-    status = re.split('\s', ip)
-    if status[9] == 'UP': return True
-    else: return False
+def IsConnected():
+    # If we are connected to a network, it lists it. Otherwise, it returns nothing.
+    check = subprocess.check_output("netctl list | sed -n 's/^\* //p'", shell=True)
+    print(check)
+    if check == b'':
+        print("False")
+        return False
+    else:
+        print("True")
+        return True
 
 def cleanUp():
     # Clean up time
