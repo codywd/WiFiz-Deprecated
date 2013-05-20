@@ -1,4 +1,4 @@
-'''''WiFiz (A NetCTL GUI Frontend)'''''
+## WiFiz (A NetCTL GUI Frontend)
 
 WiFiz is a brand new GUI NetCTL frontend. The reason why it uses NetCTL 
 as a 
