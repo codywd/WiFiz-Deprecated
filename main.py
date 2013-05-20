@@ -33,7 +33,10 @@ for arg in sys.argv:
     if arg == '--help' or arg == '-h':
         print "WiFiz; The netctl gui! \nNeeds to be root."
         sys.exit(0)
-
+    if arg == '--version' or arg == '-v':
+        print "Your WiFiz version is " + progVer + "."
+        sys.exit(0)
+        
 # Lets make sure we're root as well #
 euid = os.geteuid()
 if euid != 0:
