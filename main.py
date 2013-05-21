@@ -400,9 +400,6 @@ class WiFiz(wx.Frame):
                     elif kv[1] == "on":
                         encrypt = "Probably WEP"
                     self.APList.SetStringItem(self.APindex, 2, encrypt)
-                if "WPA2" in line:
-                    encrypt = "WPA2"
-                    self.APList.SetStringItem(self.APindex, 2, encrypt)
                 elif "WPA" in line:
                     encrypt = "WPA"
                     self.APList.SetStringItem(self.APindex, 2, encrypt)
