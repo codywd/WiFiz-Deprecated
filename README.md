@@ -1,7 +1,4 @@
 # WiFiz v0.9.1.1
-
-
-## About WiFiz
 WiFiz is a brand new GUI NetCTL frontend. The reason why it uses NetCTL 
 as a 
 backend over NetCFG, is due to the fact that it better integrates with 
