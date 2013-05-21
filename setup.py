@@ -16,6 +16,6 @@ setup(name='wifiz',
         ['imgs/APScan.png', 'imgs/connect.png', 'imgs/exit.png',
         'imgs/newprofile.png', 'imgs/aboutLogo.png', 'imgs/disconnect.png',
         'imgs/logo.png', 'imgs/preferences.png' ]),
-                  ('/usr/share/licenses/wifiz/',['WiFiz.license']
+                  ('/usr/share/licenses/wifiz/',['WiFiz.license'])
                  ]
       )
