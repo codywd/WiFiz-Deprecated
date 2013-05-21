@@ -50,47 +50,26 @@ except IOError:
 fp.write(str(pid_number) + "\n")
 fp.flush()
 
+
 # __main__ Class #
 class WiFiz(wx.Frame):
     def __init__(self, parent, title):
         super(WiFiz, self).__init__(None, title="WiFiz",
                             style = wx.DEFAULT_FRAME_STYLE)
-        # init objs
-        self.InitUI()
-        self.TrayIcon = Icon(self, wx.Icon(img_loc + "APScan.png",
+        self.TrayIcon = Icon(self, wx.Icon("./imgs/logo.png",
                                     wx.BITMAP_TYPE_PNG), "WiFiz")
-        # init vars
-        self.scanning = False
-        self.APindex = 0
-        self.APList = AutoWidthListCtrl(self)
-        self.APList.setResizeColumn(0)
-        self.APList.InsertColumn(0, "SSID", width=150)
-        self.APList.InsertColumn(1, "Connection Strength", width=200)
-        self.APList.InsertColumn(2, "Security Type", width=150)
-        self.APList.InsertColumn(3, "Connected?", width=150)
-        self.APList.SetStringItem(0, 0, 'scanning...')
-
-        # Get interface name: From file or from user.
-        self.UIDValue = GetInterface(self)
-        self.SetSize((700,390))
-        self.Center()
-
-        # init processies
-        # Pre scan in BG
-        thread.start_new_thread(self.ScanWifi, (1,))
-        # set up InterfaceCtl class
-        self.interface = InterfaceCtl()
+        self.index = 0
+        self.InitUI()
 
     def InitUI(self):
 
-        # Set Icon
-        iconFile = img_loc + "logo.png"
+        iconFile = "./imgs/logo.png"
         mainIcon = wx.Icon(iconFile, wx.BITMAP_TYPE_PNG)
         self.SetIcon(mainIcon)
 
         # Menu Bar #
         self.mainMenu = wx.MenuBar()
-
+        
         fileMenu = wx.Menu()
         ScanAPs = fileMenu.Append(wx.ID_ANY, "Scan for New Networks",
                                     "Scan for New Wireless Networks.")
@@ -155,6 +134,14 @@ class WiFiz(wx.Frame):
         toolbar.Realize()
         # End Toolbar #
 
+        self.APList = AutoWidthListCtrl(self)
+
+        self.APList.setResizeColumn(0)
+        self.APList.InsertColumn(0, "SSID", width=150)
+        self.APList.InsertColumn(1, "Connection Strength", width=200)
+        self.APList.InsertColumn(2, "Security Type", width=150)
+        self.APList.InsertColumn(3, "Connected?", width=150)
+
         # Create Status Bar #
         self.CreateStatusBar()
         # End Status Bar #
@@ -184,6 +171,7 @@ class WiFiz(wx.Frame):
         interface.down(netinterface)
 
     # TODO rename this funct
+>>>>>>> Temporary merge branch 2
     def OnMConnect(self, profile):
         # This figures out the profile we are trying to connect to by reading
         # the just-recently-clicked profile
@@ -231,7 +219,7 @@ class WiFiz(wx.Frame):
         # TODO and move it out of here
         print filename
         if os.path.isfile(conf_dir + filename):
-            self.interface.down(self.UIDValue)
+            interface.down(self.UIDValue)
             netctl.start(filename)
             # Missing function TODO
             if IsConnected():
@@ -259,7 +247,7 @@ class WiFiz(wx.Frame):
 
 
             try:
-                self.interface.down(self.UIDValue)
+                interface.down(self.UIDValue)
                 netctl.start(filename)
                 wx.MessageBox("You are now connected to " +
                             str(nameofProfile).strip() + ".", "Connected.")
@@ -306,7 +294,7 @@ class WiFiz(wx.Frame):
         item = self.APList.GetItem(index, 0)
         nameofProfile = item.GetText()
         netctl.stop(filename)
-        self.interface.down(self.UIDValue)
+        interface.down(self.UIDValue)
         self.OnScan()
         wx.MessageBox("You are now disconnected from " +
                     nameofProfile + ".", "Disconnected.")
@@ -314,26 +302,18 @@ class WiFiz(wx.Frame):
     def OnNew(self, e):
         # Here we run the NewProfile wizard
         newProf = NewProfile(parent=None)
+>>>>>>> Temporary merge branch 2
 
-    def ScanWifi(self, e=None):
+    def OnScan(self, e=None):
+        '''Scan on [device], save output'''
         # Scan for access points
-        while self.scanning:
-            print "Scanning in progress, please hold!"
-            time.sleep(1)
-        self.interface.up(self.UIDValue)
+        interface.up(self.UIDValue)
         print "Scanning:: " + self.UIDValue
-        self.scanning = True
         output = str(subprocess.check_output("iwlist " + self.UIDValue +
                                                         " scan", shell=True))
         f = open(iwlist_file, 'w')
         f.write(output)
         f.close()
-        print "Scanning:: Done"
-        self.scanning = False
-        self.OnScan(1)
-
-    def OnScan(self, e=None):
-        '''Process scan results.'''
         # Clear APList
         self.APList.DeleteAllItems()
         self.APindex = 0
@@ -347,15 +327,17 @@ class WiFiz(wx.Frame):
             self.ScanWifi()
             iwlist = open(iwlist_file, 'r').read()
         # I'd rather use regex and get an array
-        ap_list = re.split(r'Cell \d\d -', iwlist)
+        iwlist = open(iwlist_file, 'r').read()
         # Split by access point
+        ap_list = re.split(r'Cell \d\d -', iwlist)
+
         for ap in reversed(ap_list):
             # Split by line
             ap_data = re.split("\n+",ap)
             for line in ap_data:
                 kv = re.split(":", line.strip())
                 if kv[0] == "ESSID":
-                    self.APList.SetStringItem(self.APindex, 0,
+                    self.APList.SetStringItem(self.index, 0,
                             kv[1].strip().replace('"', ""))
                 if kv[0] == "Encryption key":
                     if kv[1] == "off":
@@ -363,24 +345,24 @@ class WiFiz(wx.Frame):
                         file_encrypt = "none"
                     elif kv[1] == "on":
                         encrypt = "Probably WEP"
-                    self.APList.SetStringItem(self.APindex, 2, encrypt)
+                    self.APList.SetStringItem(self.index, 2, encrypt)
                 if "WPA2" in line:
                     encrypt = "WPA2"
-                    self.APList.SetStringItem(self.APindex, 2, encrypt)
+                    self.APList.SetStringItem(self.index, 2, encrypt)
                 elif "WPA" in line:
                     encrypt = "WPA"
-                    self.APList.SetStringItem(self.APindex, 2, encrypt)
+                    self.APList.SetStringItem(self.index, 2, encrypt)
 
                 # TODO conver this line!
                 if "Quality" in line:
-                    lines = "Line %s" % self.APindex
-                    self.APList.InsertStringItem(self.APindex, lines)
-                    self.APindex + 1
+                    lines = "Line %s" % self.index
+                    self.APList.InsertStringItem(self.index, lines)
+                    self.index + 1
                     s = str(line)[28:33]
                     # Courtesy of gohu's iwlistparse.py, slightly modified.
                     # https://bbs.archlinux.org/viewtopic.php?id=88967
                     s3 = str(int(round(float(s[0])/float(s[3])*100))).rjust(3)+" %"
-                    self.APList.SetStringItem(self.APindex, 1, s3)
+                    self.APList.SetStringItem(self.index, 1, s3)
 
                 # profiles = os.listdir("/etc/netctl/")
                 # if any(essid.strip() in s for s in profiles):
@@ -392,8 +374,11 @@ class WiFiz(wx.Frame):
                 #                     profile = profile
                 #                 else:
                 #                     pass
-        if e is None:
-            thread.start_new_thread(self.ScanWifi, (1,))
+
+        f = open(iwconfig_file, 'w')
+        f.write(outputs)
+        f.close()
+
         # TODO if atocnnt enabled DO
         # try:
         #     self.AutoConnect()
@@ -401,14 +386,14 @@ class WiFiz(wx.Frame):
         #     print "Auto connect failed!"
         # else:
         #     pass
+        print "Scanning:: Done"
 
     # TODO unworking
     def AutoConnect(self, e):
         try:
-            self.interface.down(self.UIDValue)
+            interface.down(self.UIDValue)
             netctl.start(self.profile)
-            wx.MessageBox("You are now connected to "+str(self.profile).strip()
-                                                         + ".", "Connected.")
+            wx.MessageBox("You are now connected to " + str(self.profile).strip() + ".", "Connected.")
         except:
             wx.MessageBox("There has been an error, please try again. "
                         "If it persists, please contact Cody Dostal "
@@ -427,7 +412,7 @@ class WiFiz(wx.Frame):
 
         info = wx.AboutDialogInfo()
 
-        info.SetIcon(wx.Icon(img_loc + 'aboutLogo.png', wx.BITMAP_TYPE_PNG))
+        info.SetIcon(wx.Icon('./imgs/aboutLogo.png', wx.BITMAP_TYPE_PNG))
         info.SetName('WiFiz')
         info.SetVersion(str(progVer))
         info.SetDescription(description)
@@ -449,14 +434,12 @@ class Icon(wx.TaskBarIcon):
         self.parent = parent
         self.Bind(wx.EVT_TASKBAR_LEFT_DCLICK, self.OnLeftDClick)
         self.CreateMenu()
-        print "Starting Tray"
 
     def CreateMenu(self):
         self.Bind(wx.EVT_TASKBAR_RIGHT_UP, self.OnPopup)
         self.menu = wx.Menu()
         topen = self.menu.Append(wx.ID_ANY, '&Open')
         self.menu.Bind(wx.EVT_MENU, self.OnOpen, topen)
-
         self.menu.AppendSeparator()
         profiles = os.listdir("/etc/netctl/")
         for i in profiles:
@@ -487,6 +470,7 @@ class Icon(wx.TaskBarIcon):
         if self.parent.IsIconized():
             self.parent.Iconize(False)
         if not self.parent.IsShown():
+            wx.CallAfter(self.parent.OnScan)
             self.parent.Show(True)
             self.parent.Raise()
         else:
@@ -614,11 +598,11 @@ class Netctl(object):
 class InterfaceCtl(object):
     """Control the network interface"""
     def __init__(self):
-        pass
-    def down(self, interface=None):
+        super(InterfaceCtl, self).__init__()
+    def down(self, interface):
         print "interface:: down: " + interface
         subprocess.call(["ip", "link", "set", "down", "dev", interface])
-    def up(self, interface=None):
+    def up(self, interface):
         print "interface:: up: " + interface
         subprocess.call(["ip", "link", "set", "up", "dev", interface])
 
@@ -689,11 +673,11 @@ def sigInt(signal, frame):
     print "done. BYE!"
     sys.exit(0)
 
-# Main Job #
-def start():
+# Start App #
+if __name__ == "__main__":
     netctl = Netctl()
     interface = InterfaceCtl()
-    wxAppPid = os.fork()
+    wxAppPid = os.fork() # Consider pty module instead? TODO
     if wxAppPid:
         # We'll handle ctrl-c
         signal.signal(signal.SIGINT, sigInt)
@@ -709,7 +693,3 @@ def start():
         WiFiz(None, title="WiFiz")
         # Run app
         app.MainLoop()
-
-# If called as an app, run start
-if __name__ == "__main__":
-    start()
