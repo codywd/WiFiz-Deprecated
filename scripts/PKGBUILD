@@ -1,23 +1,23 @@
-# Maintainer: Gregory Mullen <greg@grayhatter.com>
+# Maintainer: Cody Dostal <dostalcody@gmail.com>
 
-pkgname=wifiz-git
-_gitname=wifiz-nightly
-pkgver=v0.9.19.g908ab8c
-pkgrel=1
-pkgdesc="GUI for netctl, nightly version."
+pkgname=wifiz-stable
+_gitname=wifiz-stable
+pkgver=v0.9.1.1.d361ddd0a2
+pkgrel=2
+pkgdesc="GUI for netctl, (mostly) stable version."
 arch=('any')
-url="https://github.com/GrayHatter/WiFiz"
-license=('unknown')
+url="https://github.com/codywd/WiFiz"
+license=('MIT')
 depends=('python2' 'wxpython' 'wireless_tools' 'netctl')
 makedepends=('git')
 provides=('wifiz')
-conflicts=('wifiz')
+conflicts=('wifiz-nightly')
 options=(!emptydirs)
-source=('wifiz-nightly::git://github.com/GrayHatter/WiFiz.git#branch=nightly')
+source=('wifiz-nightly::git://github.com/codywd/WiFiz.git#branch=develop')
 md5sums=('SKIP')
 
 pkgver() {
-  cd $srcdir/wifiz-nightly
+  cd $srcdir/wifiz-stable
   # Use the tag of the last commit
   git describe --always | sed 's|-|.|g'
 }
