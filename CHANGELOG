@@ -1,0 +1,9 @@
+0.9.1.2
+Fixed Bugs:
+1. "netctl is not defined"
+2. "interface is not defined"
+3. Whenever you would connect to a network, even if you previously connected to it, would cause it to re-prompt for the password.
+4. Incorrect wpa2 authentication settings.
+
+Fixed Bugs:
+1. global name 'key' is not defined

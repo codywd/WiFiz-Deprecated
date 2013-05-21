@@ -17,7 +17,7 @@ from wx.lib.mixins.listctrl import ListCtrlAutoWidthMixin
 import wx.lib.mixins.listctrl as listmix
 
 # Setting some base app information #
-progVer = '0.9.1.1'
+progVer = '0.9.1.2'
 conf_dir = '/etc/netctl/'
 status_dir = '/usr/lib/wifiz/'
 int_file = status_dir + 'interface.cfg'
@@ -53,6 +53,39 @@ except IOError:
 fp.write(str(pid_number) + "\n")
 fp.flush()
 
+class Netctl(object):
+    """Functions to control netctl"""
+    def __init__(self):
+        super(Netctl, self).__init__()
+
+    def start(self, network):
+        print "netctl:: start " + network
+        subprocess.call(["netctl", "start", network])
+
+    def stop(self, network):
+        print "netctl:: stop " + network
+        subprocess.call(["netctl", "stop", network])
+
+    def stopall(self):
+        print "netctl:: stop-all"
+        subprocess.call(["netctl", "stop-all"])
+
+    def restart(self, network):
+        print "netctl:: restart " + network
+        subprocess.call(["netctl", "restart", profile])
+
+class InterfaceCtl(object):
+    """Control the network interface"""
+    def __init__(self):
+        pass
+    def down(self, interface=None):
+        print "interface:: down: " + interface
+        subprocess.call(["ip", "link", "set", "down", "dev", interface])
+    def up(self, interface=None):
+        print "interface:: up: " + interface
+        subprocess.call(["ip", "link", "set", "up", "dev", interface])
+
+
 # __main__ Class #
 class WiFiz(wx.Frame):
     def __init__(self, parent, title):
@@ -64,6 +97,7 @@ class WiFiz(wx.Frame):
                                     wx.BITMAP_TYPE_PNG), "WiFiz")
         # init vars
         self.scanning = False
+        self.netctl = Netctl()
         self.APindex = 0
         self.APList = AutoWidthListCtrl(self)
         self.APList.setResizeColumn(0)
@@ -183,8 +217,8 @@ class WiFiz(wx.Frame):
         # from the network. Usually seems to happen after letting a computer
         # (at least mine) go to sleep for a while.
         netinterface = GetInterface(self)
-        netctl.stopall()
-        interface.down(netinterface)
+        self.netctl.stopall()
+        self.interface.down(netinterface)
 
     # TODO rename this funct
     def OnMConnect(self, profile):
@@ -193,9 +227,9 @@ class WiFiz(wx.Frame):
         #item = self.mainMenu.FindItemById(e.GetId())
         #profile = item.GetText()
         netinterface = GetInterface(self)
-        interface.down(netinterface)
-        netctl.stopall()
-        netctl.start(profile)
+        self.interface.down(netinterface)
+        self.netctl.stopall()
+        self.netctl.start(profile)
 
     def OnPref(self, e):
         # Opens the preferences dialog... which is currently not functional
@@ -227,7 +261,7 @@ class WiFiz(wx.Frame):
             typeofSecurity = 'none'
 
         # Here we get the filename of a current profile
-        filename = str("wifiz" + u'-' + nameofProfile).strip()
+        filename = str(nameofProfile + u'_' + "wifiz").strip()
         filename = filename.strip()
 
         # We need to make this section optional
@@ -235,7 +269,7 @@ class WiFiz(wx.Frame):
         print filename
         if os.path.isfile(conf_dir + filename):
             self.interface.down(self.UIDValue)
-            netctl.start(filename)
+            self.netctl.start(filename)
             # Missing function TODO
             if IsConnected():
                 wx.MessageBox("You are now connected to " +
@@ -257,13 +291,12 @@ class WiFiz(wx.Frame):
                 network_key = None
 
             CreateConfig(nameofProfile, self.UIDValue, typeofSecurity, network_key)
-            f.write("IP=dhcp\n")
-            f.close()
 
 
             try:
-                self.interface.down(self.UIDValue)
-                netctl.start(filename)
+                netinterface = GetInterface(self)
+                self.interface.down(netinterface)
+                self.netctl.start(filename)
                 wx.MessageBox("You are now connected to " +
                             str(nameofProfile).strip() + ".", "Connected.")
             except:
@@ -308,7 +341,7 @@ class WiFiz(wx.Frame):
         index = int(index)
         item = self.APList.GetItem(index, 0)
         nameofProfile = item.GetText()
-        netctl.stop(filename)
+        self.netctl.stop(filename)
         self.interface.down(self.UIDValue)
         self.OnScan()
         wx.MessageBox("You are now disconnected from " +
@@ -367,9 +400,6 @@ class WiFiz(wx.Frame):
                     elif kv[1] == "on":
                         encrypt = "Probably WEP"
                     self.APList.SetStringItem(self.APindex, 2, encrypt)
-                if "WPA2" in line:
-                    encrypt = "WPA2"
-                    self.APList.SetStringItem(self.APindex, 2, encrypt)
                 elif "WPA" in line:
                     encrypt = "WPA"
                     self.APList.SetStringItem(self.APindex, 2, encrypt)
@@ -409,7 +439,7 @@ class WiFiz(wx.Frame):
     def AutoConnect(self, e):
         try:
             self.interface.down(self.UIDValue)
-            netctl.start(self.profile)
+            self.netctl.start(self.profile)
             wx.MessageBox("You are now connected to "+str(self.profile).strip()
                                                          + ".", "Connected.")
         except:
@@ -593,38 +623,6 @@ class TitledPage(wiz.WizardPageSimple):
         sizer.Add(title, 0, wx.ALIGN_CENTER_HORIZONTAL|wx.ALL, 5)
         sizer.Add(wx.StaticLine(self, -1), 0, wx.EXPAND|wx.ALL, 5)
 
-class Netctl(object):
-    """Functions to control netctl"""
-    def __init__(self):
-        super(Netctl, self).__init__()
-
-    def start(self, network):
-        print "netctl:: start " + network
-        subprocess.call(["netctl", "start", network])
-
-    def stop(self, network):
-        print "netctl:: stop " + network
-        subprocess.call(["netctl", "stop", network])
-
-    def stopall(self):
-        print "netctl:: stop-all"
-        subprocess.call(["netctl", "stop-all"])
-
-    def restart(self, network):
-        print "netctl:: restart " + network
-        subprocess.call(["netctl", "restart", profile])
-
-class InterfaceCtl(object):
-    """Control the network interface"""
-    def __init__(self):
-        pass
-    def down(self, interface=None):
-        print "interface:: down: " + interface
-        subprocess.call(["ip", "link", "set", "down", "dev", interface])
-    def up(self, interface=None):
-        print "interface:: up: " + interface
-        subprocess.call(["ip", "link", "set", "up", "dev", interface])
-
 # Helper Functions #
 
 # TODO return this to the main class
@@ -648,7 +646,7 @@ def GetInterface(wxobj):
 def CreateConfig(name, interface, security, key=None, ip='dhcp'):
     print "Creating Config File!\n"
     # TODO genertate better filename
-    filename =  name + "-wifiz"
+    filename =  name + "_wifiz"
     f = open(conf_dir + filename, "w")
     f.write("Description='A profile generated by WiFiz for "+str(name)+"'\n" +
     "Interface=" + str(interface) + "\n" +
@@ -656,7 +654,7 @@ def CreateConfig(name, interface, security, key=None, ip='dhcp'):
     "Security=" + str(security) + "\n" +
     "ESSID='" + str(name) + "'\n")
     if key:
-        f.write(r'Key=\"' + key + "\n")
+        f.write(r"Key='" + key + "'\n")
     else:
         f.write(r'Key=None\n')
     f.write("IP=dhcp\n")
