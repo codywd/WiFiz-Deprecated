@@ -147,8 +147,10 @@ class WiFiz(wx.Frame):
         toolsMenu = wx.Menu()
         cantCItem = toolsMenu.Append(wx.ID_ANY, "Can't Connect to Networks",
                              "If you can't connect to any networks, run this.")
+        editProfile = toolsMenu.Append(wx.ID_ANY, "Edit profiles",
+                                               "Manually edit profiles.")        
         self.mainMenu.Append(toolsMenu, "Tools")
-
+        
         helpMenu = wx.Menu()
         helpItem = helpMenu.Append(wx.ID_HELP, "Help with WiFiz",
                                             "Get help with WiFiz")
@@ -210,7 +212,23 @@ class WiFiz(wx.Frame):
         self.Bind(wx.EVT_CONTEXT_MENU, self.OnDConnect, popDCon)
         self.Bind(wx.EVT_MENU, self.OnReport, reportIssue)
         self.Bind(wx.EVT_MENU, self.OnCantConnect, cantCItem)
+        self.Bind(wx.EVT_MENU, self.onEditProf, editProfile)
         # End Bindings #
+        
+    def onEditProf(self, e):
+        if os.path.exists("/usr/bin/gedit"):
+            if self.APList.GetFirstSelected() == -1:
+                wx.MessageBox("You have to select a profile first!", "Please select profile.")
+            else:
+                index = str(self.getSelectedIndices()).strip('[]')
+                index = int(index)
+                item = self.APList.GetItem(index, 0)
+                nameofProfile = item.GetText()        
+                subprocess.call("gedit " + (conf_dir + nameofProfile), shell="True")
+        else:
+            wx.MessageBox("To edit profiles, you need to have gedit installed. Please install gedit, and then retry.",
+                          "Install gedit first.")
+        
 
     def OnCantConnect(self, e):
         # This fixes an error where the interface stays up, but it disconnects

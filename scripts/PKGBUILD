@@ -10,6 +10,7 @@ url="https://github.com/codywd/WiFiz"
 license=('MIT')
 depends=('python2' 'wxpython' 'wireless_tools' 'netctl' 
 'wpa_supplicant')
+optdepends=('gedit: Manually editing profiles.")
 makedepends=('git')
 conflicts=('wifiz-nightly')
 provides=('wifiz')

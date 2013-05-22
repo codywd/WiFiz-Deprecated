@@ -16,4 +16,7 @@ WiFiz is in beta state, and generally considered stable for daily use. While thi
 5. netctl
 Those are currently all the dependencies I know of.
 
+## Optional Dependencies
+These dependencies are required for various features.
+1. gedit: Manually editing profiles.
 
