@@ -1,3 +1,6 @@
+0.9.2
+1. Added the ability to edit the profiles (currently uses gedit.) 
+
 0.9.1.2
 Fixed Bugs:
 1. "netctl is not defined"
