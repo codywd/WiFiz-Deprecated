@@ -2,16 +2,16 @@
 
 pkgname=wifiz
 _gitname=WiFiz
-pkgver=6620271
-pkgrel=1
+pkgver=0.9.2.8.gc38cae9
+pkgrel=2
 pkgdesc="NetCTL GUI Frontend, written in wxPython. Stable Version."
 arch=('any')
 url="https://github.com/codywd/WiFiz"
 license=('MIT')
 depends=('python2' 'wxpython' 'wireless_tools' 'netctl' 
 'wpa_supplicant')
-optdepends=('gedit: Manually editing profiles.')
 makedepends=('git')
+optdepends=('gedit: Manually editing profiles.')
 conflicts=('wifiz-nightly')
 provides=('wifiz')
 source=('git://github.com/codywd/WiFiz.git#branch=develop')
@@ -19,9 +19,8 @@ source=('git://github.com/codywd/WiFiz.git#branch=develop')
 md5sums=('SKIP')
 
 pkgver() {
-  cd $_gitname
-  # Use the tag of the last commit
-  git describe --always | sed 's|-|.|g'
+  cd "$_gitname"
+  echo $(git describe --long | sed 's/-/./g')
 }
 
 package() {

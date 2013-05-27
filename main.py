@@ -17,7 +17,7 @@ from wx.lib.mixins.listctrl import ListCtrlAutoWidthMixin
 import wx.lib.mixins.listctrl as listmix
 
 # Setting some base app information #
-progVer = '0.9.2'
+progVer = '0.9.2.2'
 conf_dir = '/etc/netctl/'
 status_dir = '/usr/lib/wifiz/'
 int_file = status_dir + 'interface.cfg'
@@ -37,22 +37,38 @@ for arg in sys.argv:
         print "Your WiFiz version is " + progVer + "."
         sys.exit(0)
         
+if os.path.exists(status_dir):
+    pass
+else:
+    subprocess.call("mkdir " + status_dir, shell=True)
+        
 # Lets make sure we're root as well #
 euid = os.geteuid()
 if euid != 0:
     print ("WiFiz needs to be run as root, please sudo and try again. \n")
     sys.exit(2)
-
-# Allow only one instance #
-fp = open(pid_file, 'w')
-try:
-    fcntl.lockf(fp, fcntl.LOCK_EX|fcntl.LOCK_NB)
-except IOError:
-    print "We only allow one instance of WiFiz at a time for now."
-    sys.exit(1)
-fp.write(str(pid_number) + "\n")
-fp.flush()
-
+if os.path.exists(pid_file):
+    # Allow only one instance #
+    fp = open(pid_file, 'w')
+    try:
+        fcntl.lockf(fp, fcntl.LOCK_EX|fcntl.LOCK_NB)
+    except IOError:
+        print "We only allow one instance of WiFiz at a time for now."
+        sys.exit(1)
+    fp.write(str(pid_number) + "\n")
+    fp.flush()
+else:
+    subprocess.call("touch " + pid_file, shell=True)
+    # Allow only one instance #
+    fp = open(pid_file, 'w')
+    try:
+        fcntl.lockf(fp, fcntl.LOCK_EX|fcntl.LOCK_NB)
+    except IOError:
+        print "We only allow one instance of WiFiz at a time for now."
+        sys.exit(1)
+    fp.write(str(pid_number) + "\n")
+    fp.flush() 
+    
 class Netctl(object):
     """Functions to control netctl"""
     def __init__(self):

@@ -1,3 +1,6 @@
+0.9.2.1
+1. Fixed error where status directory was not created.
+
 0.9.2
 1. Added the ability to edit the profiles (currently uses gedit.) 
 
@@ -7,6 +10,4 @@ Fixed Bugs:
 2. "interface is not defined"
 3. Whenever you would connect to a network, even if you previously connected to it, would cause it to re-prompt for the password.
 4. Incorrect wpa2 authentication settings.
-
-Fixed Bugs:
-1. global name 'key' is not defined
+5. global name 'key' is not defined
