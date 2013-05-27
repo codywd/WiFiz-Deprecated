@@ -17,7 +17,7 @@ from wx.lib.mixins.listctrl import ListCtrlAutoWidthMixin
 import wx.lib.mixins.listctrl as listmix
 
 # Setting some base app information #
-progVer = '0.9.2'
+progVer = '0.9.2.1'
 conf_dir = '/etc/netctl/'
 status_dir = '/usr/lib/wifiz/'
 int_file = status_dir + 'interface.cfg'
