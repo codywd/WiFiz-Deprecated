@@ -20,6 +20,7 @@ import wx.lib.mixins.listctrl as listmix
 progVer = '0.9.2.2'
 conf_dir = '/etc/netctl/'
 status_dir = '/usr/lib/wifiz/'
+license_dir = '/usr/share/licenses/wifiz/'
 int_file = status_dir + 'interface.cfg'
 iwconfig_file = status_dir + 'iwconfig.log'
 iwlist_file = status_dir + 'iwlist.log'
@@ -94,10 +95,12 @@ class InterfaceCtl(object):
     """Control the network interface"""
     def __init__(self):
         pass
-    def down(self, interface=None):
+    
+    def down(self, interface=""):
         print "interface:: down: " + interface
         subprocess.call(["ip", "link", "set", "down", "dev", interface])
-    def up(self, interface=None):
+    
+    def up(self, interface=""):
         print "interface:: up: " + interface
         subprocess.call(["ip", "link", "set", "up", "dev", interface])
 
@@ -125,6 +128,7 @@ class WiFiz(wx.Frame):
 
         # Get interface name: From file or from user.
         self.UIDValue = GetInterface(self)
+        print self.UIDValue
         self.SetSize((700,390))
         self.Center()
 
@@ -490,7 +494,7 @@ class WiFiz(wx.Frame):
 
     def OnAbout(self, e):
         description = """WiFiz is a simple to use, frontend for NetCTL."""
-        license = open('WiFiz.license', 'r').read()
+        license = open(license_dir + 'WiFiz.license', 'r').read()
 
         info = wx.AboutDialogInfo()
 
@@ -676,6 +680,7 @@ def GetInterface(wxobj):
             f = open(int_file, 'w')
             f.write(wxobj.UIDValue)
             f.close()
+            return wxobj.UIDValue
 
 def CreateConfig(name, interface, security, key=None, ip='dhcp'):
     print "Creating Config File!\n"
