@@ -1,3 +1,11 @@
+0.9.2.3
+1. Fixed "TypeError: cannot concatenate 'str' and 'NoneType' objects" on 
+first run.
+2. Fixed a "file doesn't exist" error when opening the license section.
+
+0.9.2.2
+1. PKGBUILD Issues
+
 0.9.2.1
 1. Fixed error where status directory was not created.
 
