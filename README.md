@@ -1,4 +1,4 @@
-# WiFiz v0.9.2.3
+# WiFiz v0.9.2.4
 WiFiz is a brand new GUI NetCTL frontend. The reason why it uses NetCTL 
 as a 
 backend over NetCFG, is due to the fact that it better integrates with 
@@ -16,6 +16,7 @@ When you install v0.9.2, it will say it is downgrading. Do not worry about this.
 3. wireless-tools
 4. wpa_supplicant
 5. netctl
+
 Those are currently all the dependencies I know of.
 
 ## Optional Dependencies
