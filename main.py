@@ -124,7 +124,6 @@ class WiFiz(wx.Frame):
         self.APList.InsertColumn(1, "Connection Strength", width=200)
         self.APList.InsertColumn(2, "Security Type", width=150)
         self.APList.InsertColumn(3, "Connected?", width=150)
-        self.APList.SetStringItem(0, 0, 'scanning...')
 
         # Get interface name: From file or from user.
         self.UIDValue = GetInterface(self)
