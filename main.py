@@ -430,6 +430,11 @@ class WiFiz(wx.Frame):
                 if kv[0] == "ESSID":
                     self.APList.SetStringItem(self.APindex, 0,
                             kv[1].strip().replace('"', ""))
+                    check = subprocess.check_output("netctl list | sed -n 's/^\* //p'", shell=True)
+                    if kv[1].strip().replace('"', "") in check:
+                        self.APList.SetStringItem(self.APindex, 3, "True")
+                    else:
+                        self.APList.SetStringItem(self.APindex, 3, "False")
                 if kv[0] == "Encryption key":
                     if kv[1] == "off":
                         encrypt = "Open"
