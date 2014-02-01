@@ -23,3 +23,7 @@ These dependencies are required for various features.
 
 1. gedit: Manually editing profiles.
 
+## Known Issues
+1. "swig/python detected a memory leak of type 'wxPyXmlSubclassFactory 
+*', no destructor found." This is a wxPython issue, and not something I 
+can fix. Hopefully the developers of wxPython will fix it soon.
