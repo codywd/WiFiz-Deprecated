@@ -26,4 +26,5 @@ These dependencies are required for various features.
 ## Known Issues
 1. "swig/python detected a memory leak of type 'wxPyXmlSubclassFactory 
 *', no destructor found." This is a wxPython issue, and not something I 
-can fix. Hopefully the developers of wxPython will fix it soon.
+can fix. Hopefully the developers of wxPython will fix it soon. It is 
+safe to ignore, however.
