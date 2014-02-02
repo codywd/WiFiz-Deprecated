@@ -2,6 +2,7 @@
 
 # Importing Standard Libraries #
 import fcntl
+import getpass
 import os
 import re
 import signal
@@ -9,6 +10,7 @@ import subprocess
 import sys
 import thread
 import time
+import webbrowser
 
 # Importing wxpython Libraries #
 from wx import *
@@ -151,7 +153,8 @@ class WiFiz(wx.Frame):
         ScanAPs = fileMenu.Append(wx.ID_ANY, "Scan for New Networks",
                                     "Scan for New Wireless Networks.")
         fileMenu.AppendSeparator()
-        fileQuit = fileMenu.Append(wx.ID_EXIT, "Quit", "Exit the Program.")
+        fileQuit = fileMenu.Append(wx.ID_ANY, "Close", "Minimize the program to the task area.")
+        fileExit = fileMenu.Append(wx.ID_EXIT, "Exit", "Exit the program completely.")
         self.mainMenu.Append(fileMenu, "&File")
 
         profilesMenu = wx.Menu()
@@ -232,6 +235,7 @@ class WiFiz(wx.Frame):
         self.Bind(wx.EVT_MENU, self.OnReport, reportIssue)
         self.Bind(wx.EVT_MENU, self.OnCantConnect, cantCItem)
         self.Bind(wx.EVT_MENU, self.onEditProf, editProfile)
+        self.Bind(wx.EVT_MENU, self.OnFullClose, fileExit)
         # End Bindings #
         
     def onEditProf(self, e):
@@ -243,7 +247,7 @@ class WiFiz(wx.Frame):
                 index = int(index)
                 item = self.APList.GetItem(index, 0)
                 nameofProfile = item.GetText()        
-                subprocess.call("gedit " + (conf_dir + nameofProfile), shell="True")
+                subprocess.call("gedit " + (conf_dir + nameofProfile + "_wifiz"), shell="True")
         else:
             wx.MessageBox("To edit profiles, you need to have gedit installed. Please install gedit, and then retry.",
                           "Install gedit first.")
@@ -359,8 +363,7 @@ class WiFiz(wx.Frame):
         return indices
 
     def OnReport(self, e):
-        wx.MessageBox("To report a message, send an email to "
-                            "cody@seafiresoftware.org", "e-Mail")
+        subprocess.call("sudo -u " + getpass.getuser() + " " + webbrowser.open("https://github.com/codywd/WiFiz/issues"))
 
     def OnShowPopup(self, e):
         # Here we get the position of the mouse, and show the popup where we
@@ -494,7 +497,7 @@ class WiFiz(wx.Frame):
 
     def OnFullClose(self, e):
         open(iwlist_file, 'w').close()
-        app.Exit()
+        sys.exit()
 
     def OnAbout(self, e):
         description = """WiFiz is a simple to use, frontend for NetCTL."""
