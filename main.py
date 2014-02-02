@@ -10,13 +10,15 @@ import subprocess
 import sys
 import thread
 import time
-import webbrowser
 
 # Importing wxpython Libraries #
 from wx import *
 from wx import wizard as wiz
 from wx.lib.mixins.listctrl import ListCtrlAutoWidthMixin
 import wx.lib.mixins.listctrl as listmix
+
+# Import personal files
+from nonrootwebbrowser import OpenReportWindow
 
 # Setting some base app information #
 progVer = '0.9.2.5'
@@ -363,7 +365,7 @@ class WiFiz(wx.Frame):
         return indices
 
     def OnReport(self, e):
-        subprocess.call("sudo -u " + getpass.getuser() + " " + webbrowser.open("https://github.com/codywd/WiFiz/issues"))
+        OpenReportWindow()
 
     def OnShowPopup(self, e):
         # Here we get the position of the mouse, and show the popup where we
